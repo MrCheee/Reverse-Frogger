@@ -28,4 +28,14 @@ public class FieldGrid
     {
         return _instance.field[x, y];
     }
+
+    public static SingleGrid GetSingleGrid(GridCoord gridCoord)
+    {
+        return _instance.field[gridCoord.x, gridCoord.y];
+    }
+
+    public static bool IsWithinField(GridCoord gridCoord)
+    {
+        return !(gridCoord.x < 0 || gridCoord.x >= 11 || gridCoord.y < 0 || gridCoord.y >= 9);
+    }
 }

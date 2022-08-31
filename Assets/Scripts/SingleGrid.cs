@@ -7,7 +7,7 @@ public class SingleGrid : ISingleGrid
     int _x;
     int _y;
     Vector3 _centrePoint;
-    List<Unit> _units = new List<Unit>();
+    Dictionary<int, GameObject> _objectsID = new Dictionary<int, GameObject>();
 
     public SingleGrid(int x, int y, Vector3 centrePoint)
     {
@@ -17,50 +17,64 @@ public class SingleGrid : ISingleGrid
     }
 
     // To position multiple game objects that are in the same grid so they do not overlap
-    public void RepositionUnits()
+    public void RepositionObjects()
     {
-        int count = _units.Count;
-        switch (count)
+        List<Unit> allEnemies = GetListOfObjectTypes("Enemy");
+        switch (allEnemies.Count)
         {
             case 2:
-                _units[0].IssueCommand(new MoveCommand(Vector3.left, _units[0].transform.position + Vector3.left));
-                _units[1].IssueCommand(new MoveCommand(Vector3.right, _units[1].transform.position + Vector3.right));
+                allEnemies[0].IssueCommand(new MoveWithinGridCommand(_centrePoint + Vector3.left));
+                allEnemies[1].IssueCommand(new MoveWithinGridCommand(_centrePoint + Vector3.right));
                 break;
             case 3:
-                _units[0].IssueCommand(new MoveCommand(Vector3.forward, _units[0].transform.position + Vector3.forward));
-                _units[1].IssueCommand(new MoveCommand(Vector3.forward, _units[1].transform.position + Vector3.forward));
-                _units[2].IssueCommand(new MoveCommand(Vector3.back, _units[2].transform.position + Vector3.back));
+                allEnemies[0].IssueCommand(new MoveWithinGridCommand(_centrePoint + Vector3.left + Vector3.forward));
+                allEnemies[1].IssueCommand(new MoveWithinGridCommand(_centrePoint + Vector3.right + Vector3.forward));
+                allEnemies[2].IssueCommand(new MoveWithinGridCommand(_centrePoint + Vector3.back));
+                break;
+            case 4:
+                allEnemies[0].IssueCommand(new MoveWithinGridCommand(_centrePoint + Vector3.left + Vector3.forward));
+                allEnemies[1].IssueCommand(new MoveWithinGridCommand(_centrePoint + Vector3.right + Vector3.forward));
+                allEnemies[2].IssueCommand(new MoveWithinGridCommand(_centrePoint + Vector3.left + Vector3.back));
+                allEnemies[3].IssueCommand(new MoveWithinGridCommand(_centrePoint + Vector3.right + Vector3.back));
                 break;
             default:
+                // No repositioning if only 1 Unit or none is in the grid
                 break;
         }
     }
 
-    public void AddUnit(Unit gameobj)
+    public void AddObject(GameObject gameobj)
     {
-        _units.Add(gameobj);
-        RepositionUnits();
+        _objectsID.Add(gameobj.GetInstanceID(), gameobj);
     }
 
-    public Vector3 GetGridPoint()
+    public void RemoveObject(int gameobjID)
+    {
+        _objectsID.Remove(gameobjID);
+    }
+
+    public Vector3 GetGridCentrePoint()
     {
         return _centrePoint;
     }
 
     public int GetUnitCount()
     {
-        return _units.Count;
+        return _objectsID.Where(x => x.Value.CompareTag("Unit")).Count();
     }
 
-    public string GetUnitsTag()
+    public int GetObjectCount()
     {
-        if (_units.Count > 0)
-        {
-            return _units[0].tag;
-        }
-        else
-        {
-            return "None";
-        }
+        return _objectsID.Count;
+    }
+
+    public List<string> GetUnitsTag()
+    {
+        return _objectsID.Values.Select(x => x.tag).ToList();
+    }
+
+    List<Unit> GetListOfObjectTypes(string tag)
+    {
+        return _objectsID.Values.Where(x => x.CompareTag(tag)).Select(x => x.GetComponent<Unit>()).ToList();
     }
 }

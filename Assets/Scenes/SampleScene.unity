@@ -3428,6 +3428,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2078264370}
   - component: {fileID: 2078264369}
+  - component: {fileID: 2078264371}
   m_Layer: 0
   m_Name: MainManager
   m_TagString: Untagged
@@ -3447,7 +3448,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67d22ebd0ab743d4f934e6221563e879, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soldierPrefab: {fileID: 8652477907589224054, guid: c0c3bfbf5c67a21448f67390e6a71937, type: 3}
+  enemyPrefabs:
+  - {fileID: 8652477907589224054, guid: c0c3bfbf5c67a21448f67390e6a71937, type: 3}
+  - {fileID: 4171536206027180326, guid: 998042904d263034c8f19fd6a127811a, type: 3}
+  - {fileID: 4035556462916602105, guid: f4fd65b4339bbd24784a5f7a309576f9, type: 3}
 --- !u!4 &2078264370
 Transform:
   m_ObjectHideFlags: 0
@@ -3463,6 +3467,21 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2078264371
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2078264368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bcbe9d4aeacf5c48abe2f7de526b1b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  vehPrefabs:
+  - {fileID: 8219861734544655096, guid: e9b15826872fb96488cce9b4be00c7bd, type: 3}
+  - {fileID: 6749696542830746714, guid: 331eac4a72794f442a99db73e7aa78f6, type: 3}
 --- !u!1 &2143266646
 GameObject:
   m_ObjectHideFlags: 0

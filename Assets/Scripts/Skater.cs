@@ -1,10 +1,16 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Linq;
 
-public abstract class Enemy : Unit
+public class Skater : Enemy
 {
-    private List<Vehicle> Resist;
+    public override void SetMovementPattern()
+    {
+        movementPattern.Add(new GridCoord(1, 1));
+    }
+
+    public void reverseMotion()
+    {
+        movementPattern = movementPattern.Select(x => new GridCoord(x.x * -1, x.y)).ToList();
+    }
 
     public override void TakeTurn()
     {
@@ -18,25 +24,10 @@ public abstract class Enemy : Unit
             {
                 break;
             }
-            
+
             GiveMovementCommand(projectedGridPos, nextMove);
             projectedGridPos = nextGrid;
+            reverseMotion();
         }
-    }
-
-    public override void CheckConditionsToDestroy()
-    {
-        return;
-    }
-
-    public bool HasCrossedTheRoad()
-    {
-        return currentGridPosition.y == 8;
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        Debug.Log($"Hit by a car! @({currentGridPosition.x}, {currentGridPosition.y})...");
-        DestroySelf();
     }
 }
