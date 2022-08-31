@@ -46,6 +46,7 @@ public class SingleGrid : ISingleGrid
     public void AddObject(GameObject gameobj)
     {
         _objectsID.Add(gameobj.GetInstanceID(), gameobj);
+        RepositionObjects();
     }
 
     public void RemoveObject(int gameobjID)

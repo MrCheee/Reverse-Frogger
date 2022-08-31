@@ -13,4 +13,9 @@ public class Helper
     {
         return new GridCoord(current.x + next.x, current.y + next.y);
     }
+
+    public static bool IsVehicleInTheWay(GridCoord targetGrid)
+    {
+        return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetSingleGrid(targetGrid).GetUnitsTag().Contains("Vehicle");
+    }
 }

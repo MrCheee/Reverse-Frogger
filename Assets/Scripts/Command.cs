@@ -11,7 +11,7 @@ public abstract class MoveCommand : Command
 {
     protected Vector3 _moveDirection;
     protected Vector3 _target;
-    protected bool hasMoved = false;
+    protected bool moveReady = false;
 
     public void MoveToTarget(Unit unit)
     {
@@ -33,31 +33,35 @@ public abstract class MoveCommand : Command
 // for the target
 public class MoveToGridCommand : MoveCommand
 {
-    private GridCoord _currentGrid;
+    private GridCoord _toMove;
     private GridCoord _targetGrid;
     
-    public MoveToGridCommand(GridCoord currentGrid, GridCoord moveGrid)
+    public MoveToGridCommand(GridCoord moveGrid)
     {
-        _currentGrid = currentGrid;
-        _targetGrid = new GridCoord(currentGrid.x + moveGrid.x, currentGrid.y + moveGrid.y);
-        _target = FieldGrid.GetSingleGrid(_targetGrid).GetGridCentrePoint();
+        _toMove = moveGrid;
     }
 
     public override void Execute(Unit unit)
     {
         if (isFinished) return;
-        if (!hasMoved)
+        if (!moveReady)
         {
+            GridCoord currentGrid = unit.CurrentGridPosition;
+            _targetGrid = new GridCoord(currentGrid.x + _toMove.x, currentGrid.y + _toMove.y);
+            _target = FieldGrid.GetSingleGrid(_targetGrid).GetGridCentrePoint();
             _moveDirection = calculateMoveDirection(_target, unit.transform.position);
+
             UpdateGridOnMovement(unit);
-            hasMoved = true;
+            moveReady = true;
+
+            //Debug.Log($"Executing Move command from ({currentGrid.x}, {currentGrid.y}) to ({_targetGrid.x}, {_targetGrid.y})");
         }
         MoveToTarget(unit);
     }
 
     public void UpdateGridOnMovement(Unit unit)
     {
-        unit.RemoveFromFieldGridPosition(_currentGrid);
+        unit.RemoveFromFieldGridPosition();
         unit.AddToFieldGridPosition(_targetGrid);
     }
 }
@@ -73,19 +77,11 @@ public class MoveWithinGridCommand : MoveCommand
     public override void Execute(Unit unit)
     {
         if (isFinished) return;
-        if (!hasMoved)
+        if (!moveReady)
         {
             _moveDirection = calculateMoveDirection(_target, unit.transform.position);
-            hasMoved = true;
+            moveReady = true;
         }
         MoveToTarget(unit);
-    }
-}
-
-public class DestroyCommand : Command
-{
-    public override void Execute(Unit unit)
-    {
-        unit.DestroySelf();
     }
 }

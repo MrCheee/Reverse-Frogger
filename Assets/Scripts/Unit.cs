@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class Unit : MonoBehaviour, IUnit
@@ -10,18 +11,27 @@ public abstract class Unit : MonoBehaviour, IUnit
     protected Queue<Command> commandStack = new Queue<Command>();
     protected Command _currentCommand;
     protected List<GridCoord> movementPattern = new List<GridCoord>();
-    protected GridCoord currentGridPosition;
+    public GridCoord CurrentGridPosition { get; set; }
+    public bool TurnInProgress { get; protected set; }
 
     public void Awake()
     {
         // Each enemy will define its own movement pattern and it will be assigned to the private variable on startup
         SetMovementPattern();
-        InvokeRepeating("TakeTurn", 3.0f, 3.0f);
+        InvokeRepeating("SimulateRepeatingTurns", 3.0f, 3.0f);
+    }
+
+    private void SimulateRepeatingTurns()
+    {
+        TurnInProgress = true;
+        StartCoroutine("TakeTurn");
     }
 
     // Define own movement pattern for each subclass
     public abstract void SetMovementPattern();
-    public abstract void TakeTurn();
+    public abstract void PreTurnActions();
+    public abstract IEnumerator TakeTurn();
+    public abstract void PostTurnActions();
     public abstract void CheckConditionsToDestroy();
 
     public bool IsObjInTheWay(GridCoord targetGrid)
@@ -46,7 +56,7 @@ public abstract class Unit : MonoBehaviour, IUnit
 
     public void DestroySelf()
     {
-        RemoveFromFieldGridPosition(currentGridPosition);
+        RemoveFromFieldGridPosition();
         Destroy(gameObject);
     }
 
@@ -61,14 +71,14 @@ public abstract class Unit : MonoBehaviour, IUnit
         SetCurrentGridPosition(position);
     }
 
-    public void RemoveFromFieldGridPosition(GridCoord position)
+    public void RemoveFromFieldGridPosition()
     {
-        FieldGrid.GetSingleGrid(position).RemoveObject(gameObject.GetInstanceID());
+        FieldGrid.GetSingleGrid(CurrentGridPosition).RemoveObject(gameObject.GetInstanceID());
     }
 
     public void SetCurrentGridPosition(GridCoord position)
     {
-        currentGridPosition = position;
+        CurrentGridPosition = position;
     }
 
     // [To Be Added] Update  will only run these command execution when in its correct game state
@@ -103,8 +113,8 @@ public abstract class Unit : MonoBehaviour, IUnit
         }
     }
 
-    public void GiveMovementCommand(GridCoord startGrid, GridCoord moveGrid)
+    public void GiveMovementCommand(GridCoord moveGrid)
     {
-        commandStack.Enqueue(new MoveToGridCommand(startGrid, moveGrid));
+        commandStack.Enqueue(new MoveToGridCommand(moveGrid));
     }
 }
