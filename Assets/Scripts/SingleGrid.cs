@@ -4,15 +4,14 @@ using System.Linq;
 
 public class SingleGrid : ISingleGrid
 {
-    int _x;
-    int _y;
+    GridCoord _gridCoord;
     Vector3 _centrePoint;
     Dictionary<int, GameObject> _objectsID = new Dictionary<int, GameObject>();
 
     public SingleGrid(int x, int y, Vector3 centrePoint)
     {
-        _x = x;
-        _y = y;
+        _gridCoord.x = x;
+        _gridCoord.y = y;
         _centrePoint = centrePoint;
     }
 
@@ -77,5 +76,10 @@ public class SingleGrid : ISingleGrid
     List<Unit> GetListOfObjectTypes(string tag)
     {
         return _objectsID.Values.Where(x => x.CompareTag(tag)).Select(x => x.GetComponent<Unit>()).ToList();
+    }
+
+    public GridCoord GetGridCoord()
+    {
+        return _gridCoord;
     }
 }

@@ -2,9 +2,9 @@
 
 public class FieldGrid
 {
-    private int fieldLength = 11;
-    private int fieldHeight = 9;
-    private SingleGrid[,] field = new SingleGrid[11,9];
+    private static int fieldLength = 13;
+    private static int fieldHeight = 11;
+    private SingleGrid[,] field = new SingleGrid[fieldLength, fieldHeight];
 
     private static readonly FieldGrid _instance = new FieldGrid();
 
@@ -26,6 +26,10 @@ public class FieldGrid
 
     public static SingleGrid GetSingleGrid(int x, int y)
     {
+        if (x < 0 || x >= fieldLength || y < 0 || y >= fieldHeight)
+        {
+            throw new AccessingFieldGridOutOfBoundsException();
+        }
         return _instance.field[x, y];
     }
 
