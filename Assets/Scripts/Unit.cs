@@ -18,12 +18,12 @@ public abstract class Unit : MonoBehaviour, IUnit
     {
         // Each enemy will define its own movement pattern and it will be assigned to the private variable on startup
         SetMovementPattern();
-        InvokeRepeating("SimulateRepeatingTurns", 3.0f, 3.0f);
+        //StartCoroutine("TakeTurn");
+        //InvokeRepeating("BeginTurn", 3.0f, 3.0f);
     }
 
-    private void SimulateRepeatingTurns()
+    public void BeginTurn()
     {
-        TurnInProgress = true;
         StartCoroutine("TakeTurn");
     }
 
@@ -95,7 +95,7 @@ public abstract class Unit : MonoBehaviour, IUnit
             }
             else // Remove command from stack and set current command to null
             {
-                Debug.Log("Pop Command");
+                //Debug.Log("Pop Command");
                 commandStack.Dequeue();
                 _currentCommand = null;
             }
@@ -107,7 +107,7 @@ public abstract class Unit : MonoBehaviour, IUnit
             // If no current command, check if any in stack, grab the top command if there is
             if (commandStack.Count > 0)
             {
-                Debug.Log("Executing Command");
+                //Debug.Log("Executing Command");
                 _currentCommand = commandStack.Peek();
             }
         }

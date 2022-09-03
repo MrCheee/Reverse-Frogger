@@ -2,8 +2,10 @@
 
 public class FieldGrid
 {
-    private static int fieldLength = 13;
-    private static int fieldHeight = 11;
+    private static int fieldLength = 15;
+    private static int fieldHeight = 13;
+    private static int fieldBuffer = 2;
+    private static int numOfLanes = 3;
     private SingleGrid[,] field = new SingleGrid[fieldLength, fieldHeight];
 
     private static readonly FieldGrid _instance = new FieldGrid();
@@ -41,5 +43,25 @@ public class FieldGrid
     public static bool IsWithinField(GridCoord gridCoord)
     {
         return !(gridCoord.x < 0 || gridCoord.x >= 11 || gridCoord.y < 0 || gridCoord.y >= 9);
+    }
+
+    public static int GetMaxHeight()
+    {
+        return fieldHeight;
+    }
+
+    public static int GetMaxLength()
+    {
+        return fieldLength;
+    }
+
+    public static int GetFieldBuffer()
+    {
+        return fieldBuffer;
+    }
+
+    public static int GetNumberOfLanes()
+    {
+        return numOfLanes;
     }
 }

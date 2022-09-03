@@ -18,7 +18,7 @@ public abstract class MoveCommand : Command
         unit.Move(_moveDirection);
         if (unit.ReachedPosition(_target))
         {
-            Debug.Log("Completed Movement");
+            //Debug.Log("Completed Movement");
             IsFinished = true;
         }
     }

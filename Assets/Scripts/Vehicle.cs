@@ -6,6 +6,7 @@ using UnityEngine;
 public abstract class Vehicle : Unit
 {
     public int SpeedAddition { get; set; }
+    int dividerY = FieldGrid.GetFieldBuffer() + 1 + FieldGrid.GetNumberOfLanes();
 
     public override void PreTurnActions()
     {
@@ -18,6 +19,7 @@ public abstract class Vehicle : Unit
 
     public override IEnumerator TakeTurn()
     {
+        TurnInProgress = true;
         PreTurnActions();
         int retries = 0;
         Queue<GridCoord> moveQueue = new Queue<GridCoord>(movementPattern);
@@ -65,13 +67,13 @@ public abstract class Vehicle : Unit
 
     public bool HasReachedEndOfRoad()
     {
-        if (CurrentGridPosition.y < 4)
+        if (CurrentGridPosition.y < dividerY)
         {
             return CurrentGridPosition.x == 0;
         }
         else
         {
-            return CurrentGridPosition.x == 10;
+            return CurrentGridPosition.x == FieldGrid.GetMaxLength() - 1;
         }
     }
 

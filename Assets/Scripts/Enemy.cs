@@ -19,6 +19,7 @@ public abstract class Enemy : Unit
     // Or it is unable to complete its movement any further
     public override IEnumerator TakeTurn()
     {
+        TurnInProgress = true;
         PreTurnActions();
         Queue<GridCoord> moveQueue = new Queue<GridCoord>(movementPattern);
         GridCoord nextMove = moveQueue.Peek();
@@ -60,7 +61,7 @@ public abstract class Enemy : Unit
 
     public bool HasCrossedTheRoad()
     {
-        return CurrentGridPosition.y == 8;
+        return CurrentGridPosition.y == FieldGrid.GetMaxHeight() - 1;
     }
 
     private void OnTriggerEnter(Collider other)
