@@ -44,7 +44,7 @@ public class VehicleSpawner : MonoBehaviour
             GameObject veh = Instantiate(vehPrefabs[vehIndex], spawnPos, vehPrefabs[vehIndex].transform.rotation);
             veh.GetComponent<Vehicle>().AddToFieldGridPosition(spawnGrid);
 
-            if (spawnY < dividerY) veh.GetComponent<Vehicle>().reverseMotion();
+            if (spawnY < dividerY) veh.GetComponent<Vehicle>().ReverseMotion();
 
             yield return new WaitForSeconds(stateInterval);
         }
@@ -60,7 +60,7 @@ public class VehicleSpawner : MonoBehaviour
         GameObject veh = Instantiate(vehPrefabs[0], spawnPos, vehPrefabs[0].transform.rotation);
         veh.GetComponent<Vehicle>().AddToFieldGridPosition(spawnGrid);
 
-        if (spawnY < dividerY) veh.GetComponent<Vehicle>().reverseMotion();
+        if (spawnY < dividerY) veh.GetComponent<Vehicle>().ReverseMotion();
 
         yield return new WaitForSeconds(stateInterval);
     }
@@ -85,7 +85,7 @@ public class VehicleSpawner : MonoBehaviour
             Vector3 spawnPos = FieldGrid.GetSingleGrid(spawnGrid).GetGridCentrePoint();
             GameObject veh = Instantiate(vehPrefabs[(int)vehIndex], spawnPos, vehPrefabs[(int)vehIndex].transform.rotation);
             veh.GetComponent<Vehicle>().AddToFieldGridPosition(spawnGrid);
-            if (spawnY < dividerY) veh.GetComponent<Vehicle>().reverseMotion();
+            if (spawnY < dividerY) veh.GetComponent<Vehicle>().ReverseMotion();
         }
     }
 

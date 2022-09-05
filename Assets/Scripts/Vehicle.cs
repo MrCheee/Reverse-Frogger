@@ -6,6 +6,7 @@ using UnityEngine;
 public abstract class Vehicle : Unit
 {
     public int SpeedAddition { get; set; }
+    int laneSpeedAddition = 0;
     int dividerY = FieldGrid.GetFieldBuffer() + 1 + FieldGrid.GetNumberOfLanes();
 
     public override void PreTurnActions()
@@ -19,10 +20,12 @@ public abstract class Vehicle : Unit
 
     public override IEnumerator TakeTurn()
     {
+        Debug.Log($"On Grid: {CurrentGridPosition.y} with lane speed {laneSpeedAddition}");
         TurnInProgress = true;
         PreTurnActions();
         int retries = 0;
         Queue<GridCoord> moveQueue = new Queue<GridCoord>(movementPattern);
+        moveQueue = UpdateMovementWithLaneSpeed(moveQueue);
         GridCoord nextMove = moveQueue.Peek();
         GridCoord nextGrid = Helper.AddGridCoords(CurrentGridPosition, nextMove);
         while (moveQueue.Count > 0)
@@ -81,9 +84,24 @@ public abstract class Vehicle : Unit
     {
         return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetSingleGrid(targetGrid).GetUnitsTag().Contains("Brute");
     }
-    public void reverseMotion()
+
+    public void ReverseMotion()
     {
         movementPattern = movementPattern.Select(x => new GridCoord(x.x * -1, x.y)).ToList();
+    }
+
+    public void UpdateLaneSpeed(int newLaneSpeed)
+    {
+        laneSpeedAddition = newLaneSpeed - 1;
+    }
+
+    public Queue<GridCoord> UpdateMovementWithLaneSpeed(Queue<GridCoord> moveQueue)
+    {
+        for (int i = 0; i < laneSpeedAddition; i++)
+        {
+            moveQueue.Enqueue(movementPattern.Last());
+        }
+        return moveQueue;
     }
 
 }

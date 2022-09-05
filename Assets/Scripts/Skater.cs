@@ -8,10 +8,10 @@ public class Skater : Enemy
     }
     public override void PostTurnActions()
     {
-        reverseMotion();
+        ReverseMotion();
     }
 
-    public void reverseMotion()
+    public void ReverseMotion()
     {
         movementPattern = movementPattern.Select(x => new GridCoord(x.x * -1, x.y)).ToList();
     }
