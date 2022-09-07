@@ -11,10 +11,9 @@ public abstract class Unit : MonoBehaviour, IUnit
     protected Queue<Command> commandStack = new Queue<Command>();
     protected Command _currentCommand;
     protected List<GridCoord> movementPattern = new List<GridCoord>();
-    public GridCoord CurrentGridPosition { get; set; }
     public bool TurnInProgress { get; protected set; }
 
-    public void Awake()
+    protected virtual void Awake()
     {
         // Each enemy will define its own movement pattern and it will be assigned to the private variable on startup
         SetMovementPattern();
@@ -27,7 +26,10 @@ public abstract class Unit : MonoBehaviour, IUnit
         StartCoroutine("TakeTurn");
     }
 
-    // Define own movement pattern for each subclass
+    public abstract GridCoord GetCurrentGridPosition();
+    public abstract void AddToFieldGridPosition(GridCoord position);
+    public abstract void RemoveFromFieldGridPosition();
+    public abstract void SetCurrentGridPosition(GridCoord position);
     public abstract void SetMovementPattern();
     public abstract void PreTurnActions();
     public abstract IEnumerator TakeTurn();
@@ -46,7 +48,7 @@ public abstract class Unit : MonoBehaviour, IUnit
 
     public void Move(Vector3 moveDirection)
     {
-        transform.Translate(moveDirection * moveSpeed * Time.deltaTime);
+        transform.Translate(moveDirection * moveSpeed * Time.deltaTime, Space.World);
     }
 
     public bool ReachedPosition(Vector3 target)
@@ -58,27 +60,6 @@ public abstract class Unit : MonoBehaviour, IUnit
     {
         RemoveFromFieldGridPosition();
         Destroy(gameObject);
-    }
-
-    public void IssueCommand(Command cmd)
-    {
-        commandStack.Enqueue(cmd);
-    }
-
-    public void AddToFieldGridPosition(GridCoord position)
-    {
-        FieldGrid.GetSingleGrid(position).AddObject(gameObject);
-        SetCurrentGridPosition(position);
-    }
-
-    public void RemoveFromFieldGridPosition()
-    {
-        FieldGrid.GetSingleGrid(CurrentGridPosition).RemoveObject(gameObject.GetInstanceID());
-    }
-
-    public void SetCurrentGridPosition(GridCoord position)
-    {
-        CurrentGridPosition = position;
     }
 
     // [To Be Added] Update  will only run these command execution when in its correct game state
@@ -111,6 +92,11 @@ public abstract class Unit : MonoBehaviour, IUnit
                 _currentCommand = commandStack.Peek();
             }
         }
+    }
+
+    public void IssueCommand(Command cmd)
+    {
+        commandStack.Enqueue(cmd);
     }
 
     public void GiveMovementCommand(GridCoord moveGrid)

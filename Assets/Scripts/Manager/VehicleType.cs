@@ -1,5 +1,8 @@
 ﻿public enum VehicleType
 {
     Car,
-    SpeedyCar
+    SpeedyCar,
+    Truck,
+    Bus,
+    Motorbike
 }

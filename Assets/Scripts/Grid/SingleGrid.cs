@@ -45,7 +45,7 @@ public class SingleGrid : ISingleGrid
     public void AddObject(GameObject gameobj)
     {
         _objectsID.Add(gameobj.GetInstanceID(), gameobj);
-        RepositionObjects();
+        FieldGrid.AddGridToReposition(_gridCoord);
     }
 
     public void RemoveObject(int gameobjID)
@@ -56,6 +56,16 @@ public class SingleGrid : ISingleGrid
     public Vector3 GetGridCentrePoint()
     {
         return _centrePoint;
+    }
+
+    public Vector3 GetCornerPoint(int left, int top)
+    {
+        return new Vector3((float)(_centrePoint.x + left * 2.5), 0, (float)(_centrePoint.z + top * 2));
+    }
+
+    public Vector3 GetInBetweenPoint(int front, int top)
+    {
+        return new Vector3((float)(_centrePoint.x + front * 1.75), 0, (float)(_centrePoint.z + top * 2));
     }
 
     public int GetUnitCount()

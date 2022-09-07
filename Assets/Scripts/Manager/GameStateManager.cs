@@ -44,11 +44,14 @@ public class GameStateManager : MonoBehaviour
                     if (enemies.Any(x => x.GetComponent<Unit>().TurnInProgress) == false)
                     {
                         Debug.Log("All enemies turn completed...");
+
+                        FieldGrid.TriggerGridsRepositioning();
+
                         vehicles = GameObject.FindGameObjectsWithTag("Vehicle");
                         foreach (GameObject vehObj in vehicles)
                         {
                             Vehicle veh = vehObj.GetComponent<Vehicle>();
-                            int vehLaneSpeed = laneManager.GetLaneSpeed(veh.CurrentGridPosition.y);
+                            int vehLaneSpeed = laneManager.GetLaneSpeed(veh.GetCurrentGridPosition().y);
                             veh.UpdateLaneSpeed(vehLaneSpeed);
                             veh.BeginTurn();
                         }
@@ -91,11 +94,6 @@ public class GameStateManager : MonoBehaviour
                     if (playerTurnInProgress == false)
                     {
                         Debug.Log("Player ended turn...");
-                        enemies = GameObject.FindGameObjectsWithTag("Enemy");
-                        foreach (GameObject enemy in enemies)
-                        {
-                            enemy.GetComponent<Enemy>().BeginTurn();
-                        }
                         foreach (LaneControl lane in FindObjectsOfType<LaneControl>())
                         {
                             lane.FinaliseSpeed();
@@ -110,6 +108,11 @@ public class GameStateManager : MonoBehaviour
                     break;
                 case GameState.PlayerSkill:
                     Debug.Log("Finished Player Skills... Starting enemies turn...");
+                    enemies = GameObject.FindGameObjectsWithTag("Enemy");
+                    foreach (GameObject enemy in enemies)
+                    {
+                        enemy.GetComponent<Enemy>().BeginTurn();
+                    }
                     gameStateIndex = GameState.Enemy;
                     break;
                 default:

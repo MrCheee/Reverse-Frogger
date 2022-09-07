@@ -17,7 +17,7 @@ public class LaneManager : MonoBehaviour
     public int GetLaneSpeed(int gridYNum)
     {
         int laneIndex = gridYNum - FieldGrid.GetFieldBuffer() - 1; // -1 for the sidewalk
-        if (laneIndex >= 3)
+        if (laneIndex >= FieldGrid.GetNumberOfLanes())
         {
             laneIndex -= 1;
         }

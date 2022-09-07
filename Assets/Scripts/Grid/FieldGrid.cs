@@ -1,11 +1,14 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class FieldGrid
 {
-    private static int fieldLength = 15;
-    private static int fieldHeight = 13;
-    private static int fieldBuffer = 2;
-    private static int numOfLanes = 3;
+    private static int fieldLength = 17;
+    private static int fieldHeight = 18;
+    private static int fieldBuffer = 3;
+    private static int numOfLanes = 4;
+    private static int dividerY;
+    private static List<GridCoord> gridsToReposition = new List<GridCoord>();
     private SingleGrid[,] field = new SingleGrid[fieldLength, fieldHeight];
 
     private static readonly FieldGrid _instance = new FieldGrid();
@@ -19,6 +22,7 @@ public class FieldGrid
                 field[i, j] = new SingleGrid(i, j, new Vector3(i * 5, 0, j * 5));
             }
         }
+        dividerY = fieldBuffer + numOfLanes + 1;
     }
 
     public static FieldGrid GetFieldGrid()
@@ -42,7 +46,7 @@ public class FieldGrid
 
     public static bool IsWithinField(GridCoord gridCoord)
     {
-        return !(gridCoord.x < 0 || gridCoord.x >= 11 || gridCoord.y < 0 || gridCoord.y >= 9);
+        return !(gridCoord.x < 0 || gridCoord.x >= fieldLength || gridCoord.y < 0 || gridCoord.y >= fieldHeight);
     }
 
     public static int GetMaxHeight()
@@ -63,5 +67,24 @@ public class FieldGrid
     public static int GetNumberOfLanes()
     {
         return numOfLanes;
+    }
+
+    public static int GetDividerLaneNum()
+    {
+        return dividerY;
+    }
+
+    public static void AddGridToReposition(GridCoord gridCoord)
+    {
+        gridsToReposition.Add(gridCoord);
+    }
+
+    public static void TriggerGridsRepositioning()
+    {
+        foreach(GridCoord coord in gridsToReposition)
+        {
+            _instance.field[coord.x, coord.y].RepositionObjects();
+        }
+        gridsToReposition.Clear();
     }
 }
