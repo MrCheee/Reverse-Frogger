@@ -49,7 +49,9 @@ public class MoveToGridCommand : MoveCommand
         {
             GridCoord currentGrid = unit.GetCurrentGridPosition();
             _targetGrid = new GridCoord(currentGrid.x + _toMove.x, currentGrid.y + _toMove.y);
-            _target = FieldGrid.GetSingleGrid(_targetGrid).GetGridCentrePoint();
+            Vector3 gridCentrePoint = FieldGrid.GetSingleGrid(_targetGrid).GetGridCentrePoint();
+            gridCentrePoint.y = unit.yAdjustment;
+            _target = gridCentrePoint;
             _moveDirection = calculateMoveDirection(_target, unit.transform.position);
 
             UpdateGridOnMovement(unit);
@@ -89,12 +91,11 @@ public class MoveToGridInbetweenCommand : MoveCommand
         UpdateGridOnMovement(unit);
 
         int posY = currentGrid.y;
-        int left = posY < dividerY ? 1 : -1;
+        int right = posY < dividerY ? 1 : -1;
         int top = toBottomInBetweenLane.Contains(posY) ? -1 : 1;
         int front = 0;
-        //int front = toBottomInBetweenLane.Contains(posY) ? 1 : -1;
 
-        unit.IssueCommand(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(_targetGrid).GetCornerPoint(left, top)));
+        unit.IssueCommand(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(_targetGrid).GetCornerPoint(right, top)));
         unit.IssueCommand(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(_targetGrid).GetInBetweenPoint(front, top)));
 
         isFinished = true;
@@ -110,8 +111,11 @@ public class MoveToGridInbetweenCommand : MoveCommand
 // Any movement and positioning within the grid will be controlled by the Grid classes. They will assign Vector3 movement.
 public class MoveWithinGridCommand : MoveCommand
 {
-    public MoveWithinGridCommand(Vector3 target)
+    float manualYAdjustment;
+
+    public MoveWithinGridCommand(Vector3 target, float manualY = 0)
     {
+        manualYAdjustment = manualY;
         _target = target;
     }
 
@@ -120,6 +124,7 @@ public class MoveWithinGridCommand : MoveCommand
         if (isFinished) return;
         if (!moveReady)
         {
+            _target.y = manualYAdjustment != 0 ? manualYAdjustment : unit.yAdjustment;
             _moveDirection = calculateMoveDirection(_target, unit.transform.position);
             moveReady = true;
         }

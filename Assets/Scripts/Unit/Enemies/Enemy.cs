@@ -5,7 +5,26 @@ using UnityEngine;
 public abstract class Enemy : Unit
 {
     private List<Vehicle> Resist;
-    private GridCoord _currentGridPosition;
+    protected GridCoord _currentGridPosition;
+    protected int chargePerTurn = 0;
+    protected int skipTurn = 0;
+    protected int charging = 0;
+
+    protected override void Awake()
+    {
+        SetAdditionalTag();
+        SetChargePerTurn();
+        base.Awake();
+    }
+
+    protected override void SetAdditionalTag()
+    {
+        tag = "Normal";
+    }
+    protected virtual void SetChargePerTurn()
+    {
+        chargePerTurn = 0;
+    }
 
     public override GridCoord GetCurrentGridPosition()
     {
@@ -28,58 +47,105 @@ public abstract class Enemy : Unit
         _currentGridPosition = position;
     }
 
+    // Turn ends when enemy has completed one cycle of its movement pattern
+    // Or it is unable to complete its movement any further
+    public override IEnumerator TakeTurn()
+    {
+        float retryInterval = 0.2f;
+
+        if (ToSkipTurn()) yield break;
+        if (StillChargingUp()) yield break;
+
+        TurnInProgress = true;
+        PreTurnActions();
+
+        PrepareMovement(out Queue<GridCoord> moveQueue, out GridCoord nextMove, out GridCoord nextGrid);
+
+        while (moveQueue.Count > 0)
+        {
+            // Halt all movement when enemy has crossed the road
+            if (HasCrossedTheRoad()) break; 
+
+            // Wait until all commands have been completed by the unit before issuing next move command
+            if (!CheckIfCompletedPreviousMovement()) yield return new WaitForSeconds(retryInterval);
+
+            // If vehicle is in the way, take role specific actions
+            if (Helper.IsVehicleInTheWay(nextGrid))
+            {
+                TakeVehicleInTheWayAction();
+                if (HaltMovementByVehicleInTheWay()) break;
+            }
+            else
+            {
+                TakeNoVehicleInTheWayAction();
+            }
+            
+            // If not break away by vehicle in the way, issue the next movement command
+            //Debug.Log($"Issue Move command of ({nextMove.x}, {nextMove.y}) to ({nextGrid.x}, {nextGrid.y})");
+            (nextMove, nextGrid) = TakeMovementAction(moveQueue, nextMove, nextGrid);
+            yield return new WaitForSeconds(0.2f);
+        }
+        TurnInProgress = false;
+        PostTurnActions();
+    }
+
+    protected bool StillChargingUp()
+    {
+        if (charging > 0)
+        {
+            charging -= 1;
+            return true;
+        }
+        return false;
+    }
+
+    protected void PrepareMovement(out Queue<GridCoord> moveQueue, out GridCoord nextMove, out GridCoord nextGrid)
+    {
+        moveQueue = new Queue<GridCoord>(movementPattern);
+        nextMove = moveQueue.Peek();
+        nextGrid = Helper.AddGridCoords(_currentGridPosition, nextMove);
+    }
+
+    protected bool CheckIfCompletedPreviousMovement()
+    {
+        return commandStack.Count == 0;
+    }
+
+    protected (GridCoord, GridCoord) TakeMovementAction(Queue<GridCoord> moveQueue, GridCoord nextMove, GridCoord nextGrid)
+    {
+        GiveMovementCommand(nextMove);
+        moveQueue.Dequeue();
+        if (moveQueue.Count > 0)
+        {
+            nextMove = moveQueue.Peek();
+            nextGrid = Helper.AddGridCoords(nextGrid, nextMove);
+        }
+        return (nextMove, nextGrid);
+    }
+
     public override void PreTurnActions()
     {
         return;
     }
+
     public override void PostTurnActions()
     {
         return;
     }
 
-    // Turn ends when enemy has completed one cycle of its movement pattern
-    // Or it is unable to complete its movement any further
-    public override IEnumerator TakeTurn()
+    public override void TakeVehicleInTheWayAction()
     {
-        int stuck = 0;
-        TurnInProgress = true;
-        PreTurnActions();
-        Queue<GridCoord> moveQueue = new Queue<GridCoord>(movementPattern);
-        GridCoord nextMove = moveQueue.Peek();
-        GridCoord nextGrid = Helper.AddGridCoords(_currentGridPosition, nextMove);
-        while (moveQueue.Count > 0)
-        {
-            if (stuck > 50)
-            {
-                Debug.Log("STUCKED WITH UNIT COMMAND STACK NEVER BEING COMPLETED.");
-            }
-            if (HasCrossedTheRoad()) break;
-            // Wait until all commands have been completed by the unit before issuing next move command
-            if (commandStack.Count != 0)
-            {
-                stuck += 1;
-                yield return new WaitForSeconds(0.2f);
-            }
-            // If vehicle is in the way, cancel current movement and break out from all further movement
-            if (Helper.IsVehicleInTheWay(nextGrid))
-            {
-                break;
-            } 
-            else   // If no vehicle, issue the next movement command
-            {
-                //Debug.Log($"Issue Move command of ({nextMove.x}, {nextMove.y}) to ({nextGrid.x}, {nextGrid.y})");
-                GiveMovementCommand(nextMove);
-                moveQueue.Dequeue();
-                if (moveQueue.Count > 0)
-                {
-                    nextMove = moveQueue.Peek();
-                    nextGrid = Helper.AddGridCoords(nextGrid, nextMove);
-                }
-                yield return new WaitForSeconds(0.2f);
-            }
-        }
-        TurnInProgress = false;
-        PostTurnActions();
+        return;
+    }
+
+    public override void TakeNoVehicleInTheWayAction()
+    {
+        return;
+    }
+
+    public override bool HaltMovementByVehicleInTheWay()
+    {
+        return true;
     }
 
     public override void CheckConditionsToDestroy()
@@ -92,9 +158,13 @@ public abstract class Enemy : Unit
         return _currentGridPosition.y == FieldGrid.GetMaxHeight() - 1;
     }
 
-    private void OnTriggerEnter(Collider other)
+    protected virtual void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"Hit by a car! @({_currentGridPosition.x}, {_currentGridPosition.y})...");
-        DestroySelf();
+        if (other.gameObject.GetComponent<Unit>().TurnInProgress)
+        {
+            Debug.Log($"Hit by a car! @({_currentGridPosition.x}, {_currentGridPosition.y})...");
+            DestroySelf();
+        }
+        
     }
 }

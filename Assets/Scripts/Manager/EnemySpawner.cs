@@ -9,7 +9,7 @@ public class EnemySpawner : MonoBehaviour
     List<EnemyType> _currentSpawnList;
     int spawnY = FieldGrid.GetFieldBuffer();
     int spawnXMin = FieldGrid.GetFieldBuffer() + 2;
-    int spawnXMax = FieldGrid.GetMaxLength() - FieldGrid.GetFieldBuffer() - 2;
+    int spawnXMax = FieldGrid.GetMaxLength() - FieldGrid.GetFieldBuffer() - 3;
 
     private float stateInterval = 3.0f;
     //private float stateDelay = 0.0f;

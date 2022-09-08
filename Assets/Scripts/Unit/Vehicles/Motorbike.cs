@@ -48,8 +48,18 @@ public class Motorbike : Vehicle
                         moved = true;
                     }
                 }
-                else   // If coast is clear, issue the next movement command
+                else   // If coast is clear, further checks
                 {
+                    if (IsShieldBlockingTheWay(nextMove, nextGrid)) break;  // If Shield is blocking, halt current and further movement
+                    if (IsEnemyTypeInTheWay(nextGrid, "Brute"))  // If Brute in the way, check if movement will kill it. If yes, proceed as normal.
+                    {
+                        Unit brute = GetUnitInTheWay(nextGrid, "Brute");
+                        if (IsBruteTooStrong(brute))  // Brute will always be too strong for motorbike
+                        {
+                            HandleBruteInTheWay(brute);  // Deal no damage to brute
+                            break;
+                        }
+                    }
                     commandStack.Enqueue(new MoveToGridCommand(nextMove));
                     moved = true;
                 }
@@ -71,5 +81,24 @@ public class Motorbike : Vehicle
         }
         TurnInProgress = false;
         PostTurnActions();
+    }
+
+    // Motorbike will deal no damage to a brute
+    public override void HandleBruteInTheWay(Unit brute)   
+    {
+        GridCoord currentGrid = GetCurrentGridPosition();
+        int right = currentGrid.y < dividerY ? -1 : 1;
+        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(right, 0)));
+        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, 0)));
+    }
+
+    public override bool IsBruteTooStrong(Unit brute)
+    {
+        return true;
+    }
+
+    protected override void SetAdditionalTag()
+    {
+        tag = "Knockback-able Vehicle";
     }
 }

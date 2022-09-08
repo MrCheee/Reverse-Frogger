@@ -41,6 +41,10 @@ public class FieldGrid
 
     public static SingleGrid GetSingleGrid(GridCoord gridCoord)
     {
+        if (gridCoord.x < 0 || gridCoord.x >= fieldLength || gridCoord.y < 0 || gridCoord.y >= fieldHeight)
+        {
+            throw new AccessingFieldGridOutOfBoundsException();
+        }
         return _instance.field[gridCoord.x, gridCoord.y];
     }
 

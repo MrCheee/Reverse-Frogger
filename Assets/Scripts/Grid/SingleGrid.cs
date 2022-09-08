@@ -58,9 +58,9 @@ public class SingleGrid : ISingleGrid
         return _centrePoint;
     }
 
-    public Vector3 GetCornerPoint(int left, int top)
+    public Vector3 GetCornerPoint(int right, int top)
     {
-        return new Vector3((float)(_centrePoint.x + left * 2.5), 0, (float)(_centrePoint.z + top * 2));
+        return new Vector3((float)(_centrePoint.x + right * 2.5), 0, (float)(_centrePoint.z + top * 2));
     }
 
     public Vector3 GetInBetweenPoint(int front, int top)
@@ -86,6 +86,21 @@ public class SingleGrid : ISingleGrid
     List<Unit> GetListOfObjectTypes(string tag)
     {
         return _objectsID.Values.Where(x => x.CompareTag(tag)).Select(x => x.GetComponent<Unit>()).ToList();
+    }
+
+    public bool IsUnitTagInGrid(string tag)
+    {
+        return _objectsID.Values.Select(x => x.GetComponent<Unit>().GetTag()).Contains(tag);
+    }
+
+    public Unit GetUnitWithTag(string tag)
+    {
+        return _objectsID.Values.Where(x => x.GetComponent<Unit>().GetTag() == tag).First().GetComponent<Unit>();
+    }
+
+    public List<Unit> GetUnitsWithTag(string tag)
+    {
+        return _objectsID.Values.Where(x => x.GetComponent<Unit>().GetTag() == tag).Select(x => x.GetComponent<Unit>()).ToList();
     }
 
     public GridCoord GetGridCoord()

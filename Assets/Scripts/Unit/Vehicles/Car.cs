@@ -12,4 +12,9 @@ public class Car : Vehicle
     {
         movementPattern.Add(new GridCoord(1, 0));
     }
+
+    protected override void SetAdditionalTag()
+    {
+        tag = "Knockback-able Vehicle";
+    }
 }

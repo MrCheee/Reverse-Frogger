@@ -44,6 +44,8 @@ public class VehicleSpawner : MonoBehaviour
     public void SpawnXVehiclesAtRandom(int number)
     {
         List<int> reservedSpawnY = new List<int>() { dividerY };
+        CheckOccupiedLanes(reservedSpawnY);
+
         if (number > numOfLanes)
         {
             Debug.Log($"Requested too many vehicles to spawn, there is limited space of {numOfLanes}!!");
@@ -54,14 +56,17 @@ public class VehicleSpawner : MonoBehaviour
         {
             int spawnIndex = Random.Range(0, _currentSpawnList.Count);
             VehicleType vehIndex = _currentSpawnList[spawnIndex];
+
             int spawnY = RandomNonRepeating(reservedSpawnY, spawnYMin, spawnYMax);
             reservedSpawnY.Add(spawnY);
             int spawnX = spawnY < dividerY ? spawnXRight : spawnXLeft;
+            
             GridCoord spawnGrid = new GridCoord(spawnX, spawnY);
             Vector3 spawnPos = FieldGrid.GetSingleGrid(spawnGrid).GetGridCentrePoint();
-            //Quaternion spawnRotation = vehPrefabs[(int)vehIndex].transform.rotation;
             Quaternion spawnRotation = spawnY < dividerY ? vehPrefabs[(int)vehIndex].transform.rotation : vehPrefabs[(int)vehIndex].transform.rotation * Quaternion.Euler(0f, 180f, 0f);
+            
             GameObject veh = Instantiate(vehPrefabs[(int)vehIndex], spawnPos, spawnRotation);
+            
             veh.GetComponent<Vehicle>().AddToFieldGridPosition(spawnGrid);
             if (spawnY < dividerY) veh.GetComponent<Vehicle>().ReverseMotion();
         }
@@ -77,4 +82,24 @@ public class VehicleSpawner : MonoBehaviour
         return selected;
     }
 
+    void CheckOccupiedLanes(List<int> reservedSpawnY)
+    {
+        for (int i = spawnYMin; i < spawnYMax+1; i++)
+        {
+            if (i < dividerY)
+            {
+                if (FieldGrid.GetSingleGrid(spawnXRight, i).GetUnitsTag().Contains("Vehicle"))
+                {
+                    reservedSpawnY.Add(i);
+                }
+            }
+            else if (i > dividerY) 
+            {
+                if (FieldGrid.GetSingleGrid(spawnXLeft, i).GetUnitsTag().Contains("Vehicle"))
+                {
+                    reservedSpawnY.Add(i);
+                }
+            }
+        }
+    }
 }

@@ -8,17 +8,20 @@ public abstract class Unit : MonoBehaviour, IUnit
 
     protected int health;
     protected int damage;
+    protected int skipTurn = 0;
+    protected string tag;
     protected Queue<Command> commandStack = new Queue<Command>();
     protected Command _currentCommand;
     protected List<GridCoord> movementPattern = new List<GridCoord>();
+    public float yAdjustment { get; protected set; }
     public bool TurnInProgress { get; protected set; }
 
     protected virtual void Awake()
     {
         // Each enemy will define its own movement pattern and it will be assigned to the private variable on startup
+        SetHealthAndDamage();
+        SetAdditionalTag();
         SetMovementPattern();
-        //StartCoroutine("TakeTurn");
-        //InvokeRepeating("BeginTurn", 3.0f, 3.0f);
     }
 
     public void BeginTurn()
@@ -26,15 +29,30 @@ public abstract class Unit : MonoBehaviour, IUnit
         StartCoroutine("TakeTurn");
     }
 
+    protected abstract void SetHealthAndDamage();
+    protected abstract void SetAdditionalTag();
+    public abstract void SetMovementPattern();
     public abstract GridCoord GetCurrentGridPosition();
     public abstract void AddToFieldGridPosition(GridCoord position);
     public abstract void RemoveFromFieldGridPosition();
     public abstract void SetCurrentGridPosition(GridCoord position);
-    public abstract void SetMovementPattern();
     public abstract void PreTurnActions();
     public abstract IEnumerator TakeTurn();
     public abstract void PostTurnActions();
     public abstract void CheckConditionsToDestroy();
+    public abstract void TakeVehicleInTheWayAction();
+    public abstract void TakeNoVehicleInTheWayAction();
+    public abstract bool HaltMovementByVehicleInTheWay();
+
+    protected bool ToSkipTurn()
+    {
+        if (skipTurn > 0)
+        {
+            skipTurn -= 1;
+            return true;
+        }
+        return false;
+    }
 
     public bool IsObjInTheWay(GridCoord targetGrid)
     {
@@ -94,6 +112,15 @@ public abstract class Unit : MonoBehaviour, IUnit
         }
     }
 
+    public void TakeDamage(int damageReceived)
+    {
+        damage -= damageReceived;
+        if (damage <= 0)
+        {
+            DestroySelf();
+        }
+    }
+
     public void IssueCommand(Command cmd)
     {
         commandStack.Enqueue(cmd);
@@ -102,5 +129,26 @@ public abstract class Unit : MonoBehaviour, IUnit
     public void GiveMovementCommand(GridCoord moveGrid)
     {
         commandStack.Enqueue(new MoveToGridCommand(moveGrid));
+    }
+
+    public string GetTag()
+    {
+        return tag;
+    }
+
+    public int GetHealth()
+    {
+        return health;
+    }
+
+    public void AddDamage(int damageAdd)
+    {
+        damage += damageAdd;
+        damage = Mathf.Max(damage, 0);
+    }
+
+    public void DisableUnit(int disableTime)
+    {
+        skipTurn += disableTime;
     }
 }
