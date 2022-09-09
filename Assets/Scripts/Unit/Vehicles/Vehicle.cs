@@ -32,7 +32,7 @@ public abstract class Vehicle : Unit
 
     protected override void SetAdditionalTag()
     {
-        tag = "Normal";
+        unitTag = "Normal";
     }
 
     public override GridCoord GetCurrentGridPosition()
@@ -115,7 +115,11 @@ public abstract class Vehicle : Unit
             }
             else   // If coast is clear, issue the next movement command
             {
-                if (IsShieldBlockingTheWay(nextMove, nextGrid)) break;  // If Shield is blocking, halt current and further movement
+                if (IsShieldBlockingTheWay(nextMove, nextGrid)) // If Shield is blocking, halt current and further movement
+                {
+                    SimulateHitObstacle();
+                    break;
+                }
                 if (IsEnemyTypeInTheWay(nextGrid, "Brute"))  // If Brute in the way, check if movement will kill it. If yes, proceed as normal.
                 {
                     Unit brute = GetUnitInTheWay(nextGrid, "Brute");
@@ -164,6 +168,11 @@ public abstract class Vehicle : Unit
     public virtual void HandleBruteInTheWay(Unit brute)
     {
         brute.TakeDamage(damage);
+        SimulateHitObstacle();
+    }
+
+    protected void SimulateHitObstacle()
+    {
         GridCoord currentGrid = GetCurrentGridPosition();
         int right = currentGrid.y < dividerY ? -1 : 1;
         commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(right, 0)));
@@ -228,7 +237,7 @@ public abstract class Vehicle : Unit
     {
         for (int i = 0; i < _currentGridPosition.Length; i++)
         {
-            List<Unit> enemiesOnTop = FieldGrid.GetSingleGrid(_currentGridPosition[i]).GetUnitsWithTag("Jumper");
+            List<Unit> enemiesOnTop = FieldGrid.GetSingleGrid(_currentGridPosition[i]).GetUnitsWithTag("Roof-Ready");
             foreach (Unit enemy in enemiesOnTop)
             {
                 enemy.IssueCommand(new MoveToGridCommand(nextMove));

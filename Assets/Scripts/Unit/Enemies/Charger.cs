@@ -9,11 +9,12 @@
     protected override void SetChargePerTurn()
     {
         chargePerTurn = 3;
+        charging = chargePerTurn;
     }
 
     public override void SetMovementPattern()
     {
-        int totalLength = FieldGrid.GetNumberOfLanes() * 2 + 1 + 1;  // + Divider + Final sidewalk
+        int totalLength = FieldGrid.GetNumberOfLanes() + 1;  // Dash half of the map, start to divider, then divider to end
         for (int i = 0; i < totalLength; i++)
         {
             movementPattern.Add(new GridCoord(0, 1));

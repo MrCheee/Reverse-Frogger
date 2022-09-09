@@ -9,19 +9,12 @@ public class EnemySpawner : MonoBehaviour
     List<EnemyType> _currentSpawnList;
     int spawnY = FieldGrid.GetFieldBuffer();
     int spawnXMin = FieldGrid.GetFieldBuffer() + 2;
-    int spawnXMax = FieldGrid.GetMaxLength() - FieldGrid.GetFieldBuffer() - 3;
-
-    private float stateInterval = 3.0f;
-    //private float stateDelay = 0.0f;
+    int spawnXMax = FieldGrid.GetMaxLength() - FieldGrid.GetFieldBuffer() - 2;
 
     // Start is called before the first frame update
     void Start()
     {
         SetSpawnList();
-
-        //StartCoroutine("SpawnOneSprinter");
-        //StartCoroutine("SpawnTwoSoldiers");
-        //StartCoroutine("SpawnEnemiesAtRandom");
     }
 
     void SetSpawnList()
@@ -29,41 +22,12 @@ public class EnemySpawner : MonoBehaviour
         // Spawn enemy types randomly based on proportion
         // Spawn enemy types in fixed sequence
 
-        _currentSpawnList = new List<EnemyType>() { EnemyType.Soldier, EnemyType.Sprinter, EnemyType.Skater };
-    }
+        //_currentSpawnList = new List<EnemyType>() { EnemyType.Soldier, EnemyType.Sprinter, EnemyType.Skater };
 
-    IEnumerator SpawnTwoSoldiers()
-    {
-        for (int i = 0; i < 2; i++)
+        _currentSpawnList = new List<EnemyType>()
         {
-            GameObject unit = Instantiate(enemyPrefabs[0], Vector3.zero, enemyPrefabs[0].transform.rotation);
-            unit.GetComponent<Enemy>().SetCurrentGridPosition(new GridCoord(0, 0));
-            yield return new WaitForSeconds(stateInterval);
-        }
-    }
-
-    IEnumerator SpawnOneSprinter()
-    {
-        int spawnX = 10;
-        GridCoord spawnGrid = new GridCoord(spawnX, 0);
-        Vector3 spawnPos = FieldGrid.GetSingleGrid(spawnGrid).GetGridCentrePoint();
-        GameObject unit = Instantiate(enemyPrefabs[1], spawnPos, enemyPrefabs[1].transform.rotation);
-        unit.GetComponent<Enemy>().SetCurrentGridPosition(spawnGrid);
-        yield return new WaitForSeconds(stateInterval);
-    }
-
-    IEnumerator SpawnEnemiesAtRandom()
-    {
-        while (true)
-        {
-            int enemyIndex = Random.Range(0, enemyPrefabs.Length);
-            int spawnX = Random.Range(2, 9);
-            GridCoord spawnGrid = new GridCoord(spawnX, 0);
-            Vector3 spawnPos = FieldGrid.GetSingleGrid(spawnGrid).GetGridCentrePoint();
-            GameObject unit = Instantiate(enemyPrefabs[enemyIndex], spawnPos, enemyPrefabs[enemyIndex].transform.rotation);
-            unit.GetComponent<Enemy>().AddToFieldGridPosition(spawnGrid);
-            yield return new WaitForSeconds(stateInterval);
-        }
+            EnemyType.Flatten
+        };
     }
 
     public void SpawnXEnemiesAtRandom(int number)

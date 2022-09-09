@@ -7,8 +7,7 @@ public abstract class Enemy : Unit
     private List<Vehicle> Resist;
     protected GridCoord _currentGridPosition;
     protected int chargePerTurn = 0;
-    protected int skipTurn = 0;
-    protected int charging = 0;
+    public int charging = 0;
 
     protected override void Awake()
     {
@@ -19,7 +18,7 @@ public abstract class Enemy : Unit
 
     protected override void SetAdditionalTag()
     {
-        tag = "Normal";
+        unitTag = "Normal";
     }
     protected virtual void SetChargePerTurn()
     {
@@ -160,11 +159,12 @@ public abstract class Enemy : Unit
 
     protected virtual void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.GetComponent<Unit>().TurnInProgress)
-        {
-            Debug.Log($"Hit by a car! @({_currentGridPosition.x}, {_currentGridPosition.y})...");
-            DestroySelf();
-        }
-        
+        Debug.Log($"{gameObject.name}: Hit by a car! @({_currentGridPosition.x}, {_currentGridPosition.y})...");
+        DestroySelf();
+    }
+
+    public void ChildTriggeredEnter(Collider other)
+    {
+        OnTriggerEnter(other);
     }
 }

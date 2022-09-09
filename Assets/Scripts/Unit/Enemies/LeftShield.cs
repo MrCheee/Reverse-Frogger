@@ -2,7 +2,7 @@
 {
     protected override void SetAdditionalTag()
     {
-        tag = "LShield";
+        unitTag = "LShield";
     }
 
 }

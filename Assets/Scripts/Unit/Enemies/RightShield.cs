@@ -2,6 +2,6 @@
 {
     protected override void SetAdditionalTag()
     {
-        tag = "RShield";
+        unitTag = "RShield";
     }
 }

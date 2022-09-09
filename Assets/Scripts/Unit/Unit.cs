@@ -6,10 +6,10 @@ public abstract class Unit : MonoBehaviour, IUnit
 {
     [SerializeField] private float moveSpeed = 1f;
 
-    protected int health;
+    public int health;
     protected int damage;
-    protected int skipTurn = 0;
-    protected string tag;
+    public int skipTurn = 0;
+    protected string unitTag;
     protected Queue<Command> commandStack = new Queue<Command>();
     protected Command _currentCommand;
     protected List<GridCoord> movementPattern = new List<GridCoord>();
@@ -114,8 +114,8 @@ public abstract class Unit : MonoBehaviour, IUnit
 
     public void TakeDamage(int damageReceived)
     {
-        damage -= damageReceived;
-        if (damage <= 0)
+        health -= damageReceived;
+        if (health <= 0)
         {
             DestroySelf();
         }
@@ -133,7 +133,7 @@ public abstract class Unit : MonoBehaviour, IUnit
 
     public string GetTag()
     {
-        return tag;
+        return unitTag;
     }
 
     public int GetHealth()

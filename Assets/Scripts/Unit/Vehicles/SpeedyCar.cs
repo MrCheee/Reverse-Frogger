@@ -14,6 +14,6 @@
 
     protected override void SetAdditionalTag()
     {
-        tag = "Knockback-able Vehicle";
+        unitTag = "Knockback-able Vehicle";
     }
 }

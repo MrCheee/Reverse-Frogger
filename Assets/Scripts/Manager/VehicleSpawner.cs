@@ -15,9 +15,6 @@ public class VehicleSpawner : MonoBehaviour
     int spawnYMax = FieldGrid.GetFieldBuffer() + FieldGrid.GetNumberOfLanes() * 2 + 1;
     int dividerY = FieldGrid.GetFieldBuffer() + 1 + FieldGrid.GetNumberOfLanes();
 
-    private float stateInterval = 3.0f;
-    private float stateDelay = 1.5f;
-
     // Start is called before the first frame update
     void Start()
     {

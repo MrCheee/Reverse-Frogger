@@ -8,7 +8,7 @@
 
     protected override void SetAdditionalTag()
     {
-        tag = "Jumper";
+        unitTag = "Roof-Ready";
     }
 
     public override void SetMovementPattern()

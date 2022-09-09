@@ -62,7 +62,7 @@ public class BabyForesight : Enemy
             } 
             else if (!vehiclesInTheWay[2])  // If no vehicle on the right
             {
-                if (_currentGridPosition.x == maxRight) // Check if still can move right
+                if (_currentGridPosition.x != maxRight) // Check if still can move right
                 {
                     GiveMovementCommand(movementPattern[2]); // Move right
                 }

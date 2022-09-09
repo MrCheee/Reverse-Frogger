@@ -17,11 +17,14 @@ public class Motorbike : Vehicle
 
     public override IEnumerator TakeTurn()
     {
+        if (ToSkipTurn()) yield break;
+
         TurnInProgress = true;
         PreTurnActions();
         int retries = 0;
         int vehicleCheck = 0;
         bool moved = false;
+        bool quickExit = false;
         Queue<GridCoord> moveQueue = new Queue<GridCoord>(movementPattern);
         moveQueue = UpdateMovementWithLaneSpeed(moveQueue);
         GridCoord nextMove = moveQueue.Peek();
@@ -60,6 +63,8 @@ public class Motorbike : Vehicle
                             break;
                         }
                     }
+                    if (IsEnemyTypeInTheWay(nextGrid, "Bloat")) quickExit = true;
+                    MoveUnitsOnTopOfVehicle(nextMove);
                     commandStack.Enqueue(new MoveToGridCommand(nextMove));
                     moved = true;
                 }
@@ -76,6 +81,7 @@ public class Motorbike : Vehicle
                         nextGrid = Helper.AddGridCoords(nextGrid, nextMove);
                     }
                 }
+                if (quickExit) break;
                 yield return new WaitForSeconds(0.2f);
             }
         }
@@ -99,6 +105,6 @@ public class Motorbike : Vehicle
 
     protected override void SetAdditionalTag()
     {
-        tag = "Knockback-able Vehicle";
+        unitTag = "Knockback-able Vehicle";
     }
 }

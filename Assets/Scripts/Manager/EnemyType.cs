@@ -2,5 +2,14 @@
 {
     Soldier,
     Sprinter,
-    Skater
+    Skater,
+    Charger,
+    Jumper,
+    Vaulter,
+    Brute,
+    LShield,
+    RShield,
+    BabyForesight,
+    Bloat,
+    Flatten
 }

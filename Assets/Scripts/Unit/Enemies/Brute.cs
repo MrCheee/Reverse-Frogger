@@ -10,6 +10,11 @@ public class Brute : Enemy
     };
     bool movementBlocked = true;
 
+    protected override void SetAdditionalTag()
+    {
+        unitTag = "Brute";
+    }
+
     protected override void SetHealthAndDamage()
     {
         health = 2;
@@ -35,10 +40,16 @@ public class Brute : Enemy
                 if (!Helper.IsVehicleInTheWay(destinationGrid))
                 {
                     Unit veh = FieldGrid.GetSingleGrid(targetGrid).GetUnitWithTag("Knockback-able Vehicle");
-                    veh.IssueCommand(new MoveToGridCommand(destinationGrid));
+                    veh.IssueCommand(new MoveToGridCommand(new GridCoord(0, 1)));
                     movementBlocked = false;
                 }
             }
+        }
+        if (movementBlocked)
+        {
+            GridCoord currentGrid = GetCurrentGridPosition();
+            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, 1)));
+            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, 0)));
         }
     }
 

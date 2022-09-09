@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: -1122793754334638840}
   m_Layer: 0
   m_Name: RShield
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -47,6 +47,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 10
+  health: 0
+  skipTurn: 0
+  charging: 0
 --- !u!1 &4263661304222605461
 GameObject:
   m_ObjectHideFlags: 0
@@ -156,6 +159,7 @@ GameObject:
   - component: {fileID: 1737775513884538360}
   - component: {fileID: 6795785736741782945}
   - component: {fileID: 8321022479812668433}
+  - component: {fileID: 6396208396826738135}
   m_Layer: 0
   m_Name: ShieldBody
   m_TagString: Untagged
@@ -241,3 +245,15 @@ SphereCollider:
   serializedVersion: 2
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &6396208396826738135
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4891725237575936863}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ea1e9f4a0abd3b44880166dfcac374a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

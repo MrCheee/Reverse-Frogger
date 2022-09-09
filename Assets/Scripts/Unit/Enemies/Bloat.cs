@@ -7,6 +7,10 @@ public class Bloat : Enemy
         health = 1;
         damage = 1;
     }
+    protected override void SetAdditionalTag()
+    {
+        unitTag = "Bloat";
+    }
 
     public override void SetMovementPattern()
     {
@@ -24,14 +28,10 @@ public class Bloat : Enemy
 
     protected override void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.GetComponent<Unit>().TurnInProgress)
-        {
-            Debug.Log($"Hit by a car! @({_currentGridPosition.x}, {_currentGridPosition.y})...");
+        Debug.Log($"Hit by a car! @({_currentGridPosition.x}, {_currentGridPosition.y})...");
 
-            other.gameObject.GetComponent<Unit>().DisableUnit(1);
+        other.gameObject.GetComponentInParent<Unit>().DisableUnit(2);
 
-            DestroySelf();
-        }
-
+        DestroySelf();
     }
 }
