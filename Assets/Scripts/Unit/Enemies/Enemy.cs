@@ -4,23 +4,14 @@ using UnityEngine;
 
 public abstract class Enemy : Unit
 {
-    private List<Vehicle> Resist;
     protected GridCoord _currentGridPosition;
-    protected int chargePerTurn = 0;
-    public int charging = 0;
-
-    protected override void Awake()
-    {
-        SetAdditionalTag();
-        SetChargePerTurn();
-        base.Awake();
-    }
 
     protected override void SetAdditionalTag()
     {
         unitTag = "Normal";
     }
-    protected virtual void SetChargePerTurn()
+
+    protected override void SetChargePerTurn()
     {
         chargePerTurn = 0;
     }
@@ -88,16 +79,6 @@ public abstract class Enemy : Unit
         PostTurnActions();
     }
 
-    protected bool StillChargingUp()
-    {
-        if (charging > 0)
-        {
-            charging -= 1;
-            return true;
-        }
-        return false;
-    }
-
     protected void PrepareMovement(out Queue<GridCoord> moveQueue, out GridCoord nextMove, out GridCoord nextGrid)
     {
         moveQueue = new Queue<GridCoord>(movementPattern);
@@ -129,7 +110,7 @@ public abstract class Enemy : Unit
 
     public override void PostTurnActions()
     {
-        return;
+        charging = chargePerTurn;
     }
 
     public override void TakeVehicleInTheWayAction()

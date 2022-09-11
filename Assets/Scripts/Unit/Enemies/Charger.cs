@@ -30,8 +30,15 @@
         commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, 0)));
     }
 
-    public override void PostTurnActions()
+    public override string GetName()
     {
-        charging = chargePerTurn;
+        return "Charger";
+    }
+
+    public override string GetDescription()
+    {
+        return "Movement Pattern: Charges up its movement over 3 turns. It will charge forward for half the map in distance, " +
+            "or until it hits a vehicle. <br> <br>" +
+            "Vehicle in the way: Runs into vehicle and become stunned for 1 turn.";
     }
 }

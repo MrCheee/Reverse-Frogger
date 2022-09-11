@@ -36,4 +36,14 @@ public class Skater : Enemy
         movementPattern = movementPattern.Select(x => new GridCoord(x.x * -1, x.y)).ToList();
     }
 
+    public override string GetName()
+    {
+        return "Skater";
+    }
+
+    public override string GetDescription()
+    {
+        return "Movement Pattern: Moves 1 step forward left or forward right, alternating between them. <br> <br>" +
+            "Vehicle in the way: Runs into vehicle and become stunned for 1 turn, while being displaced horizontally.";
+    }
 }

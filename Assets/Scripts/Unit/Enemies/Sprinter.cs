@@ -20,4 +20,15 @@
         commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, 1)));
         commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, 0)));
     }
+
+    public override string GetName()
+    {
+        return "Sprinter";
+    }
+
+    public override string GetDescription()
+    {
+        return "Movement Pattern: Moves 2 step forward per turn. <br> <br>" +
+            "Vehicle in the way: Runs into vehicle and become stunned for 2 turns.";
+    }
 }

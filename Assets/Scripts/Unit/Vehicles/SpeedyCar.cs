@@ -16,4 +16,16 @@
     {
         unitTag = "Knockback-able Vehicle";
     }
+
+    public override string GetName()
+    {
+        return "Fast Car";
+    }
+
+    public override string GetDescription()
+    {
+        return "Size: 1 width <br> <br>" +
+            "Speed: Base 2, Max 4 steps <br> <br>" +
+            "Additional effects: Can be displaced by strong enemies. Manual Lane Change possible.";
+    }
 }

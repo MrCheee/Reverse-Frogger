@@ -10,6 +10,7 @@ public class GameStateManager : MonoBehaviour
     EnemySpawner enemySpawner;
     VehicleSpawner vehicleSpawner;
     LaneManager laneManager;
+    UIMain uiMain;
 
     GameState gameStateIndex = GameState.Initialisation;
     bool playerTurnInProgress = false;
@@ -20,6 +21,8 @@ public class GameStateManager : MonoBehaviour
         enemySpawner = gameObject.GetComponent<EnemySpawner>();
         vehicleSpawner = gameObject.GetComponent<VehicleSpawner>();
         laneManager = gameObject.GetComponent<LaneManager>();
+
+        uiMain = UIMain.Instance;
 
         playerFinishButton.onClick.AddListener(PlayerButtonOnClick);
         StartCoroutine(CheckAndUpdateGameState(1f));
@@ -40,6 +43,7 @@ public class GameStateManager : MonoBehaviour
                     gameStateIndex = GameState.EnemySpawn;
                     break;
                 case GameState.Enemy: // Enemy Turn
+                    uiMain.UpdateContent();
                     enemies = GameObject.FindGameObjectsWithTag("Enemy");
                     if (enemies.Any(x => x.GetComponent<Unit>().TurnInProgress) == false)
                     {
@@ -60,6 +64,7 @@ public class GameStateManager : MonoBehaviour
                     }
                     break;
                 case GameState.Vehicle: // Vehicle Turn
+                    uiMain.UpdateContent();
                     vehicles = GameObject.FindGameObjectsWithTag("Vehicle");
                     if (vehicles.Any(x => x.GetComponent<Unit>().TurnInProgress) == false)
                     {
@@ -69,11 +74,13 @@ public class GameStateManager : MonoBehaviour
                     }
                     break;
                 case GameState.EnemySpawn:
+                    uiMain.UpdateContent();
                     enemySpawner.SpawnXEnemiesAtRandom(2);
                     gameStateIndex = GameState.VehicleSpawn;
                     Debug.Log("Spawned Enemies! Starting Vehicle Spawn sequence...");
                     break;
                 case GameState.VehicleSpawn:
+                    uiMain.UpdateContent();
                     vehicleSpawner.SpawnXVehiclesAtRandom(2);
                     gameStateIndex = GameState.Player;
                     Debug.Log("Spawned Vehicles! Starting Player's Turn...");
@@ -91,6 +98,7 @@ public class GameStateManager : MonoBehaviour
                     playerTurnInProgress = true;
                     break;
                 case GameState.Player:
+                    uiMain.UpdateContent();
                     if (playerTurnInProgress == false)
                     {
                         Debug.Log("Player ended turn...");
@@ -107,6 +115,7 @@ public class GameStateManager : MonoBehaviour
                     }
                     break;
                 case GameState.PlayerSkill:
+                    uiMain.UpdateContent();
                     Debug.Log("Finished Player Skills... Starting enemies turn...");
                     enemies = GameObject.FindGameObjectsWithTag("Enemy");
                     foreach (GameObject enemy in enemies)

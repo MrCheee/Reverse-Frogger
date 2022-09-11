@@ -81,4 +81,18 @@
         skipTurn = 1;
         vaultAvailable = false;
     }
+
+    public override string GetName()
+    {
+        return "Vaulter";
+    }
+
+    public override string GetDescription()
+    {
+        return "Movement Pattern: Moves 1 step forward per turn. <br> <br>" +
+            "Vehicle in the way: If vault pole is still available, it will vault over to the lane after, landing on the ground " +
+            "or on top of the vehicle. If no pole is available, it will run into the vehicle and become stunned for 1 turn. <br> <br> " +
+            "Additional effects: It can only vault once, thereafter losing its pole. Its pole extends one lane behind it, and " +
+            "if a vehicle runs into the pole, it will destroy the pole and stun the vaulter for 1 turn.";
+    }
 }

@@ -27,6 +27,10 @@ public abstract class Vehicle : Unit
         damage = 1;
     }
 
+    protected override void SetChargePerTurn()
+    {
+        chargePerTurn = 0;
+    }
 
     protected abstract void SetUpSize();
 

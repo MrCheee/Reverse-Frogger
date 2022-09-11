@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Unit : MonoBehaviour, IUnit
+public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
 {
     [SerializeField] private float moveSpeed = 1f;
 
-    public int health;
-    protected int damage;
-    public int skipTurn = 0;
+    protected int health = 0;
+    protected int damage = 0;
+    protected int skipTurn = 0;
+    protected int chargePerTurn = 0;
+    protected int charging = 0;
+
     protected string unitTag;
     protected Queue<Command> commandStack = new Queue<Command>();
     protected Command _currentCommand;
@@ -21,6 +24,7 @@ public abstract class Unit : MonoBehaviour, IUnit
         // Each enemy will define its own movement pattern and it will be assigned to the private variable on startup
         SetHealthAndDamage();
         SetAdditionalTag();
+        SetChargePerTurn();
         SetMovementPattern();
     }
 
@@ -31,6 +35,7 @@ public abstract class Unit : MonoBehaviour, IUnit
 
     protected abstract void SetHealthAndDamage();
     protected abstract void SetAdditionalTag();
+    protected abstract void SetChargePerTurn();
     public abstract void SetMovementPattern();
     public abstract GridCoord GetCurrentGridPosition();
     public abstract void AddToFieldGridPosition(GridCoord position);
@@ -49,6 +54,16 @@ public abstract class Unit : MonoBehaviour, IUnit
         if (skipTurn > 0)
         {
             skipTurn -= 1;
+            return true;
+        }
+        return false;
+    }
+
+    protected bool StillChargingUp()
+    {
+        if (charging > 0)
+        {
+            charging -= 1;
             return true;
         }
         return false;
@@ -76,6 +91,7 @@ public abstract class Unit : MonoBehaviour, IUnit
 
     public void DestroySelf()
     {
+        health = 0;
         RemoveFromFieldGridPosition();
         Destroy(gameObject);
     }
@@ -150,5 +166,22 @@ public abstract class Unit : MonoBehaviour, IUnit
     public void DisableUnit(int disableTime)
     {
         skipTurn += disableTime;
+    }
+
+    public virtual string GetName()
+    {
+        return "Default Name";
+    }
+
+    public virtual string GetDescription()
+    {
+        return "Default Description";
+    }
+
+    public virtual void GetContent(ref List<Status> content)
+    {
+        content.Add(new Status("Health", health));
+        content.Add(new Status("Stunned", skipTurn));
+        content.Add(new Status("Charging", charging));
     }
 }

@@ -19,15 +19,51 @@ public class EnemySpawner : MonoBehaviour
 
     void SetSpawnList()
     {
-        // Spawn enemy types randomly based on proportion
-        // Spawn enemy types in fixed sequence
+        // Testing Enemy Spawn
+        //_currentSpawnList = new List<EnemyType>()
+        //{
+        //    EnemyType.Flatten
+        //};
 
-        //_currentSpawnList = new List<EnemyType>() { EnemyType.Soldier, EnemyType.Sprinter, EnemyType.Skater };
-
-        _currentSpawnList = new List<EnemyType>()
-        {
-            EnemyType.Flatten
+        // Even Proportion Enemy Spawn
+        _currentSpawnList = new List<EnemyType>() { 
+            EnemyType.Soldier, 
+            EnemyType.Sprinter, 
+            EnemyType.Skater,
+            EnemyType.Brute,
+            EnemyType.Bloat,
+            EnemyType.BabyForesight,
+            EnemyType.Charger,
+            EnemyType.Flatten,
+            EnemyType.Jumper,
+            EnemyType.Vaulter,
+            EnemyType.LShield,
+            EnemyType.RShield
         };
+
+        // Weak Enemies Skewed Proportion
+        //_currentSpawnList = new List<EnemyType>() {
+        //    EnemyType.Soldier,
+        //    EnemyType.Soldier,
+        //    EnemyType.Soldier,
+        //    EnemyType.Soldier,
+        //    EnemyType.Sprinter,
+        //    EnemyType.Sprinter,
+        //    EnemyType.Skater,
+        //    EnemyType.Skater,
+        //    EnemyType.Skater,
+        //    EnemyType.Skater,
+        //    EnemyType.Brute,
+        //    EnemyType.Bloat,
+        //    EnemyType.BabyForesight,
+        //    EnemyType.Charger,
+        //    EnemyType.Flatten,
+        //    EnemyType.Jumper,
+        //    EnemyType.Vaulter,
+        //    EnemyType.Vaulter,
+        //    EnemyType.LShield,
+        //    EnemyType.RShield
+        //};
     }
 
     public void SpawnXEnemiesAtRandom(int number)

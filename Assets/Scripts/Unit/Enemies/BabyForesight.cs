@@ -97,4 +97,17 @@ public class BabyForesight : Enemy
         TurnInProgress = false;
         PostTurnActions();
     }
+
+    public override string GetName()
+    {
+        return "Foresight (Baby)";
+    }
+
+    public override string GetDescription()
+    {
+        return "Movement Pattern: Moves 1 step per turn, either forward left or forward straight or forward right. " + 
+            "Determines its movement based on vehicle spots in front of it. " +
+            "It will not intentionally move into a vehicle's path within its line of sight. <br> <br>" +
+            "Vehicle in the way: It will not move.";
+    }
 }

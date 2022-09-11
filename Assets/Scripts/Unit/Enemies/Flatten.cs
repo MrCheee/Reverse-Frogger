@@ -30,4 +30,16 @@
     {
         return false;
     }
+
+    public override string GetName()
+    {
+        return "Flatten";
+    }
+
+    public override string GetDescription()
+    {
+        return "Movement Pattern: Moves 1 step forward per turn. <br> <br>" +
+            "Vehicle in the way: It will flatten itself and move under the vehicle. <br> <br>" +
+            "Additional effects: It will remain in its flattened state until it has moved out from under the vehicle.";
+    }
 }

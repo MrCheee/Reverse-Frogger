@@ -34,4 +34,16 @@ public class Bloat : Enemy
 
         DestroySelf();
     }
+
+    public override string GetName()
+    {
+        return "Bloat";
+    }
+
+    public override string GetDescription()
+    {
+        return "Movement Pattern: Moves 1 step forward per turn. <br> <br>" +
+            "Vehicle in the way: Runs into vehicle and become stunned for 1 turn. <br> <br>" +
+            "Additional effects: When a vehicle kills it, it will explode onto the vehicle, stunning the vehicle for 2 turns.";
+    }
 }

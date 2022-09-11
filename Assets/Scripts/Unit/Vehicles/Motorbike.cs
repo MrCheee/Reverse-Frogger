@@ -107,4 +107,17 @@ public class Motorbike : Vehicle
     {
         unitTag = "Knockback-able Vehicle";
     }
+
+    public override string GetName()
+    {
+        return "Motorbike";
+    }
+
+    public override string GetDescription()
+    {
+        return "Size: 1 width <br> <br>" +
+            "Speed: Base 1, Max 3 steps <br> <br>" +
+            "Additional effects: It will weave inbetween lanes if there is a slower or disabled vehicle in front of it. " +
+            "Can be displaced by strong enemies. Manual Lane Change possible.";
+    }
 }

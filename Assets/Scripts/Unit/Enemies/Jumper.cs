@@ -35,4 +35,16 @@
     {
         return false;
     }
+
+    public override string GetName()
+    {
+        return "Jumper";
+    }
+
+    public override string GetDescription()
+    {
+        return "Movement Pattern: Moves 1 step forward per turn. <br> <br>" +
+            "Vehicle in the way: It will jump on top of the vehicle. <br> <br>" +
+            "Additional effects: It will move along with the vehicle's movement.";
+    }
 }
