@@ -73,7 +73,6 @@ public class LaneControl : MonoBehaviour
     void UpdateSpeedIndicators()
     {
         int tmpSpeed = Mathf.Max(minSpeed, Mathf.Min(maxSpeed, LaneSpeed + speedToggle));
-        Debug.Log($"Temp Speed: {tmpSpeed}");
         for (int i = 0; i < speedIndicators.Length; i++)
         {
             if (i < tmpSpeed)

@@ -10,6 +10,7 @@ public class GameStateManager : MonoBehaviour
     EnemySpawner enemySpawner;
     VehicleSpawner vehicleSpawner;
     LaneManager laneManager;
+    UserControl userControl;
     UIMain uiMain;
 
     GameState gameStateIndex = GameState.Initialisation;
@@ -21,6 +22,7 @@ public class GameStateManager : MonoBehaviour
         enemySpawner = gameObject.GetComponent<EnemySpawner>();
         vehicleSpawner = gameObject.GetComponent<VehicleSpawner>();
         laneManager = gameObject.GetComponent<LaneManager>();
+        userControl = gameObject.GetComponent<UserControl>();
 
         uiMain = UIMain.Instance;
 
@@ -37,93 +39,88 @@ public class GameStateManager : MonoBehaviour
             switch (gameStateIndex)
             {
                 case GameState.Initialisation: // Initialisation phase, to transition to enemy turn
-                    var enemies = GameObject.FindGameObjectsWithTag("Enemy");
-                    var vehicles = GameObject.FindGameObjectsWithTag("Vehicle");
-                    Debug.Log("Initialisation Complete...");
+                    Debug.Log("Initialisation Complete! Starting Enemy Spawn sequence...");
                     gameStateIndex = GameState.EnemySpawn;
                     break;
-                case GameState.Enemy: // Enemy Turn
-                    uiMain.UpdateContent();
-                    enemies = GameObject.FindGameObjectsWithTag("Enemy");
-                    if (enemies.Any(x => x.GetComponent<Unit>().TurnInProgress) == false)
-                    {
-                        Debug.Log("All enemies turn completed...");
 
-                        FieldGrid.TriggerGridsRepositioning();
-
-                        vehicles = GameObject.FindGameObjectsWithTag("Vehicle");
-                        foreach (GameObject vehObj in vehicles)
-                        {
-                            Vehicle veh = vehObj.GetComponent<Vehicle>();
-                            int vehLaneSpeed = laneManager.GetLaneSpeed(veh.GetCurrentGridPosition().y);
-                            veh.UpdateLaneSpeed(vehLaneSpeed);
-                            veh.BeginTurn();
-                        }
-                        Debug.Log("Started vehicles turn...");
-                        gameStateIndex = GameState.Vehicle;
-                    }
-                    break;
-                case GameState.Vehicle: // Vehicle Turn
-                    uiMain.UpdateContent();
-                    vehicles = GameObject.FindGameObjectsWithTag("Vehicle");
-                    if (vehicles.Any(x => x.GetComponent<Unit>().TurnInProgress) == false)
-                    {
-                        Debug.Log("All vehicles turn completed...");
-                        Debug.Log("Started Enemy Spawn sequence...");
-                        gameStateIndex = GameState.EnemySpawn;
-                    }
-                    break;
                 case GameState.EnemySpawn:
                     uiMain.UpdateContent();
                     enemySpawner.SpawnXEnemiesAtRandom(2);
-                    gameStateIndex = GameState.VehicleSpawn;
+
                     Debug.Log("Spawned Enemies! Starting Vehicle Spawn sequence...");
+                    gameStateIndex = GameState.VehicleSpawn;
                     break;
+
                 case GameState.VehicleSpawn:
                     uiMain.UpdateContent();
                     vehicleSpawner.SpawnXVehiclesAtRandom(2);
-                    gameStateIndex = GameState.Player;
+
                     Debug.Log("Spawned Vehicles! Starting Player's Turn...");
-                    foreach (GameObject toggleObj in GameObject.FindGameObjectsWithTag("SpeedToggle"))
-                    {
-                        toggleObj.GetComponent<Toggle>().enabled = true;
-                    }
-                    foreach (GameObject toggleObj in GameObject.FindGameObjectsWithTag("SpeedToggle"))
-                    {
-                        if (toggleObj.name == "SpeedSame")
-                        {
-                            toggleObj.GetComponent<Toggle>().SetIsOnWithoutNotify(true);
-                        }
-                    }
+                    gameStateIndex = GameState.Player;
                     playerTurnInProgress = true;
+                    EnableLaneSpeedToggles();
+                    ResetLaneSpeedToggles();
                     break;
+
                 case GameState.Player:
                     uiMain.UpdateContent();
                     if (playerTurnInProgress == false)
                     {
-                        Debug.Log("Player ended turn...");
-                        foreach (LaneControl lane in FindObjectsOfType<LaneControl>())
-                        {
-                            lane.FinaliseSpeed();
-                        }
-                        foreach (GameObject toggleObj in GameObject.FindGameObjectsWithTag("SpeedToggle"))
-                        {
-                            toggleObj.GetComponent<Toggle>().enabled = false;
-                        }
-                        Debug.Log("Started player skills...");
+                        DisableLaneSpeedToggles();
+                        FinaliseLaneSpeed();
+                        Debug.Log("Player ended turn! Starting player skills execution...");
+                        userControl.DispatchSkillCommands();
                         gameStateIndex = GameState.PlayerSkill;
                     }
                     break;
+
                 case GameState.PlayerSkill:
                     uiMain.UpdateContent();
-                    Debug.Log("Finished Player Skills... Starting enemies turn...");
-                    enemies = GameObject.FindGameObjectsWithTag("Enemy");
-                    foreach (GameObject enemy in enemies)
-                    {
-                        enemy.GetComponent<Enemy>().BeginTurn();
-                    }
+                    userControl.ResetSkillBar();
+                    Debug.Log("Finished executing Player Skills! Starting enemies turn...");
+
+                    TriggerAllEnemiesTurn();
                     gameStateIndex = GameState.Enemy;
                     break;
+
+                case GameState.Enemy: // Enemy Turn
+                    uiMain.UpdateContent();
+                    if (HaveUnitsOfTypeCompletedTurns("Enemy"))
+                    {
+                        FieldGrid.TriggerGridsRepositioning();
+                        if (HaveBoostedUnitsOfType("Enemy"))
+                        {
+                            Debug.Log("Boosted Enemies still in play, proceeding with their next turn...");
+                            TriggerBoostedUnitsOfTypeTurn("Enemy");
+                            gameStateIndex = GameState.Enemy;
+                        }
+                        else
+                        {
+                            Debug.Log("All enemies turn completed! Starting vehicle's turn...");
+                            TriggerAllVehiclesTurn();
+                            gameStateIndex = GameState.Vehicle;
+                        }
+                    }
+                    break;
+
+                case GameState.Vehicle: // Vehicle Turn
+                    uiMain.UpdateContent();
+                    if (HaveUnitsOfTypeCompletedTurns("Vehicle"))
+                    {
+                        if (HaveBoostedUnitsOfType("Vehicle"))
+                        {
+                            Debug.Log("Boosted Vehicles still in play, proceeding with their next turn...");
+                            TriggerBoostedUnitsOfTypeTurn("Vehicle");
+                            gameStateIndex = GameState.Vehicle;
+                        }
+                        else
+                        {
+                            Debug.Log("All vehicles turn completed! Starting Enemy Spawn sequence...");
+                            gameStateIndex = GameState.EnemySpawn;
+                        }
+                    }
+                    break;
+
                 default:
                     break;
             }
@@ -132,7 +129,89 @@ public class GameStateManager : MonoBehaviour
         
     }
 
-    void PlayerButtonOnClick()
+    private void TriggerAllEnemiesTurn()
+    {
+        var enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        foreach (GameObject enemy in enemies)
+        {
+            enemy.GetComponent<Enemy>().BeginTurn();
+        }
+    }
+
+    private void TriggerAllVehiclesTurn()
+    {
+        var vehicles = GameObject.FindGameObjectsWithTag("Vehicle");
+        foreach (GameObject vehObj in vehicles)
+        {
+            Vehicle veh = vehObj.GetComponent<Vehicle>();
+            int vehLaneSpeed = laneManager.GetLaneSpeed(veh.GetCurrentGridPosition().y);
+            veh.UpdateLaneSpeed(vehLaneSpeed);
+            veh.BeginTurn();
+        }
+    }
+
+    private bool HaveUnitsOfTypeCompletedTurns(string unitTag)
+    {
+        var units = GameObject.FindGameObjectsWithTag(unitTag);
+        return units.Any(x => x.GetComponent<Unit>().TurnInProgress) == false;
+    }
+
+    private bool HaveBoostedUnitsOfType(string unitTag)
+    {
+        return GetBoostedUnitsOfType(unitTag).Length > 0;
+    }
+
+    private void TriggerBoostedUnitsOfTypeTurn(string unitTag)
+    {
+        var boostedUnits = GetBoostedUnitsOfType(unitTag);
+        foreach (GameObject unit in boostedUnits)
+        {
+            unit.GetComponent<Unit>().BeginTurn();
+            unit.GetComponent<Unit>().ReduceBoostOnUnit();
+        }
+    }
+
+    private GameObject[] GetBoostedUnitsOfType(string unitTag)
+    {
+        return GameObject.FindGameObjectsWithTag(unitTag).Where(x => x.GetComponent<Unit>().isBoosted()).ToArray();
+    }
+
+    private void EnableLaneSpeedToggles()
+    {
+        foreach (GameObject toggleObj in GameObject.FindGameObjectsWithTag("SpeedToggle"))
+        {
+            toggleObj.GetComponent<Toggle>().enabled = true;
+        }
+    }
+
+    private void DisableLaneSpeedToggles()
+    {
+        foreach (GameObject toggleObj in GameObject.FindGameObjectsWithTag("SpeedToggle"))
+        {
+            toggleObj.GetComponent<Toggle>().enabled = false;
+        }
+    }
+
+    private void ResetLaneSpeedToggles()
+    {
+        foreach (GameObject toggleObj in GameObject.FindGameObjectsWithTag("SpeedToggle"))
+        {
+            if (toggleObj.name == "SpeedSame")
+            {
+                toggleObj.GetComponent<Toggle>().SetIsOnWithoutNotify(true);
+            }
+        }
+    }
+
+    private void FinaliseLaneSpeed()
+    {
+        foreach (LaneControl lane in FindObjectsOfType<LaneControl>())
+        {
+            lane.FinaliseSpeed();
+        }
+    }
+
+void PlayerButtonOnClick()
     {
         playerTurnInProgress = false;
     }

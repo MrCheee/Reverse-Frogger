@@ -11,6 +11,7 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     protected int skipTurn = 0;
     protected int chargePerTurn = 0;
     protected int charging = 0;
+    protected int boosted = 0;
 
     protected string unitTag;
     protected Queue<Command> commandStack = new Queue<Command>();
@@ -30,6 +31,7 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
 
     public void BeginTurn()
     {
+        TurnInProgress = true;
         StartCoroutine("TakeTurn");
     }
 
@@ -54,6 +56,7 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         if (skipTurn > 0)
         {
             skipTurn -= 1;
+            TurnInProgress = false;
             return true;
         }
         return false;
@@ -64,6 +67,7 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         if (charging > 0)
         {
             charging -= 1;
+            TurnInProgress = false;
             return true;
         }
         return false;
@@ -166,6 +170,21 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     public void DisableUnit(int disableTime)
     {
         skipTurn += disableTime;
+    }
+
+    public void BoostUnit(int boostCount)
+    {
+        boosted += boostCount;
+    }
+
+    public void ReduceBoostOnUnit()
+    {
+        boosted = Mathf.Max(0, boosted - 1);
+    }
+
+    public bool isBoosted()
+    {
+        return boosted > 0;
     }
 
     public virtual string GetName()

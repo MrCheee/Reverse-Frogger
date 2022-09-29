@@ -46,7 +46,6 @@ public abstract class Enemy : Unit
         if (ToSkipTurn()) yield break;
         if (StillChargingUp()) yield break;
 
-        TurnInProgress = true;
         PreTurnActions();
 
         PrepareMovement(out Queue<GridCoord> moveQueue, out GridCoord nextMove, out GridCoord nextGrid);

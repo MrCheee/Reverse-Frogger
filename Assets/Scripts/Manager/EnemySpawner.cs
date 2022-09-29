@@ -26,32 +26,9 @@ public class EnemySpawner : MonoBehaviour
         //};
 
         // Even Proportion Enemy Spawn
-        _currentSpawnList = new List<EnemyType>() { 
-            EnemyType.Soldier, 
-            EnemyType.Sprinter, 
-            EnemyType.Skater,
-            EnemyType.Brute,
-            EnemyType.Bloat,
-            EnemyType.BabyForesight,
-            EnemyType.Charger,
-            EnemyType.Flatten,
-            EnemyType.Jumper,
-            EnemyType.Vaulter,
-            EnemyType.LShield,
-            EnemyType.RShield
-        };
-
-        // Weak Enemies Skewed Proportion
-        //_currentSpawnList = new List<EnemyType>() {
-        //    EnemyType.Soldier,
-        //    EnemyType.Soldier,
-        //    EnemyType.Soldier,
-        //    EnemyType.Soldier,
-        //    EnemyType.Sprinter,
-        //    EnemyType.Sprinter,
-        //    EnemyType.Skater,
-        //    EnemyType.Skater,
-        //    EnemyType.Skater,
+        //_currentSpawnList = new List<EnemyType>() { 
+        //    EnemyType.Soldier, 
+        //    EnemyType.Sprinter, 
         //    EnemyType.Skater,
         //    EnemyType.Brute,
         //    EnemyType.Bloat,
@@ -60,10 +37,33 @@ public class EnemySpawner : MonoBehaviour
         //    EnemyType.Flatten,
         //    EnemyType.Jumper,
         //    EnemyType.Vaulter,
-        //    EnemyType.Vaulter,
         //    EnemyType.LShield,
         //    EnemyType.RShield
         //};
+
+        // Weak Enemies Skewed Proportion
+        _currentSpawnList = new List<EnemyType>() {
+            EnemyType.Soldier,
+            EnemyType.Soldier,
+            EnemyType.Soldier,
+            EnemyType.Soldier,
+            EnemyType.Sprinter,
+            EnemyType.Sprinter,
+            EnemyType.Skater,
+            EnemyType.Skater,
+            EnemyType.Skater,
+            EnemyType.Skater,
+            EnemyType.Brute,
+            EnemyType.Bloat,
+            EnemyType.BabyForesight,
+            EnemyType.Charger,
+            EnemyType.Flatten,
+            EnemyType.Jumper,
+            EnemyType.Vaulter,
+            EnemyType.Vaulter,
+            EnemyType.LShield,
+            EnemyType.RShield
+        };
     }
 
     public void SpawnXEnemiesAtRandom(int number)
