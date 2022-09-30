@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,31 +10,40 @@ public class UserControl : MonoBehaviour
     public GameObject Marker;
     public GameObject MarkerPrefab;
 
-    [SerializeField] private Canvas canvas;
-    [SerializeField] private RectTransform laneChangeUI;
-
     private Unit m_Selected = null;
 
     [SerializeField] private Toggle[] skillToggles;
     private SkillType skill_Selected = SkillType.None;
     private Dictionary<SkillType, ISkill> skillTargets = new Dictionary<SkillType, ISkill>();
 
+    private LaneChangeManager laneChangeManager;
+    private bool laneChangeHighlighted = false;
+
+    //[SerializeField] private Button[] carChoosingButtons;
+    //[SerializeField] private RectTransform carChoosingUI;
+    //private VehicleSpawner vehicleSpawner;
+
     private void Start()
     {
+        laneChangeManager = gameObject.GetComponent<LaneChangeManager>();
+        //vehicleSpawner = gameObject.GetComponent<VehicleSpawner>();
+
         Marker.SetActive(false);
-        
         for (int i = 0; i < skillToggles.Length; i++)
         {
             int tmp = i;
             skillToggles[i].onValueChanged.AddListener(delegate { HandleSelectSkill(tmp); });
         }
+
+        //for (int i = 0; i < carChoosingButtons.Length; i++)
+        //{
+        //    int tmp = i;
+        //    carChoosingButtons[i].onClick.AddListener(delegate { HandleSelectCar(tmp); });
+        //}
     }
 
     private void Update()
     {
-        //Vector2 move = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-        //GameCamera.transform.position = GameCamera.transform.position + new Vector3(move.y, 0, -move.x) * PanSpeed * Time.deltaTime;
-
         if (Input.GetMouseButtonDown(0))
         {
             HandleSelection();
@@ -101,30 +111,28 @@ public class UserControl : MonoBehaviour
                     {
                         return;
                     }
-                    RepositionLaneChangeUI(screenPos);
-                    CheckLaneChangeFeasibility();
-                    Debug.Log("Generated Lane Change UI at targeted unit's spot...");
+                    laneChangeManager.RegisterLaneChangeTarget(currentSkill);
                 }
-
-                skillTargets.Add(skill_Selected, currentSkill);
-
-                // After a skill has been assigned a targeted unit, the button will become highlighted in green, 
-                // and it will not flash yellow.
-                Debug.Log("Indicate successful targeting of skill, resetting active skill...");
-                HighlightCurrentSelectedButton();
-                ResetCurrentSelectedButton();
-                skill_Selected = SkillType.None;
+                else
+                {
+                    skillTargets.Add(skill_Selected, currentSkill);
+                    // After the skill has been assigned a targeted unit, the button will become highlighted in green, 
+                    // and it will not flash yellow.
+                    Debug.Log("Indicate successful targeting of skill, resetting active skill...");
+                    HighlightCurrentSelectedButton();
+                    ResetCurrentSelectedButton();
+                    skill_Selected = SkillType.None;
+                }
             }
         }
     }
 
     private void HandleSelectSkill(int skillNum)
     {
-        Debug.Log(skillNum);
         // If button is selected
         if (skillToggles[skillNum].isOn)
         {
-            Debug.Log($"Skill {skillNum} has been clicked!");
+            Debug.Log($"Skill {skillNum+1} has been clicked!");
             // Remove previously selected skill from active state and set this as current active skill
             ResetCurrentSelectedButton();
             SetActiveSkill((SkillType)skillNum);
@@ -135,7 +143,7 @@ public class UserControl : MonoBehaviour
         }
         else  // If button is deselected
         {
-            Debug.Log($"Skill {skillNum} has been unclicked!");
+            Debug.Log($"Skill {skillNum+1} has been unclicked!");
             ClearActiveSkill();
         }
     }
@@ -190,6 +198,11 @@ public class UserControl : MonoBehaviour
         {
             skillTargets.Remove(skill);
         }
+        if (skill == SkillType.LaneChange)
+        {
+            laneChangeHighlighted = false;
+            laneChangeManager.RemoveSkillTarget();
+        }
     }
 
     private void ResetSkillTargets()
@@ -216,32 +229,32 @@ public class UserControl : MonoBehaviour
         return null;
     }
 
-    private void RepositionLaneChangeUI(Vector3 screenPos)
-    {
-        float h = Screen.height;
-        float w = Screen.width;
-        float x = screenPos.x - (w / 2);
-        float y = screenPos.y - (h / 2);
-        float s = canvas.scaleFactor;
-        laneChangeUI.anchoredPosition = new Vector2(x, y) / s;
-        laneChangeUI.gameObject.SetActive(true);
-    }
-
     public void LaneChangeUp()
     {
-        if (skillTargets.ContainsKey(SkillType.LaneChange))
-        {
-            Debug.Log("Assigned Lane Change Up...");
-            skillTargets[SkillType.LaneChange].UpdateGridCoordAction(new GridCoord(0, 1));
-        }
+        CheckAndCompleteLaneChangeSelection();
+        Debug.Log("Assigned Lane Change Up...");
+        skillTargets[SkillType.LaneChange].UpdateGridCoordAction(new GridCoord(0, 1));
+        laneChangeManager.AssignLaneChangeUp();
     }
 
     public void LaneChangeDown()
     {
-        if (skillTargets.ContainsKey(SkillType.LaneChange))
+        CheckAndCompleteLaneChangeSelection();
+
+        Debug.Log("Assigned Lane Change Down...");
+        skillTargets[SkillType.LaneChange].UpdateGridCoordAction(new GridCoord(0, -1));
+        laneChangeManager.AssignLaneChangeDown();
+    }
+
+    private void CheckAndCompleteLaneChangeSelection()
+    {
+        if (laneChangeHighlighted == false && laneChangeManager.GetCurrentSkillHolder() != null)
         {
-            Debug.Log("Assigned Lane Change Down...");
-            skillTargets[SkillType.LaneChange].UpdateGridCoordAction(new GridCoord(0, -1));
+            HighlightCurrentSelectedButton();
+            ResetCurrentSelectedButton();
+
+            skillTargets.Add(SkillType.LaneChange, laneChangeManager.GetCurrentSkillHolder());
+            laneChangeHighlighted = true;
         }
     }
 
@@ -252,11 +265,16 @@ public class UserControl : MonoBehaviour
             skillToggles[i].isOn = false;
             skillToggles[i].GetComponentInChildren<Outline>().enabled = false;
         }
-        laneChangeUI.gameObject.SetActive(false);
+        laneChangeManager.ResetLaneChangeUI();
     }
 
-    private void CheckLaneChangeFeasibility()
+    private void HandleSelectCar(int carNum)
     {
-        return;
+        int adjustedCarNum = carNum - 1;
+        if (adjustedCarNum < 0)
+        {
+            adjustedCarNum = UnityEngine.Random.Range(0, Enum.GetNames(typeof(VehicleType)).Length);
+        }
+        
     }
 }

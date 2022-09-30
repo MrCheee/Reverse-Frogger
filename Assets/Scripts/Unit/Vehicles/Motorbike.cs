@@ -92,7 +92,7 @@ public class Motorbike : Vehicle
     // Motorbike will deal no damage to a brute
     public override void HandleBruteInTheWay(Unit brute)   
     {
-        GridCoord currentGrid = GetCurrentGridPosition();
+        GridCoord currentGrid = GetCurrentHeadGridPosition();
         int right = currentGrid.y < dividerY ? -1 : 1;
         commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(right, 0)));
         commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, 0)));

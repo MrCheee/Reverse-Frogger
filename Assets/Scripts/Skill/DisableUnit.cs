@@ -4,6 +4,6 @@
 
     public override void Execute()
     {
-        unit.DisableUnit(1);
+        unit.DisableUnit(2);
     }
 }

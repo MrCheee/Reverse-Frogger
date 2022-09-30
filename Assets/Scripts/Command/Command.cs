@@ -47,7 +47,7 @@ public class MoveToGridCommand : MoveCommand
         if (isFinished) return;
         if (!moveReady)
         {
-            GridCoord currentGrid = unit.GetCurrentGridPosition();
+            GridCoord currentGrid = unit.GetCurrentHeadGridPosition();
             _targetGrid = new GridCoord(currentGrid.x + _toMove.x, currentGrid.y + _toMove.y);
             Vector3 gridCentrePoint = FieldGrid.GetSingleGrid(_targetGrid).GetGridCentrePoint();
             gridCentrePoint.y = unit.yAdjustment;
@@ -85,7 +85,7 @@ public class MoveToGridInbetweenCommand : MoveCommand
     public override void Execute(Unit unit)
     {
         Debug.Log("Executing Move To Grid Inbetween Command");
-        GridCoord currentGrid = unit.GetCurrentGridPosition();
+        GridCoord currentGrid = unit.GetCurrentHeadGridPosition();
         _targetGrid = new GridCoord(currentGrid.x + _toMove.x, currentGrid.y + _toMove.y);
 
         UpdateGridOnMovement(unit);

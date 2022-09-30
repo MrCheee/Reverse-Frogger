@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
+using UnityEngine;
 
 public class SingleGrid : ISingleGrid
 {
@@ -18,7 +18,7 @@ public class SingleGrid : ISingleGrid
     // To position multiple game objects that are in the same grid so they do not overlap
     public void RepositionObjects()
     {
-        List<Unit> allEnemies = GetListOfObjectTypes("Enemy");
+        List<Unit> allEnemies = GetListOfUnitsWithGameObjectTag("Enemy");
         switch (allEnemies.Count)
         {
             case 2:
@@ -78,14 +78,19 @@ public class SingleGrid : ISingleGrid
         return _objectsID.Count;
     }
 
-    public List<string> GetUnitsTag()
+    public List<string> GetListOfUnitsGameObjectTag()
     {
         return _objectsID.Values.Select(x => x.tag).ToList();
     }
 
-    List<Unit> GetListOfObjectTypes(string tag)
+    public List<Unit> GetListOfUnitsWithGameObjectTag(string tag)
     {
         return _objectsID.Values.Where(x => x.CompareTag(tag)).Select(x => x.GetComponent<Unit>()).ToList();
+    }
+
+    public List<string> GetListOfUnitsName()
+    {
+        return _objectsID.Values.Select(x => x.GetComponent<Unit>().GetName()).ToList();
     }
 
     public bool IsUnitTagInGrid(string tag)
@@ -98,7 +103,7 @@ public class SingleGrid : ISingleGrid
         return _objectsID.Values.Where(x => x.GetComponent<Unit>().GetTag() == tag).First().GetComponent<Unit>();
     }
 
-    public List<Unit> GetUnitsWithTag(string tag)
+    public List<Unit> GetListOfUnitsWithTag(string tag)
     {
         return _objectsID.Values.Where(x => x.GetComponent<Unit>().GetTag() == tag).Select(x => x.GetComponent<Unit>()).ToList();
     }

@@ -16,9 +16,14 @@ public abstract class Enemy : Unit
         chargePerTurn = 0;
     }
 
-    public override GridCoord GetCurrentGridPosition()
+    public override GridCoord GetCurrentHeadGridPosition()
     {
         return _currentGridPosition;
+    }
+
+    public override GridCoord[] GetAllCurrentGridPosition()
+    {
+        return new GridCoord[] { _currentGridPosition };
     }
 
     public override void AddToFieldGridPosition(GridCoord position)

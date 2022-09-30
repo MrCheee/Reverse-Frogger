@@ -39,9 +39,14 @@ public abstract class Vehicle : Unit
         unitTag = "Normal";
     }
 
-    public override GridCoord GetCurrentGridPosition()
+    public override GridCoord GetCurrentHeadGridPosition()
     {
         return _currentGridPosition[0];
+    }
+
+    public override GridCoord[] GetAllCurrentGridPosition()
+    {
+        return _currentGridPosition;
     }
 
     public override void AddToFieldGridPosition(GridCoord position)
@@ -177,7 +182,7 @@ public abstract class Vehicle : Unit
 
     protected void SimulateHitObstacle()
     {
-        GridCoord currentGrid = GetCurrentGridPosition();
+        GridCoord currentGrid = GetCurrentHeadGridPosition();
         int right = currentGrid.y < dividerY ? -1 : 1;
         commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(right, 0)));
         commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, 0)));
@@ -215,7 +220,7 @@ public abstract class Vehicle : Unit
 
     public List<Unit> GetUnitsInTheWay(GridCoord targetGrid, string enemyType)
     {
-        return FieldGrid.GetSingleGrid(targetGrid).GetUnitsWithTag(enemyType);
+        return FieldGrid.GetSingleGrid(targetGrid).GetListOfUnitsWithTag(enemyType);
     }
 
     public virtual bool IsBruteTooStrong(Unit brute)
@@ -241,7 +246,7 @@ public abstract class Vehicle : Unit
     {
         for (int i = 0; i < _currentGridPosition.Length; i++)
         {
-            List<Unit> enemiesOnTop = FieldGrid.GetSingleGrid(_currentGridPosition[i]).GetUnitsWithTag("Roof-Ready");
+            List<Unit> enemiesOnTop = FieldGrid.GetSingleGrid(_currentGridPosition[i]).GetListOfUnitsWithTag("Roof-Ready");
             foreach (Unit enemy in enemiesOnTop)
             {
                 enemy.IssueCommand(new MoveToGridCommand(nextMove));

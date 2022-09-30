@@ -17,7 +17,7 @@ public class Skater : Enemy
     {
         skipTurn = 1;
 
-        GridCoord currentGrid = GetCurrentGridPosition();
+        GridCoord currentGrid = GetCurrentHeadGridPosition();
         GridCoord moveGrid = new GridCoord(movementPattern.Last().x, 0);
         GridCoord _targetGrid = new GridCoord(currentGrid.x + moveGrid.x, currentGrid.y + moveGrid.y);
         int right = moveGrid.x > 0 ? -1 : 1;

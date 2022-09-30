@@ -39,7 +39,8 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     protected abstract void SetAdditionalTag();
     protected abstract void SetChargePerTurn();
     public abstract void SetMovementPattern();
-    public abstract GridCoord GetCurrentGridPosition();
+    public abstract GridCoord GetCurrentHeadGridPosition();
+    public abstract GridCoord[] GetAllCurrentGridPosition();
     public abstract void AddToFieldGridPosition(GridCoord position);
     public abstract void RemoveFromFieldGridPosition();
     public abstract void SetCurrentGridPosition(GridCoord position);
@@ -80,7 +81,7 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
 
     public bool IsVehicleInTheWay(GridCoord targetGrid)
     {
-        return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetSingleGrid(targetGrid).GetUnitsTag().Contains("Vehicle");
+        return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetSingleGrid(targetGrid).GetListOfUnitsGameObjectTag().Contains("Vehicle");
     }
 
     public void Move(Vector3 moveDirection)
@@ -185,6 +186,11 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     public bool isBoosted()
     {
         return boosted > 0;
+    }
+
+    public bool isStunned()
+    {
+        return skipTurn > 0;
     }
 
     public virtual string GetName()

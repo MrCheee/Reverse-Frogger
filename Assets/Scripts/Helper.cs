@@ -16,6 +16,21 @@ public class Helper
 
     public static bool IsVehicleInTheWay(GridCoord targetGrid)
     {
-        return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetSingleGrid(targetGrid).GetUnitsTag().Contains("Vehicle");
+        return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetSingleGrid(targetGrid).GetListOfUnitsGameObjectTag().Contains("Vehicle");
+    }
+
+    public static bool IsUnitOfTypeInTheWay(GridCoord targetGrid, string unitTag)
+    {
+        return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetSingleGrid(targetGrid).GetListOfUnitsGameObjectTag().Contains(unitTag);
+    }
+
+    public static Vector2 ScreenPointToWorldPosition(Vector3 screenPos, float scaleFactor = 1)
+    {
+        float h = Screen.height;
+        float w = Screen.width;
+        float x = screenPos.x - (w / 2);
+        float y = screenPos.y - (h / 2);
+        float s = scaleFactor;
+        return new Vector2(x, y) / s;
     }
 }

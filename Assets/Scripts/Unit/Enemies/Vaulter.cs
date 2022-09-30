@@ -20,7 +20,7 @@
 
     public override void TakeVehicleInTheWayAction()
     {
-        GridCoord currentGrid = GetCurrentGridPosition();
+        GridCoord currentGrid = GetCurrentHeadGridPosition();
         GridCoord nextGrid = new GridCoord(currentGrid.x, currentGrid.y + 1);
         if (vaultAvailable)
         {
@@ -51,7 +51,7 @@
     {
         if (yAdjustment == 3)
         {
-            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentGridPosition()).GetCornerPoint(0, 1), yAdjustment));
+            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, 1), yAdjustment));
         }
         yAdjustment = 0;
     }

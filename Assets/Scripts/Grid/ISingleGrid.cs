@@ -9,6 +9,6 @@ public interface ISingleGrid
     GridCoord GetGridCoord();
     int GetObjectCount();
     int GetUnitCount();
-    List<string> GetUnitsTag();
+    List<string> GetListOfUnitsGameObjectTag();
     void RepositionObjects();
 }

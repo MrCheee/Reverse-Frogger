@@ -17,7 +17,7 @@ public class Soldier : Enemy
     {
         skipTurn = 1;
 
-        GridCoord currentGrid = GetCurrentGridPosition();
+        GridCoord currentGrid = GetCurrentHeadGridPosition();
         commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, 1)));
         commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, 0)));
     }

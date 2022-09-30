@@ -144,7 +144,7 @@ public class GameStateManager : MonoBehaviour
         foreach (GameObject vehObj in vehicles)
         {
             Vehicle veh = vehObj.GetComponent<Vehicle>();
-            int vehLaneSpeed = laneManager.GetLaneSpeed(veh.GetCurrentGridPosition().y);
+            int vehLaneSpeed = laneManager.GetLaneSpeed(veh.GetCurrentHeadGridPosition().y);
             veh.UpdateLaneSpeed(vehLaneSpeed);
             veh.BeginTurn();
         }

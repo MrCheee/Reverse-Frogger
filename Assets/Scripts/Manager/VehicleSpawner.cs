@@ -28,8 +28,8 @@ public class VehicleSpawner : MonoBehaviour
             VehicleType.Car,
             VehicleType.Car,
             VehicleType.Car,
-            VehicleType.SpeedyCar,
-            VehicleType.SpeedyCar,
+            VehicleType.FastCar,
+            VehicleType.FastCar,
             VehicleType.Motorbike,
             VehicleType.Motorbike,
             VehicleType.Truck,
@@ -85,14 +85,14 @@ public class VehicleSpawner : MonoBehaviour
         {
             if (i < dividerY)
             {
-                if (FieldGrid.GetSingleGrid(spawnXRight, i).GetUnitsTag().Contains("Vehicle"))
+                if (FieldGrid.GetSingleGrid(spawnXRight, i).GetListOfUnitsGameObjectTag().Contains("Vehicle"))
                 {
                     reservedSpawnY.Add(i);
                 }
             }
             else if (i > dividerY) 
             {
-                if (FieldGrid.GetSingleGrid(spawnXLeft, i).GetUnitsTag().Contains("Vehicle"))
+                if (FieldGrid.GetSingleGrid(spawnXLeft, i).GetListOfUnitsGameObjectTag().Contains("Vehicle"))
                 {
                     reservedSpawnY.Add(i);
                 }

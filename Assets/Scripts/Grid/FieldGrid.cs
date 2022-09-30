@@ -4,10 +4,18 @@ using UnityEngine;
 public class FieldGrid
 {
     private static int fieldLength = 17;
-    private static int fieldHeight = 18;
+    private static int fieldHeight = 17;
     private static int fieldBuffer = 3;
     private static int numOfLanes = 4;
+
     private static int dividerY;
+    private static int minPlayFieldX;
+    private static int maxPlayFieldX;
+    private static int minPlayFieldY;
+    private static int maxPlayFieldY;
+    private static int sidewalkBottomY;
+    private static int sidewalkTopY;
+
     private static List<GridCoord> gridsToReposition = new List<GridCoord>();
     private SingleGrid[,] field = new SingleGrid[fieldLength, fieldHeight];
 
@@ -23,6 +31,13 @@ public class FieldGrid
             }
         }
         dividerY = fieldBuffer + numOfLanes + 1;
+        sidewalkTopY = fieldHeight - 1 - fieldBuffer;
+        sidewalkBottomY = fieldBuffer;
+
+        minPlayFieldX = fieldBuffer;
+        maxPlayFieldX = fieldLength - 1 - fieldBuffer;
+        minPlayFieldY = fieldBuffer;
+        maxPlayFieldY = fieldHeight - 1 - fieldBuffer;
     }
 
     public static FieldGrid GetFieldGrid()
@@ -78,6 +93,16 @@ public class FieldGrid
         return dividerY;
     }
 
+    public static int GetTopSidewalkLaneNum()
+    {
+        return sidewalkTopY;
+    }
+
+    public static int GetBottomSidewalkLaneNum()
+    {
+        return sidewalkBottomY;
+    }
+
     public static void AddGridToReposition(GridCoord gridCoord)
     {
         gridsToReposition.Add(gridCoord);
@@ -90,5 +115,18 @@ public class FieldGrid
             _instance.field[coord.x, coord.y].RepositionObjects();
         }
         gridsToReposition.Clear();
+    }
+
+    public static GridCoord GetGridCoordFromWorldPosition(Vector3 worldPos)
+    {
+        // Return default value as 0, 0 grid if selection is out of valid zone
+        if (worldPos.x < -2.5 || worldPos.x >= (fieldLength * 5 - 2.5) || worldPos.z < -2.5 || worldPos.z >= (fieldHeight * 5 - 2.5))
+        {
+            return new GridCoord(0, 0);
+        }
+
+        int grid_x = (int)Mathf.Floor((worldPos.x + 2.5f) / 5);
+        int grid_y = (int)Mathf.Floor((worldPos.z + 2.5f) / 5);
+        return new GridCoord(grid_x, grid_y);
     }
 }
