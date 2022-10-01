@@ -79,7 +79,7 @@ public abstract class Enemy : Unit
             }
 
             // If not break away by vehicle in the way, issue the next movement command
-            Debug.Log($"Issue Move command of ({nextMove.x}, {nextMove.y}) to ({nextGrid.x}, {nextGrid.y})");
+            //Debug.Log($"Issue Move command of ({nextMove.x}, {nextMove.y}) to ({nextGrid.x}, {nextGrid.y})");
             GiveMovementCommand(nextMove);
 
             // Halt further movement when enemy has crossed the road

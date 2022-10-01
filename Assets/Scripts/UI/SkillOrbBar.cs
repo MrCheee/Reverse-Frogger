@@ -25,12 +25,11 @@ public class SkillOrbBar : MonoBehaviour
     public void RemoveSkillOrb(int count)
     {
         totalOrbCount = Mathf.Max(0, totalOrbCount - count);
-        for (int i = 0; i < count; i++)
+        int currentOrb = SkillOrbTransform.childCount;
+        int orbsToRemove = Mathf.Min(currentOrb, count);
+        for (int i = 0; i < orbsToRemove; i++)
         {
-            if (SkillOrbTransform.childCount > 0)
-            {
-                Destroy(SkillOrbTransform.GetChild(SkillOrbTransform.childCount - 1).gameObject);
-            }
+            Destroy(SkillOrbTransform.GetChild(SkillOrbTransform.childCount - 1 - i).gameObject);
         }
     }
 
@@ -51,6 +50,19 @@ public class SkillOrbBar : MonoBehaviour
         RefreshSkillBar();
     }
 
+    public void FullRefreshSkillbar()
+    {
+        inactiveOrbCount = 0;
+        foreach (Transform child in SkillOrbTransform)
+        {
+            Destroy(child.gameObject);
+        }
+        for (int i = 0; i < totalOrbCount; i++)
+        {
+            Instantiate(ActiveSkillOrbPrefab, SkillOrbTransform);
+        }
+    }
+
     public void RefreshSkillBar()
     {
         foreach (Transform child in SkillOrbTransform)
@@ -67,15 +79,5 @@ public class SkillOrbBar : MonoBehaviour
         {
             Instantiate(InactiveSkillOrbPrefab, SkillOrbTransform);
         }
-    }
-
-    public void SetInactiveOrbCount(int value)
-    {
-        inactiveOrbCount = value;
-    }
-
-    public int GetActiveOrbCount()
-    {
-        return totalOrbCount - inactiveOrbCount;
     }
 }

@@ -17,7 +17,7 @@ public class GameStateManager : MonoBehaviour
     bool playerTurnInProgress = false;
 
     int playerHealth = 10;
-    int playerSkillOrb = 0;
+    int playerSkillOrb = 3;
     int damageReceived = 0;
 
     // Start is called before the first frame update
@@ -29,8 +29,8 @@ public class GameStateManager : MonoBehaviour
         userControl = gameObject.GetComponent<UserControl>();
 
         uiMain = UIMain.Instance;
-        InitialiseHealthOnUI();
-        InitialiseSkillOrbOnUI();
+        uiMain.AddHealth(playerHealth);
+        AddPlayerSkillOrb(playerSkillOrb);
 
         playerFinishButton.onClick.AddListener(PlayerButtonOnClick);
         StartCoroutine(CheckAndUpdateGameState(1f));
@@ -62,11 +62,12 @@ public class GameStateManager : MonoBehaviour
                     vehicleSpawner.SpawnXVehiclesAtRandom(2);
 
                     Debug.Log("Spawned Vehicles! Starting Player's Turn...");
-                    uiMain.AddSkillOrb(1);  // Player gets 1 skill orb every turn
                     gameStateIndex = GameState.Player;
                     playerTurnInProgress = true;
                     EnableLaneSpeedToggles();
                     ResetLaneSpeedToggles();
+                    AddPlayerSkillOrb(1);  // Player gets 1 skill orb every turn
+                    userControl.UpdateSkillTogglesFunctionality();
                     break;
 
                 case GameState.Player:
@@ -84,7 +85,7 @@ public class GameStateManager : MonoBehaviour
 
                 case GameState.PlayerSkill:
                     uiMain.UpdateContent();
-                    userControl.ResetSkillBar();
+                    userControl.RefreshSkillsUI();
                     Debug.Log("Finished executing Player Skills! Starting enemies turn...");
 
                     TriggerAllEnemiesTurn();
@@ -136,7 +137,6 @@ public class GameStateManager : MonoBehaviour
             }
             yield return new WaitForSeconds(1f);
         }
-        
     }
 
     private void TriggerAllEnemiesTurn()
@@ -226,16 +226,6 @@ public class GameStateManager : MonoBehaviour
         playerTurnInProgress = false;
     }
 
-    private void InitialiseHealthOnUI()
-    {
-        uiMain.AddHealth(playerHealth);
-    }
-
-    private void InitialiseSkillOrbOnUI()
-    {
-        uiMain.AddSkillOrb(playerSkillOrb);
-    }
-
     public void DamagePlayer(int damage)
     {
         playerHealth -= damage;
@@ -244,24 +234,13 @@ public class GameStateManager : MonoBehaviour
 
     private void UpdateRemovingHealth()
     {
-        Debug.Log(damageReceived);
         uiMain.RemoveHealth(damageReceived);
         damageReceived = 0;
     }
 
     public void AddPlayerSkillOrb(int count)
     {
-        uiMain.AddSkillOrb(count);
-    }
-
-    public void RemovePlayerSkillOrb(int count)
-    {
-        uiMain.RemoveSkillOrb(count);
-    }
-
-    public void DeactivatePlayerSkillOrb(int count)
-    {
-        uiMain.DeactivateSkillOrb(count);
+        userControl.AddSkillOrb(count);
     }
 
     private void CheckIfGameOver()

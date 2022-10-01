@@ -111,4 +111,14 @@ public class UIMain : MonoBehaviour
     {
         SkillOrbBar.DeactivateSkillOrb(count);
     }
+
+    public void ReactivateSkillOrb(int count)
+    {
+        SkillOrbBar.ReactivateSkillOrb(count);
+    }
+
+    public void RefreshSkillOrbBar()
+    {
+        SkillOrbBar.FullRefreshSkillbar();
+    }
 }

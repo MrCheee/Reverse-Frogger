@@ -14,17 +14,24 @@ public class UserControl : MonoBehaviour
 
     [SerializeField] private Toggle[] skillToggles;
     private SkillType skill_Selected = SkillType.None;
+    private Dictionary<SkillType, int> skillCosts;
     private Dictionary<SkillType, ISkill> skillTargets = new Dictionary<SkillType, ISkill>();
 
     private LaneChangeManager laneChangeManager;
     private bool laneChangeHighlighted = false;
 
+    private UIMain uiMain;
+    private int currentSkillOrbCount = 0;
+    private int consumedSkillOrbCount = 0;
+    private int maxOrbCount = 10;
+
     //[SerializeField] private Button[] carChoosingButtons;
     //[SerializeField] private RectTransform carChoosingUI;
     //private VehicleSpawner vehicleSpawner;
 
-    private void Start()
+    private void Awake()
     {
+        uiMain = UIMain.Instance;
         laneChangeManager = gameObject.GetComponent<LaneChangeManager>();
         //vehicleSpawner = gameObject.GetComponent<VehicleSpawner>();
 
@@ -34,6 +41,15 @@ public class UserControl : MonoBehaviour
             int tmp = i;
             skillToggles[i].onValueChanged.AddListener(delegate { HandleSelectSkill(tmp); });
         }
+
+        skillCosts = new Dictionary<SkillType, int> {
+            { SkillType.Assassinate, 8 },
+            { SkillType.CallInVeh, 3 },
+            { SkillType.AirDropVeh, 10 },
+            { SkillType.LaneChange, 2 },
+            { SkillType.BoostUnit, 3 },
+            { SkillType.DisableUnit, 3 }
+        };
 
         //for (int i = 0; i < carChoosingButtons.Length; i++)
         //{
@@ -132,26 +148,46 @@ public class UserControl : MonoBehaviour
         // If button is selected
         if (skillToggles[skillNum].isOn)
         {
-            Debug.Log($"Skill {skillNum+1} has been clicked!");
+            Debug.Log($"Skill {skillNum+1} has been selected!");
+            uiMain.DeactivateSkillOrb(skillCosts[(SkillType)skillNum]);
+            consumedSkillOrbCount += skillCosts[(SkillType)skillNum];
+
             // Remove previously selected skill from active state and set this as current active skill
             ResetCurrentSelectedButton();
             SetActiveSkill((SkillType)skillNum);
 
             // If current active skill was previously assigned a target already, reselection will cancel that target
+            if (skillToggles[skillNum].GetComponentInChildren<Outline>().enabled == true)
+            {
+                uiMain.ReactivateSkillOrb(skillCosts[(SkillType)skillNum]);
+                consumedSkillOrbCount -= skillCosts[(SkillType)skillNum];
+            }
             ResetHighlightCurrentSelectedButton();
             RemoveSkillTarget((SkillType)skillNum);
         }
         else  // If button is deselected
         {
-            Debug.Log($"Skill {skillNum+1} has been unclicked!");
+            Debug.Log($"Skill {skillNum+1} has been deselected!");
+            if (skillToggles[skillNum].GetComponentInChildren<Outline>().enabled != true)
+            {
+                uiMain.ReactivateSkillOrb(skillCosts[(SkillType)skillNum]);
+                consumedSkillOrbCount -= skillCosts[(SkillType)skillNum];
+            }
             ClearActiveSkill();
         }
+        UpdateSkillTogglesFunctionality();
+    }
+
+    public void RefreshSkillsUI()
+    {
+        consumedSkillOrbCount = 0;
+        uiMain.RefreshSkillOrbBar();
+        ResetSkillBar();
     }
 
     private void SetActiveSkill(SkillType skill)
     {
         skill_Selected = skill;
-        Debug.Log(skill_Selected);
     }
 
     private void ClearActiveSkill()
@@ -185,10 +221,14 @@ public class UserControl : MonoBehaviour
 
     public void DispatchSkillCommands()
     {
+        int skillOrbsConsumed = 0;
         foreach (KeyValuePair<SkillType, ISkill> entry in skillTargets)
         {
             entry.Value.Execute();
+            skillOrbsConsumed += skillCosts[entry.Key];
+            currentSkillOrbCount -= skillCosts[entry.Key];
         }
+        uiMain.RemoveSkillOrb(skillOrbsConsumed);
         ResetSkillTargets();
     }
 
@@ -232,7 +272,6 @@ public class UserControl : MonoBehaviour
     public void LaneChangeUp()
     {
         CheckAndCompleteLaneChangeSelection();
-        Debug.Log("Assigned Lane Change Up...");
         skillTargets[SkillType.LaneChange].UpdateGridCoordAction(new GridCoord(0, 1));
         laneChangeManager.AssignLaneChangeUp();
     }
@@ -240,8 +279,6 @@ public class UserControl : MonoBehaviour
     public void LaneChangeDown()
     {
         CheckAndCompleteLaneChangeSelection();
-
-        Debug.Log("Assigned Lane Change Down...");
         skillTargets[SkillType.LaneChange].UpdateGridCoordAction(new GridCoord(0, -1));
         laneChangeManager.AssignLaneChangeDown();
     }
@@ -256,6 +293,12 @@ public class UserControl : MonoBehaviour
             skillTargets.Add(SkillType.LaneChange, laneChangeManager.GetCurrentSkillHolder());
             laneChangeHighlighted = true;
         }
+    }
+
+    public void AddSkillOrb(int count)
+    {
+        currentSkillOrbCount = Mathf.Min(maxOrbCount, currentSkillOrbCount + count);
+        uiMain.AddSkillOrb(count);
     }
 
     public void ResetSkillBar()
@@ -276,5 +319,48 @@ public class UserControl : MonoBehaviour
             adjustedCarNum = UnityEngine.Random.Range(0, Enum.GetNames(typeof(VehicleType)).Length);
         }
         
+    }
+
+    public void UpdateSkillTogglesFunctionality()
+    {
+        Debug.Log($"Current skill orbs: {currentSkillOrbCount}. Consumed: {consumedSkillOrbCount}");
+        int skillOrbCount = currentSkillOrbCount - consumedSkillOrbCount;
+        for (int i = 0; i < skillToggles.Length; i++)
+        {
+            if (skillCosts[(SkillType)i] > skillOrbCount)
+            {
+                if (skillToggles[i].isOn == false && skillToggles[i].GetComponentInChildren<Outline>().enabled != true)
+                {
+                    DisableSkillButton(skillToggles[i]);
+                }
+            }
+            else
+            {
+                EnableSkillButton(skillToggles[i]);
+            }
+        }
+    }
+
+    private void DisableSkillButton(Toggle skillButton)
+    {
+        if (skillButton.enabled == true)
+        {
+            skillButton.enabled = false;
+            ColorBlock cb = skillButton.colors;
+            cb.normalColor = Color.gray;
+            skillButton.colors = cb;
+        }
+    }
+
+    private void EnableSkillButton(Toggle skillButton)
+    {
+        // Only apply if button is not enabled
+        if (skillButton.enabled != true)
+        {
+            skillButton.enabled = true;
+            ColorBlock cb = skillButton.colors;
+            cb.normalColor = Color.white;
+            skillButton.colors = cb;
+        }
     }
 }
