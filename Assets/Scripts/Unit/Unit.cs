@@ -17,11 +17,14 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     protected Queue<Command> commandStack = new Queue<Command>();
     protected Command _currentCommand;
     protected List<GridCoord> movementPattern = new List<GridCoord>();
+    protected GameStateManager gameStateManager;
     public float yAdjustment { get; protected set; }
     public bool TurnInProgress { get; protected set; }
 
     protected virtual void Awake()
     {
+        gameStateManager = GameObject.Find("MainManager").GetComponent<GameStateManager>();
+
         // Each enemy will define its own movement pattern and it will be assigned to the private variable on startup
         SetHealthAndDamage();
         SetAdditionalTag();

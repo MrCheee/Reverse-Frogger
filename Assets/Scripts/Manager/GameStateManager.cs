@@ -16,6 +16,10 @@ public class GameStateManager : MonoBehaviour
     GameState gameStateIndex = GameState.Initialisation;
     bool playerTurnInProgress = false;
 
+    int playerHealth = 10;
+    int playerSkillOrb = 0;
+    int damageReceived = 0;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -25,6 +29,8 @@ public class GameStateManager : MonoBehaviour
         userControl = gameObject.GetComponent<UserControl>();
 
         uiMain = UIMain.Instance;
+        InitialiseHealthOnUI();
+        InitialiseSkillOrbOnUI();
 
         playerFinishButton.onClick.AddListener(PlayerButtonOnClick);
         StartCoroutine(CheckAndUpdateGameState(1f));
@@ -56,6 +62,7 @@ public class GameStateManager : MonoBehaviour
                     vehicleSpawner.SpawnXVehiclesAtRandom(2);
 
                     Debug.Log("Spawned Vehicles! Starting Player's Turn...");
+                    uiMain.AddSkillOrb(1);  // Player gets 1 skill orb every turn
                     gameStateIndex = GameState.Player;
                     playerTurnInProgress = true;
                     EnableLaneSpeedToggles();
@@ -64,6 +71,7 @@ public class GameStateManager : MonoBehaviour
 
                 case GameState.Player:
                     uiMain.UpdateContent();
+
                     if (playerTurnInProgress == false)
                     {
                         DisableLaneSpeedToggles();
@@ -97,6 +105,8 @@ public class GameStateManager : MonoBehaviour
                         else
                         {
                             Debug.Log("All enemies turn completed! Starting vehicle's turn...");
+                            UpdateRemovingHealth();
+                            CheckIfGameOver();
                             TriggerAllVehiclesTurn();
                             gameStateIndex = GameState.Vehicle;
                         }
@@ -211,8 +221,54 @@ public class GameStateManager : MonoBehaviour
         }
     }
 
-void PlayerButtonOnClick()
+    private void PlayerButtonOnClick()
     {
         playerTurnInProgress = false;
+    }
+
+    private void InitialiseHealthOnUI()
+    {
+        uiMain.AddHealth(playerHealth);
+    }
+
+    private void InitialiseSkillOrbOnUI()
+    {
+        uiMain.AddSkillOrb(playerSkillOrb);
+    }
+
+    public void DamagePlayer(int damage)
+    {
+        playerHealth -= damage;
+        damageReceived += damage;
+    }
+
+    private void UpdateRemovingHealth()
+    {
+        Debug.Log(damageReceived);
+        uiMain.RemoveHealth(damageReceived);
+        damageReceived = 0;
+    }
+
+    public void AddPlayerSkillOrb(int count)
+    {
+        uiMain.AddSkillOrb(count);
+    }
+
+    public void RemovePlayerSkillOrb(int count)
+    {
+        uiMain.RemoveSkillOrb(count);
+    }
+
+    public void DeactivatePlayerSkillOrb(int count)
+    {
+        uiMain.DeactivateSkillOrb(count);
+    }
+
+    private void CheckIfGameOver()
+    {
+        if (playerHealth <= 0)
+        {
+            Debug.Log("GAME OVER! YOU LOSE!");
+        }
     }
 }

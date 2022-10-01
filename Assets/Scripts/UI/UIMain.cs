@@ -14,10 +14,11 @@ public class UIMain : MonoBehaviour
     }
 
     public InfoPopup InfoPopup;
+    public HealthBar HealthBar;
+    public SkillOrbBar SkillOrbBar;
 
     protected IUIInfoContent m_CurrentContent;
     protected List<Status> m_ContentBuffer = new List<Status>();
-
 
     private void Awake()
     {
@@ -84,5 +85,30 @@ public class UIMain : MonoBehaviour
                 InfoPopup.AddToStatusContent(entry.statusType, entry.count);
             }
         }
+    }
+
+    public void AddHealth(int health)
+    {
+        HealthBar.AddHealth(health);
+    }
+
+    public void RemoveHealth(int damage)
+    {
+        HealthBar.RemoveHealth(damage);
+    }
+
+    public void AddSkillOrb(int count)
+    {
+        SkillOrbBar.AddSkillOrb(count);
+    }
+
+    public void RemoveSkillOrb(int count)
+    {
+        SkillOrbBar.RemoveSkillOrb(count);
+    }
+
+    public void DeactivateSkillOrb(int count)
+    {
+        SkillOrbBar.DeactivateSkillOrb(count);
     }
 }

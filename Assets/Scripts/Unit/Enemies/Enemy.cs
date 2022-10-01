@@ -5,6 +5,8 @@ using UnityEngine;
 public abstract class Enemy : Unit
 {
     protected GridCoord _currentGridPosition;
+    public bool Crossed { get; protected set; }
+
 
     protected override void SetAdditionalTag()
     {
@@ -48,6 +50,11 @@ public abstract class Enemy : Unit
     {
         float retryInterval = 0.2f;
 
+        if (Crossed)
+        {
+            TurnInProgress = false;
+            yield break;
+        }
         if (ToSkipTurn()) yield break;
         if (StillChargingUp()) yield break;
 
@@ -57,9 +64,6 @@ public abstract class Enemy : Unit
 
         while (moveQueue.Count > 0)
         {
-            // Halt all movement when enemy has crossed the road
-            if (HasCrossedTheRoad()) break; 
-
             // Wait until all commands have been completed by the unit before issuing next move command
             if (!CheckIfCompletedPreviousMovement()) yield return new WaitForSeconds(retryInterval);
 
@@ -73,10 +77,21 @@ public abstract class Enemy : Unit
             {
                 TakeNoVehicleInTheWayAction();
             }
-            
+
             // If not break away by vehicle in the way, issue the next movement command
-            //Debug.Log($"Issue Move command of ({nextMove.x}, {nextMove.y}) to ({nextGrid.x}, {nextGrid.y})");
-            (nextMove, nextGrid) = TakeMovementAction(moveQueue, nextMove, nextGrid);
+            Debug.Log($"Issue Move command of ({nextMove.x}, {nextMove.y}) to ({nextGrid.x}, {nextGrid.y})");
+            GiveMovementCommand(nextMove);
+
+            // Halt further movement when enemy has crossed the road
+            if (HasCrossedTheRoad(nextGrid))
+            {
+                TriggerDamageOnPlayer();
+                MarkedAsCrossed();
+                break;
+            }
+
+            (nextMove, nextGrid) = GetNextMovementAction(moveQueue, nextMove, nextGrid);
+
             yield return new WaitForSeconds(0.2f);
         }
         TurnInProgress = false;
@@ -95,9 +110,8 @@ public abstract class Enemy : Unit
         return commandStack.Count == 0;
     }
 
-    protected (GridCoord, GridCoord) TakeMovementAction(Queue<GridCoord> moveQueue, GridCoord nextMove, GridCoord nextGrid)
+    protected (GridCoord, GridCoord) GetNextMovementAction(Queue<GridCoord> moveQueue, GridCoord nextMove, GridCoord nextGrid)
     {
-        GiveMovementCommand(nextMove);
         moveQueue.Dequeue();
         if (moveQueue.Count > 0)
         {
@@ -137,19 +151,35 @@ public abstract class Enemy : Unit
         return;
     }
 
-    public bool HasCrossedTheRoad()
+    protected void MarkedAsCrossed()
     {
-        return _currentGridPosition.y == FieldGrid.GetMaxHeight() - 1;
+        Crossed = true;
+    }
+
+    public bool HasCrossedTheRoad(GridCoord nextGrid)
+    {
+        return nextGrid.y >= FieldGrid.GetTopSidewalkLaneNum();
     }
 
     protected virtual void OnTriggerEnter(Collider other)
     {
         Debug.Log($"{gameObject.name}: Hit by a car! @({_currentGridPosition.x}, {_currentGridPosition.y})...");
+        AddSkillOrbToPlayer();
         DestroySelf();
     }
 
     public void ChildTriggeredEnter(Collider other)
     {
         OnTriggerEnter(other);
+    }
+
+    protected void TriggerDamageOnPlayer()
+    {
+        gameStateManager.DamagePlayer(damage);
+    }
+
+    protected void AddSkillOrbToPlayer()
+    {
+        gameStateManager.AddPlayerSkillOrb(1);
     }
 }

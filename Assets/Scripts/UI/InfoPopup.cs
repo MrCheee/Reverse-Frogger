@@ -31,7 +31,6 @@ public class InfoPopup : MonoBehaviour
 
         newEntry.Status.text = status;
         newEntry.Count.text = count.ToString();
-
         //newEntry.Icone.sprite = Icone;
     }
 
@@ -41,7 +40,6 @@ public class InfoPopup : MonoBehaviour
 
         newEntry.Status.text = alive;
         newEntry.Count.text = count.ToString();
-
         //newEntry.Icone.sprite = Icone;
     }
 }
