@@ -148,10 +148,7 @@ public class UserControl : MonoBehaviour
         // If button is selected
         if (skillToggles[skillNum].isOn)
         {
-            Debug.Log($"Skill {skillNum+1} has been selected!");
-            uiMain.DeactivateSkillOrb(skillCosts[(SkillType)skillNum]);
-            consumedSkillOrbCount += skillCosts[(SkillType)skillNum];
-
+            Debug.Log($"Skill {skillNum + 1} has been selected!");
             // Remove previously selected skill from active state and set this as current active skill
             ResetCurrentSelectedButton();
             SetActiveSkill((SkillType)skillNum);
@@ -161,9 +158,13 @@ public class UserControl : MonoBehaviour
             {
                 uiMain.ReactivateSkillOrb(skillCosts[(SkillType)skillNum]);
                 consumedSkillOrbCount -= skillCosts[(SkillType)skillNum];
+                ResetHighlightCurrentSelectedButton();
             }
-            ResetHighlightCurrentSelectedButton();
             RemoveSkillTarget((SkillType)skillNum);
+
+            // Set state of deactivated skill orbs based on selected skill
+            uiMain.DeactivateSkillOrb(skillCosts[(SkillType)skillNum]);
+            consumedSkillOrbCount += skillCosts[(SkillType)skillNum];
         }
         else  // If button is deselected
         {
@@ -175,7 +176,6 @@ public class UserControl : MonoBehaviour
             }
             ClearActiveSkill();
         }
-        UpdateSkillTogglesFunctionality();
     }
 
     public void RefreshSkillsUI()
@@ -209,6 +209,7 @@ public class UserControl : MonoBehaviour
         {
             skillToggles[(int)skill_Selected].GetComponentInChildren<Outline>().enabled = true;
         }
+        UpdateSkillTogglesFunctionality();
     }
 
     private void ResetHighlightCurrentSelectedButton()
@@ -216,6 +217,7 @@ public class UserControl : MonoBehaviour
         if (skill_Selected != SkillType.None)
         {
             skillToggles[(int)skill_Selected].GetComponentInChildren<Outline>().enabled = false;
+            UpdateSkillTogglesFunctionality();
         }
     }
 
@@ -323,7 +325,7 @@ public class UserControl : MonoBehaviour
 
     public void UpdateSkillTogglesFunctionality()
     {
-        Debug.Log($"Current skill orbs: {currentSkillOrbCount}. Consumed: {consumedSkillOrbCount}");
+        Debug.Log($"[UserControl] Current skill orbs: {currentSkillOrbCount}. Consumed: {consumedSkillOrbCount}");
         int skillOrbCount = currentSkillOrbCount - consumedSkillOrbCount;
         for (int i = 0; i < skillToggles.Length; i++)
         {

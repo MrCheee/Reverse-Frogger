@@ -2,37 +2,71 @@
 
 public class SkillOrbBar : MonoBehaviour
 {
-    public RectTransform SkillOrbTransform;
+    public RectTransform ActiveSkillOrbTransform;
+    public RectTransform InactiveSkillOrbTransform;
     public ContentEntry ActiveSkillOrbPrefab;
     public ContentEntry InactiveSkillOrbPrefab;
 
     int maxOrbCount = 10;
-    int totalOrbCount = 0;
+    int currentOrbCount = 0;
     int inactiveOrbCount = 0;
+
+    private void Awake()
+    {
+        for (int i = 0; i < maxOrbCount; i++)
+        {
+            var activeOrb = Instantiate(ActiveSkillOrbPrefab, ActiveSkillOrbTransform);
+            activeOrb.gameObject.SetActive(false);
+            var inactiveOrb = Instantiate(InactiveSkillOrbPrefab, InactiveSkillOrbTransform);
+            inactiveOrb.gameObject.SetActive(false);
+        }
+    }
 
     public void AddSkillOrb(int count)
     {
-        totalOrbCount = Mathf.Min(maxOrbCount, totalOrbCount + count);
-        for (int i = 0; i < count; i++)
+        int orbsToAdd = Mathf.Min(maxOrbCount - currentOrbCount, count);
+        for (int i = 0; i < orbsToAdd; i++)
         {
-            if (SkillOrbTransform.childCount < maxOrbCount)
-            {
-                Instantiate(ActiveSkillOrbPrefab, SkillOrbTransform);
-            }
+            ActiveSkillOrbTransform.GetChild(currentOrbCount + i).gameObject.SetActive(true);
+            InactiveSkillOrbTransform.GetChild(currentOrbCount + i).gameObject.SetActive(true);
         }
+        currentOrbCount += orbsToAdd;
     }
+
+    //public void AddSkillOrb(int count)
+    //{
+    //    currentOrbCount = Mathf.Min(maxOrbCount, currentOrbCount + count);
+    //    for (int i = 0; i < count; i++)
+    //    {
+    //        if (SkillOrbTransform.childCount < maxOrbCount)
+    //        {
+    //            Instantiate(ActiveSkillOrbPrefab, SkillOrbTransform);
+    //        }
+    //    }
+    //}
 
     public void RemoveSkillOrb(int count)
     {
-        totalOrbCount = Mathf.Max(0, totalOrbCount - count);
-        int currentOrb = SkillOrbTransform.childCount;
-        int orbsToRemove = Mathf.Min(currentOrb, count);
+        int orbsToRemove = Mathf.Min(currentOrbCount - 0, count);
         for (int i = 0; i < orbsToRemove; i++)
         {
-            Destroy(SkillOrbTransform.GetChild(SkillOrbTransform.childCount - 1 - i).gameObject);
+            ActiveSkillOrbTransform.GetChild(currentOrbCount - i - 1).gameObject.SetActive(false);
+            InactiveSkillOrbTransform.GetChild(currentOrbCount - i - 1).gameObject.SetActive(false);
         }
+        currentOrbCount -= orbsToRemove;
     }
 
+    //public void RemoveSkillOrb(int count)
+    //{
+    //    currentOrbCount = Mathf.Max(0, currentOrbCount - count);
+    //    int currentOrb = ActiveSkillOrbTransform.childCount;
+    //    int orbsToRemove = Mathf.Min(currentOrb, count);
+    //    for (int i = 0; i < orbsToRemove; i++)
+    //    {
+    //        Destroy(ActiveSkillOrbTransform.GetChild(ActiveSkillOrbTransform.childCount - 1 - i).gameObject);
+    //    }
+    //}
+    
     public void DeactivateSkillOrb(int count)
     {
         inactiveOrbCount += count;
@@ -53,31 +87,68 @@ public class SkillOrbBar : MonoBehaviour
     public void FullRefreshSkillbar()
     {
         inactiveOrbCount = 0;
-        foreach (Transform child in SkillOrbTransform)
+        for (int i = 0; i < maxOrbCount; i++)
         {
-            Destroy(child.gameObject);
-        }
-        for (int i = 0; i < totalOrbCount; i++)
-        {
-            Instantiate(ActiveSkillOrbPrefab, SkillOrbTransform);
+            //InactiveSkillOrbTransform.GetChild(i).gameObject.SetActive(false);
+            if (i < currentOrbCount)
+            {
+                ActiveSkillOrbTransform.GetChild(i).gameObject.SetActive(true);
+                InactiveSkillOrbTransform.GetChild(i).gameObject.SetActive(true);
+            }
+            else
+            {
+                ActiveSkillOrbTransform.GetChild(i).gameObject.SetActive(false);
+                InactiveSkillOrbTransform.GetChild(i).gameObject.SetActive(false);
+            }
         }
     }
+
+    //public void FullRefreshSkillbar()
+    //{
+    //    inactiveOrbCount = 0;
+    //    foreach (Transform child in ActiveSkillOrbTransform)
+    //    {
+    //        Destroy(child.gameObject);
+    //    }
+    //    for (int i = 0; i < currentOrbCount; i++)
+    //    {
+    //        Instantiate(ActiveSkillOrbPrefab, ActiveSkillOrbTransform);
+    //    }
+    //}
 
     public void RefreshSkillBar()
     {
-        foreach (Transform child in SkillOrbTransform)
+        Debug.Log($"[SkillOrbBar] Current skill orbs: {currentOrbCount}. Inactive: {inactiveOrbCount}");
+        int activeOrbCount = currentOrbCount - inactiveOrbCount;
+        for (int i = 0; i < currentOrbCount; i++)
         {
-            Destroy(child.gameObject);
-        }
-
-        int activeOrbCount = totalOrbCount - inactiveOrbCount;
-        for (int i = 0; i < activeOrbCount; i++)
-        {
-            Instantiate(ActiveSkillOrbPrefab, SkillOrbTransform);
-        }
-        for (int i = 0; i < inactiveOrbCount; i++)
-        {
-            Instantiate(InactiveSkillOrbPrefab, SkillOrbTransform);
+            //InactiveSkillOrbTransform.GetChild(i).gameObject.SetActive(true);
+            if (i < activeOrbCount)
+            {
+                ActiveSkillOrbTransform.GetChild(i).gameObject.SetActive(true);
+            }
+            else
+            {
+                ActiveSkillOrbTransform.GetChild(i).gameObject.SetActive(false);
+            }
         }
     }
+
+    //public void RefreshSkillBar()
+    //{
+    //    foreach (Transform child in ActiveSkillOrbTransform)
+    //    {
+    //        Destroy(child.gameObject);
+    //    }
+    //
+    //    int activeOrbCount = currentOrbCount - inactiveOrbCount;
+    //    for (int i = 0; i < activeOrbCount; i++)
+    //    {
+    //        Instantiate(ActiveSkillOrbPrefab, ActiveSkillOrbTransform);
+    //    }
+    //    for (int i = 0; i < inactiveOrbCount; i++)
+    //    {
+    //        Instantiate(InactiveSkillOrbPrefab, ActiveSkillOrbTransform);
+    //    }
+    //}
 }

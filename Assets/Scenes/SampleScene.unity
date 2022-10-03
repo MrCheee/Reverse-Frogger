@@ -6867,7 +6867,7 @@ GameObject:
   - component: {fileID: 621194658}
   - component: {fileID: 621194657}
   m_Layer: 5
-  m_Name: SP
+  m_Name: SkillOrb
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -12157,7 +12157,7 @@ GameObject:
   - component: {fileID: 1019173077}
   - component: {fileID: 1019173079}
   m_Layer: 5
-  m_Name: PlayerSkillPoints
+  m_Name: PlayerSkillOrbs
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -12176,6 +12176,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 621194656}
+  - {fileID: 1975360236}
   - {fileID: 1619826555}
   m_Father: {fileID: 692182518}
   m_RootOrder: 13
@@ -12235,7 +12236,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7175b8a208f58334f8a2b048a4bade0a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SkillOrbTransform: {fileID: 1619826555}
+  ActiveSkillOrbTransform: {fileID: 1619826555}
+  InactiveSkillOrbTransform: {fileID: 1975360236}
   ActiveSkillOrbPrefab: {fileID: 1033874080214107715, guid: 7568c778be3b4b949a688949b1a2ffed, type: 3}
   InactiveSkillOrbPrefab: {fileID: 6780657856660841997, guid: 21478c60c5dffbc43adee4230eb635b4, type: 3}
 --- !u!1 &1028302193
@@ -18962,7 +18964,7 @@ GameObject:
   - component: {fileID: 1619826555}
   - component: {fileID: 1619826556}
   m_Layer: 5
-  m_Name: SPGrid
+  m_Name: ActiveSkillOrbGrid
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -18981,7 +18983,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1019173076}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -23731,6 +23733,67 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1955724048}
   m_CullTransparentMesh: 1
+--- !u!1 &1975360235
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1975360236}
+  - component: {fileID: 1975360237}
+  m_Layer: 5
+  m_Name: InactiveSkillOrbGrid
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1975360236
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1975360235}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1019173076}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 47, y: 0}
+  m_SizeDelta: {x: 310, y: 45}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1975360237
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1975360235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a8695521f0d02e499659fee002a26c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 3
+  m_StartCorner: 0
+  m_StartAxis: 0
+  m_CellSize: {x: 25, y: 25}
+  m_Spacing: {x: 5, y: 5}
+  m_Constraint: 2
+  m_ConstraintCount: 1
 --- !u!1 &1987362333
 GameObject:
   m_ObjectHideFlags: 0
