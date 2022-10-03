@@ -14,6 +14,11 @@ public class Helper
         return new GridCoord(current.x + next.x, current.y + next.y);
     }
 
+    public static bool IsEqualGridCoords(GridCoord first, GridCoord second)
+    {
+        return first.x == second.x && first.y == second.y;
+    }
+
     public static bool IsVehicleInTheWay(GridCoord targetGrid)
     {
         return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetSingleGrid(targetGrid).GetListOfUnitsGameObjectTag().Contains("Vehicle");

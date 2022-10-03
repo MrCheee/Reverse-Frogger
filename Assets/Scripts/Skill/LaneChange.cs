@@ -1,16 +1,21 @@
-﻿public class LaneChange : Skill
+﻿public class LaneChange : ISkill
 {
-    public LaneChange(Unit target) : base(target) { nextGrid = new GridCoord(0, 0); }
+    public Unit unit { get; set; }
+    public GridCoord targetGrid { get; set; }
 
-    public GridCoord nextGrid { get; set; }
-
-    public override void Execute()
+    public LaneChange(Unit target)
     {
-        unit.GiveMovementCommand(nextGrid);
+        unit = target;
+        targetGrid = new GridCoord(0, 0); 
     }
 
-    public override void UpdateGridCoordAction(GridCoord coord)
+    public void Execute()
     {
-        nextGrid = coord;
+        unit.GiveMovementCommand(targetGrid);
+    }
+
+    public void UpdateGridCoordAction(GridCoord coord)
+    {
+        targetGrid = coord;
     }
 }

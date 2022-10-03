@@ -6,6 +6,8 @@ using UnityEngine;
 public class VehicleSpawner : MonoBehaviour
 {
     [SerializeField] private GameObject[] vehPrefabs;
+    private GameObject[] callInVehicles;
+    private Vector3 playerSkillVehSpawnPos;
 
     List<VehicleType> _currentSpawnList;
     int numOfLanes = FieldGrid.GetNumberOfLanes() * 2;
@@ -16,9 +18,10 @@ public class VehicleSpawner : MonoBehaviour
     int dividerY = FieldGrid.GetFieldBuffer() + 1 + FieldGrid.GetNumberOfLanes();
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         SetSpawnList();
+        GeneratePlayerSkillVehicles();
     }
 
     void SetSpawnList()
@@ -36,6 +39,39 @@ public class VehicleSpawner : MonoBehaviour
             VehicleType.Truck,
             VehicleType.Bus
         };
+    }
+
+    public void GeneratePlayerSkillVehicles()
+    {
+        GridCoord spawnGrid = new GridCoord(FieldGrid.GetMaxLength() / 2, FieldGrid.GetMaxHeight() / 2);
+        Vector3 spawnPos = FieldGrid.GetSingleGrid(spawnGrid).GetGridCentrePoint();
+        spawnPos.y = -25;
+
+        callInVehicles = new GameObject[vehPrefabs.Length];
+        playerSkillVehSpawnPos = spawnPos;
+
+        for (int i = 0; i < vehPrefabs.Length; i++)
+        {
+            callInVehicles[i] = Instantiate(vehPrefabs[i], playerSkillVehSpawnPos, vehPrefabs[i].transform.rotation);
+            callInVehicles[i].SetActive(false);
+        }
+    }
+
+    public GameObject GetPlayerSkillVehicle(int index)
+    {
+        return callInVehicles[index];
+    }
+
+    public void ReplacePlayerSkillVehicles()
+    {
+        for (int i = 0; i < vehPrefabs.Length; i++)
+        {
+            if (callInVehicles[i].gameObject.activeInHierarchy)
+            {
+                callInVehicles[i] = Instantiate(vehPrefabs[i], playerSkillVehSpawnPos, vehPrefabs[i].transform.rotation);
+                callInVehicles[i].SetActive(false);
+            }
+        }
     }
 
     public void SpawnXVehiclesAtRandom(int number)

@@ -1,9 +1,20 @@
-﻿public class DisableUnit : Skill
+﻿public class DisableUnit : ISkill
 {
-    public DisableUnit(Unit target) : base(target) { }
+    public Unit unit { get; set; }
+    public GridCoord targetGrid { get; set; }
 
-    public override void Execute()
+    public DisableUnit(Unit target)
+    {
+        unit = target;
+    }
+
+    public void Execute()
     {
         unit.DisableUnit(2);
+    }
+
+    public void UpdateGridCoordAction(GridCoord coord)
+    {
+        return;
     }
 }

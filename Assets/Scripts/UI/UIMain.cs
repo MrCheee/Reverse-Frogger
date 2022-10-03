@@ -16,6 +16,7 @@ public class UIMain : MonoBehaviour
     public InfoPopup InfoPopup;
     public HealthBar HealthBar;
     public SkillOrbBar SkillOrbBar;
+    public RectTransform VehicleSelectionUI;
 
     protected IUIInfoContent m_CurrentContent;
     protected List<Status> m_ContentBuffer = new List<Status>();
@@ -85,6 +86,16 @@ public class UIMain : MonoBehaviour
                 InfoPopup.AddToStatusContent(entry.statusType, entry.count);
             }
         }
+    }
+
+    public void ActivateVehicleSelectionUI()
+    {
+        VehicleSelectionUI.gameObject.SetActive(true);
+    }
+
+    public void DeactivateVehicleSelectionUI()
+    {
+        VehicleSelectionUI.gameObject.SetActive(false);
     }
 
     public void AddHealth(int health)

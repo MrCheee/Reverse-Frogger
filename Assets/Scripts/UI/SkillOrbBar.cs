@@ -33,18 +33,6 @@ public class SkillOrbBar : MonoBehaviour
         currentOrbCount += orbsToAdd;
     }
 
-    //public void AddSkillOrb(int count)
-    //{
-    //    currentOrbCount = Mathf.Min(maxOrbCount, currentOrbCount + count);
-    //    for (int i = 0; i < count; i++)
-    //    {
-    //        if (SkillOrbTransform.childCount < maxOrbCount)
-    //        {
-    //            Instantiate(ActiveSkillOrbPrefab, SkillOrbTransform);
-    //        }
-    //    }
-    //}
-
     public void RemoveSkillOrb(int count)
     {
         int orbsToRemove = Mathf.Min(currentOrbCount - 0, count);
@@ -55,17 +43,6 @@ public class SkillOrbBar : MonoBehaviour
         }
         currentOrbCount -= orbsToRemove;
     }
-
-    //public void RemoveSkillOrb(int count)
-    //{
-    //    currentOrbCount = Mathf.Max(0, currentOrbCount - count);
-    //    int currentOrb = ActiveSkillOrbTransform.childCount;
-    //    int orbsToRemove = Mathf.Min(currentOrb, count);
-    //    for (int i = 0; i < orbsToRemove; i++)
-    //    {
-    //        Destroy(ActiveSkillOrbTransform.GetChild(ActiveSkillOrbTransform.childCount - 1 - i).gameObject);
-    //    }
-    //}
     
     public void DeactivateSkillOrb(int count)
     {
@@ -76,11 +53,11 @@ public class SkillOrbBar : MonoBehaviour
     public void ReactivateSkillOrb(int count)
     {
         inactiveOrbCount -= count;
-        if (inactiveOrbCount < 0)
-        {
-            Debug.Log("INACTIVE ORB COUNT REACHED BELOW ZERO, ERROR!!!");
-            inactiveOrbCount = 0;
-        }
+        //if (inactiveOrbCount < 0)
+        //{
+        //    Debug.Log("INACTIVE ORB COUNT REACHED BELOW ZERO, ERROR!!!");
+        //    inactiveOrbCount = 0;
+        //}
         RefreshSkillBar();
     }
 
@@ -103,22 +80,9 @@ public class SkillOrbBar : MonoBehaviour
         }
     }
 
-    //public void FullRefreshSkillbar()
-    //{
-    //    inactiveOrbCount = 0;
-    //    foreach (Transform child in ActiveSkillOrbTransform)
-    //    {
-    //        Destroy(child.gameObject);
-    //    }
-    //    for (int i = 0; i < currentOrbCount; i++)
-    //    {
-    //        Instantiate(ActiveSkillOrbPrefab, ActiveSkillOrbTransform);
-    //    }
-    //}
-
     public void RefreshSkillBar()
     {
-        Debug.Log($"[SkillOrbBar] Current skill orbs: {currentOrbCount}. Inactive: {inactiveOrbCount}");
+        //Debug.Log($"[SkillOrbBar] Current skill orbs: {currentOrbCount}. Inactive: {inactiveOrbCount}");
         int activeOrbCount = currentOrbCount - inactiveOrbCount;
         for (int i = 0; i < currentOrbCount; i++)
         {
@@ -133,22 +97,4 @@ public class SkillOrbBar : MonoBehaviour
             }
         }
     }
-
-    //public void RefreshSkillBar()
-    //{
-    //    foreach (Transform child in ActiveSkillOrbTransform)
-    //    {
-    //        Destroy(child.gameObject);
-    //    }
-    //
-    //    int activeOrbCount = currentOrbCount - inactiveOrbCount;
-    //    for (int i = 0; i < activeOrbCount; i++)
-    //    {
-    //        Instantiate(ActiveSkillOrbPrefab, ActiveSkillOrbTransform);
-    //    }
-    //    for (int i = 0; i < inactiveOrbCount; i++)
-    //    {
-    //        Instantiate(InactiveSkillOrbPrefab, ActiveSkillOrbTransform);
-    //    }
-    //}
 }

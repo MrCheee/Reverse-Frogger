@@ -6,6 +6,7 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
 {
     [SerializeField] private float moveSpeed = 1f;
 
+    protected int size = 1;
     protected int health = 0;
     protected int damage = 0;
     protected int skipTurn = 0;
@@ -99,6 +100,7 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
 
     public void DestroySelf()
     {
+        Debug.Log($"[{gameObject.name}] Destroying self...");
         health = 0;
         RemoveFromFieldGridPosition();
         Destroy(gameObject);
@@ -163,6 +165,11 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     public int GetHealth()
     {
         return health;
+    }
+
+    public int GetSize()
+    {
+        return size;
     }
 
     public void AddDamage(int damageAdd)

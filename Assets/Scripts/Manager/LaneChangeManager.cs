@@ -14,7 +14,7 @@ public class LaneChangeManager : MonoBehaviour
     private Color laneChangeOnColor;
     private Color laneChangeOffColor;
     private Color laneChangeBlockColor;
-    private Skill currentLaneChangeSkillHolder;
+    private ISkill currentLaneChangeSkillHolder;
 
     private void Start()
     {
@@ -23,7 +23,7 @@ public class LaneChangeManager : MonoBehaviour
         laneChangeBlockColor = new Color(255, 0, 0, 0.5f);
     }
 
-    public void RegisterLaneChangeTarget(Skill currentSkill)
+    public void RegisterLaneChangeTarget(ISkill currentSkill)
     {
         currentLaneChangeSkillHolder = currentSkill;
 
@@ -196,7 +196,7 @@ public class LaneChangeManager : MonoBehaviour
         return GameCamera.WorldToScreenPoint(selectedGridPos);
     }
 
-    public Skill GetCurrentSkillHolder()
+    public ISkill GetCurrentSkillHolder()
     {
         return currentLaneChangeSkillHolder;
     }

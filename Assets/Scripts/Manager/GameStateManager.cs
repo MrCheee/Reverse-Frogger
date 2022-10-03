@@ -17,7 +17,7 @@ public class GameStateManager : MonoBehaviour
     bool playerTurnInProgress = false;
 
     int playerHealth = 10;
-    int playerSkillOrb = 3;
+    int playerSkillOrb = 10;
     int damageReceived = 0;
 
     // Start is called before the first frame update
@@ -68,6 +68,7 @@ public class GameStateManager : MonoBehaviour
                     ResetLaneSpeedToggles();
                     AddPlayerSkillOrb(1);  // Player gets 1 skill orb every turn
                     userControl.UpdateSkillTogglesFunctionality();
+                    userControl.UpdateCalledInVehicles();
                     break;
 
                 case GameState.Player:
@@ -86,6 +87,7 @@ public class GameStateManager : MonoBehaviour
                 case GameState.PlayerSkill:
                     uiMain.UpdateContent();
                     userControl.RefreshSkillsUI();
+                    vehicleSpawner.ReplacePlayerSkillVehicles();
                     Debug.Log("Finished executing Player Skills! Starting enemies turn...");
 
                     TriggerAllEnemiesTurn();

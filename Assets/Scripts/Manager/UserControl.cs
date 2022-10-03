@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,6 +12,8 @@ public class UserControl : MonoBehaviour
     public GameObject MarkerPrefab;
 
     private Unit m_Selected = null;
+
+    private GraphicRaycasterManager graphicRaycasterManager;
 
     [SerializeField] private Toggle[] skillToggles;
     private SkillType skill_Selected = SkillType.None;
@@ -25,15 +28,22 @@ public class UserControl : MonoBehaviour
     private int consumedSkillOrbCount = 0;
     private int maxOrbCount = 10;
 
-    //[SerializeField] private Button[] carChoosingButtons;
-    //[SerializeField] private RectTransform carChoosingUI;
-    //private VehicleSpawner vehicleSpawner;
+    [SerializeField] private Button[] carChoosingButtons;
+    [SerializeField] private Image invalidVehicleDropSelectionImg;
+    [SerializeField] private Image validVehicleDropSelectionImg;
+    [SerializeField] private RectTransform invalidVehicleLaneSelectionImg;
+    [SerializeField] private RectTransform validVehicleLaneSelectionImg;
+    private VehicleSpawner vehicleSpawner;
+    private ISkill tempSelectVehicleSkill;
+    private List<Unit> calledInVehicles;
+    GridCoord currentVehicleSkillHoverGrid;
 
     private void Awake()
     {
         uiMain = UIMain.Instance;
         laneChangeManager = gameObject.GetComponent<LaneChangeManager>();
-        //vehicleSpawner = gameObject.GetComponent<VehicleSpawner>();
+        vehicleSpawner = gameObject.GetComponent<VehicleSpawner>();
+        graphicRaycasterManager = GameObject.Find("Canvas").GetComponent<GraphicRaycasterManager>();
 
         Marker.SetActive(false);
         for (int i = 0; i < skillToggles.Length; i++)
@@ -51,21 +61,106 @@ public class UserControl : MonoBehaviour
             { SkillType.DisableUnit, 3 }
         };
 
-        //for (int i = 0; i < carChoosingButtons.Length; i++)
-        //{
-        //    int tmp = i;
-        //    carChoosingButtons[i].onClick.AddListener(delegate { HandleSelectCar(tmp); });
-        //}
+        for (int i = 0; i < carChoosingButtons.Length; i++)
+        {
+            int tmp = i;
+            carChoosingButtons[i].onClick.AddListener(delegate { HandleSelectCar(tmp); });
+        }
+        tempSelectVehicleSkill = null;
+        currentVehicleSkillHoverGrid = new GridCoord(0, 0);
+        calledInVehicles = new List<Unit>();
+    }
+
+    private bool HaveVehiclesBlockingAirDrop(GridCoord targetGrid, Unit unit)
+    {
+        int vehicleSize = unit.GetSize();
+        int direction = targetGrid.y < FieldGrid.GetDividerLaneNum() ? 1 : -1;
+        bool blocked = false;
+
+        for (int i = 0; i < vehicleSize; i++)
+        {
+            GridCoord checkGrid = Helper.AddGridCoords(targetGrid, new GridCoord(i * direction, 0));
+            List<string> gameObjectsTagInGrid = FieldGrid.GetSingleGrid(checkGrid).GetListOfUnitsGameObjectTag();
+            if (gameObjectsTagInGrid.Contains("Vehicle"))
+            {
+                blocked = true;
+                break;
+            }
+        }
+        return blocked;
     }
 
     private void Update()
     {
+        if (tempSelectVehicleSkill != null)
+        {
+            GridCoord currentTargetedGrid = FieldGrid.GetGridCoordFromWorldPosition(GameCamera.ScreenToWorldPoint(Input.mousePosition));
+            if (IsWithinPlayableX(currentTargetedGrid.x))
+            {
+                if (skill_Selected == SkillType.AirDropVeh)
+                {
+                    if (!Helper.IsEqualGridCoords(currentVehicleSkillHoverGrid, currentTargetedGrid))
+                    {
+                        Vector3 mouseOverGridPos = FieldGrid.GetSingleGrid(currentTargetedGrid).GetGridCentrePoint();
+                        if (!IsTargetedGridInALane(currentTargetedGrid.y) || HaveVehiclesBlockingAirDrop(currentTargetedGrid, tempSelectVehicleSkill.unit))
+                        {
+                            invalidVehicleDropSelectionImg.transform.position = GameCamera.WorldToScreenPoint(mouseOverGridPos);
+                            invalidVehicleDropSelectionImg.gameObject.SetActive(true);
+                            validVehicleDropSelectionImg.gameObject.SetActive(false);
+                        }
+                        else
+                        {
+                            validVehicleDropSelectionImg.transform.position = GameCamera.WorldToScreenPoint(mouseOverGridPos);
+                            validVehicleDropSelectionImg.gameObject.SetActive(true);
+                            invalidVehicleDropSelectionImg.gameObject.SetActive(false);
+                        }
+                        currentVehicleSkillHoverGrid = currentTargetedGrid;
+                    }
+                }
+                else if (skill_Selected == SkillType.CallInVeh)
+                {
+                    if (currentVehicleSkillHoverGrid.y != currentTargetedGrid.y)
+                    {
+                        GridCoord laneCentreGrid = new GridCoord(FieldGrid.GetMaxLength() / 2, currentTargetedGrid.y);
+                        Vector3 laneCentreGridPos = FieldGrid.GetSingleGrid(laneCentreGrid).GetGridCentrePoint();
+                        if (IsTargetedGridInALane(currentTargetedGrid.y) && CheckNoExistingCalledInVehInSameLane(currentTargetedGrid.y))
+                        {
+                            validVehicleLaneSelectionImg.transform.position = GameCamera.WorldToScreenPoint(laneCentreGridPos);
+                            validVehicleLaneSelectionImg.gameObject.SetActive(true);
+                            invalidVehicleLaneSelectionImg.gameObject.SetActive(false);
+                        }
+                        else
+                        {
+                            invalidVehicleLaneSelectionImg.transform.position = GameCamera.WorldToScreenPoint(laneCentreGridPos);
+                            invalidVehicleLaneSelectionImg.gameObject.SetActive(true);
+                            validVehicleLaneSelectionImg.gameObject.SetActive(false);
+                        }
+                        currentVehicleSkillHoverGrid = currentTargetedGrid;
+                    }
+                }
+                else
+                {
+                    Debug.Log("State should not be in locator mode. Skill selected isn't call-in veh or air drop vehicle.");
+                }
+            }
+        }
+
         if (Input.GetMouseButtonDown(0))
         {
             HandleSelection();
         }
 
+        if (Input.GetMouseButtonDown(1))
+        {
+            HandleDeselection();
+        }
+
         MarkerHandling();
+    }
+
+    private bool CheckNoExistingCalledInVehInSameLane(int gridY)
+    {
+        return calledInVehicles.All(x => x.GetCurrentHeadGridPosition().y != gridY);
     }
 
     // Handle displaying the marker above the unit that is currently selected (or hiding it if no unit is selected)
@@ -89,8 +184,63 @@ public class UserControl : MonoBehaviour
         }
     }
 
+    public void HandleDeselection()
+    {
+        m_Selected = null;
+        UIMain.Instance.SetNewInfoContent(null);
+
+        ResetCurrentSelectedButton();
+        tempSelectVehicleSkill = null;
+    }
+
     public void HandleSelection()
     {
+        if (graphicRaycasterManager.IsSelectingUI())
+        {
+            Debug.Log("Selected UI Element... ignoring...");
+            return;
+        }
+
+        if (IsSelectingVehicleSkill())
+        {
+            if (tempSelectVehicleSkill != null)
+            {
+                Debug.Log("[HandleSelection] In locator mode...");
+                if (graphicRaycasterManager.HasSelectedValidLocatorUI())
+                {
+                    Debug.Log("[VehicleSkill] Has selected valid grid...");
+                    GridCoord currentTargetedGrid = FieldGrid.GetGridCoordFromWorldPosition(GameCamera.ScreenToWorldPoint(Input.mousePosition));
+                    if (skill_Selected == SkillType.CallInVeh)
+                    {
+                        if (currentTargetedGrid.y < FieldGrid.GetDividerLaneNum())
+                        {
+                            currentTargetedGrid.x = FieldGrid.GetMaxLength() - FieldGrid.GetFieldBuffer();
+                        }
+                        else
+                        {
+                            currentTargetedGrid.x = FieldGrid.GetFieldBuffer() - 1;
+                        }
+                    }
+                    tempSelectVehicleSkill.UpdateGridCoordAction(currentTargetedGrid);
+                    skillTargets.Add(skill_Selected, tempSelectVehicleSkill);
+                    tempSelectVehicleSkill = null;
+
+                    Debug.Log($"Readying Skill {skill_Selected} for execution, target at ({currentTargetedGrid.x}, {currentTargetedGrid.y})");
+                    HighlightCurrentSelectedButton();
+                    ResetCurrentSelectedButton();
+                }
+                else
+                {
+                    Debug.Log("[VehicleSkill] Has selected invalid grid...");
+                }
+            }
+            else 
+            {
+                Debug.Log("[HandleSelection] Not in locator mode yet, cancelling player vehicle skill...");
+                skillToggles[(int)skill_Selected].isOn = false;
+            }
+        }
+
         Vector3 screenPos = Input.mousePosition;
         var ray = GameCamera.ScreenPointToRay(screenPos);
 
@@ -108,11 +258,11 @@ public class UserControl : MonoBehaviour
 
             if (m_Selected != null && skill_Selected != SkillType.None)
             {
-                Debug.Log($"{skill_Selected} has been targeted at a unit, saving skill target...");
+                //Debug.Log($"{skill_Selected} has been targeted at a unit, saving skill target...");
                 // Register unit and skill command to be dispatched after player turn ends. 
                 // This is to allow for cancellation of commands before turn is officially ended.
                 // [TEMP] Each skill can only be used once, so a dictionary is used
-                Skill currentSkill = GenerateSkill(skill_Selected, m_Selected);
+                ISkill currentSkill = GenerateSkill(skill_Selected, m_Selected);
 
                 // Assassinate only works on enemy units
                 if (skill_Selected == SkillType.Assassinate && m_Selected.gameObject.tag != "Enemy")
@@ -129,12 +279,12 @@ public class UserControl : MonoBehaviour
                     }
                     laneChangeManager.RegisterLaneChangeTarget(currentSkill);
                 }
-                else
+                else if (!IsSelectingVehicleSkill())
                 {
-                    skillTargets.Add(skill_Selected, currentSkill);
                     // After the skill has been assigned a targeted unit, the button will become highlighted in green, 
                     // and it will not flash yellow.
-                    Debug.Log("Indicate successful targeting of skill, resetting active skill...");
+                    //Debug.Log("Indicate successful targeting of skill, resetting active skill...");
+                    skillTargets.Add(skill_Selected, currentSkill);
                     HighlightCurrentSelectedButton();
                     ResetCurrentSelectedButton();
                     skill_Selected = SkillType.None;
@@ -148,9 +298,9 @@ public class UserControl : MonoBehaviour
         // If button is selected
         if (skillToggles[skillNum].isOn)
         {
-            Debug.Log($"Skill {skillNum + 1} has been selected!");
+            Debug.Log($"Skill {(SkillType)skillNum} has been selected!");
             // Remove previously selected skill from active state and set this as current active skill
-            ResetCurrentSelectedButton();
+            ResetPreviousSelectedButton((SkillType)skillNum);
             SetActiveSkill((SkillType)skillNum);
 
             // If current active skill was previously assigned a target already, reselection will cancel that target
@@ -159,8 +309,8 @@ public class UserControl : MonoBehaviour
                 uiMain.ReactivateSkillOrb(skillCosts[(SkillType)skillNum]);
                 consumedSkillOrbCount -= skillCosts[(SkillType)skillNum];
                 ResetHighlightCurrentSelectedButton();
+                RemoveSkillTarget((SkillType)skillNum);
             }
-            RemoveSkillTarget((SkillType)skillNum);
 
             // Set state of deactivated skill orbs based on selected skill
             uiMain.DeactivateSkillOrb(skillCosts[(SkillType)skillNum]);
@@ -168,7 +318,7 @@ public class UserControl : MonoBehaviour
         }
         else  // If button is deselected
         {
-            Debug.Log($"Skill {skillNum+1} has been deselected!");
+            Debug.Log($"Skill {(SkillType)skillNum} has been deselected!");
             if (skillToggles[skillNum].GetComponentInChildren<Outline>().enabled != true)
             {
                 uiMain.ReactivateSkillOrb(skillCosts[(SkillType)skillNum]);
@@ -188,16 +338,48 @@ public class UserControl : MonoBehaviour
     private void SetActiveSkill(SkillType skill)
     {
         skill_Selected = skill;
+        if (IsSelectingVehicleSkill())
+        {
+            uiMain.ActivateVehicleSelectionUI();
+        }
     }
 
     private void ClearActiveSkill()
     {
+        if (IsSelectingVehicleSkill())
+        {
+            uiMain.DeactivateVehicleSelectionUI();
+            tempSelectVehicleSkill = null;
+            if (skillToggles[(int)SkillType.CallInVeh].GetComponentInChildren<Outline>().enabled != true)
+            {
+                invalidVehicleLaneSelectionImg.gameObject.SetActive(false);
+                validVehicleLaneSelectionImg.gameObject.SetActive(false);
+            }
+            if (skillToggles[(int)SkillType.AirDropVeh].GetComponentInChildren<Outline>().enabled != true)
+            {
+                validVehicleDropSelectionImg.gameObject.SetActive(false);
+                invalidVehicleDropSelectionImg.gameObject.SetActive(false);
+            }
+        }
         skill_Selected = SkillType.None;
     }
 
     private void ResetCurrentSelectedButton()
     {
         if (skill_Selected != SkillType.None)
+        {
+            skillToggles[(int)skill_Selected].isOn = false;
+        }
+    }
+
+    public void UICancelCurrentSkillSelection()
+    {
+        ResetCurrentSelectedButton();
+    }
+
+    private void ResetPreviousSelectedButton(SkillType skill)
+    {
+        if (skill_Selected != SkillType.None && skill_Selected != skill)
         {
             skillToggles[(int)skill_Selected].isOn = false;
         }
@@ -229,6 +411,12 @@ public class UserControl : MonoBehaviour
             entry.Value.Execute();
             skillOrbsConsumed += skillCosts[entry.Key];
             currentSkillOrbCount -= skillCosts[entry.Key];
+
+            if (entry.Key == SkillType.CallInVeh)
+            {
+                calledInVehicles.Add(entry.Value.unit);
+            }
+
         }
         uiMain.RemoveSkillOrb(skillOrbsConsumed);
         ResetSkillTargets();
@@ -244,6 +432,14 @@ public class UserControl : MonoBehaviour
         {
             laneChangeHighlighted = false;
             laneChangeManager.RemoveSkillTarget();
+        } 
+        else if (skill == SkillType.CallInVeh)
+        {
+            validVehicleLaneSelectionImg.gameObject.SetActive(false);
+        } 
+        else if (skill == SkillType.AirDropVeh)
+        {
+            validVehicleDropSelectionImg.gameObject.SetActive(false);
         }
     }
 
@@ -255,7 +451,7 @@ public class UserControl : MonoBehaviour
         }
     }
 
-    private Skill GenerateSkill(SkillType skillType, Unit unit)
+    private ISkill GenerateSkill(SkillType skillType, Unit unit)
     {
         switch (skillType)
         {
@@ -267,6 +463,10 @@ public class UserControl : MonoBehaviour
                 return new BoostUnit(unit);
             case SkillType.DisableUnit:
                 return new DisableUnit(unit);
+            case SkillType.CallInVeh:
+                return new CallInVehicle(unit);
+            case SkillType.AirDropVeh:
+                return new AirDropVehicle(unit);
         }
         return null;
     }
@@ -311,16 +511,24 @@ public class UserControl : MonoBehaviour
             skillToggles[i].GetComponentInChildren<Outline>().enabled = false;
         }
         laneChangeManager.ResetLaneChangeUI();
+        ResetPlayerVehicleSelectorUI();
+    }
+
+    private void ResetPlayerVehicleSelectorUI()
+    {
+        uiMain.DeactivateVehicleSelectionUI();
+        validVehicleDropSelectionImg.gameObject.SetActive(false);
+        validVehicleLaneSelectionImg.gameObject.SetActive(false);
     }
 
     private void HandleSelectCar(int carNum)
     {
-        int adjustedCarNum = carNum - 1;
-        if (adjustedCarNum < 0)
+        if (IsSelectingVehicleSkill())
         {
-            adjustedCarNum = UnityEngine.Random.Range(0, Enum.GetNames(typeof(VehicleType)).Length);
+            Unit selectedVehicle = vehicleSpawner.GetPlayerSkillVehicle(carNum).GetComponent<Unit>();
+            tempSelectVehicleSkill = GenerateSkill(skill_Selected, selectedVehicle);
+            uiMain.DeactivateVehicleSelectionUI();
         }
-        
     }
 
     public void UpdateSkillTogglesFunctionality()
@@ -365,4 +573,25 @@ public class UserControl : MonoBehaviour
             skillButton.colors = cb;
         }
     }
+
+    private bool IsSelectingVehicleSkill()
+    {
+        return skill_Selected == SkillType.CallInVeh || skill_Selected == SkillType.AirDropVeh;
+    }
+
+    private bool IsTargetedGridInALane(int gridY)
+    {
+        return gridY != FieldGrid.GetDividerLaneNum() && gridY < FieldGrid.GetTopSidewalkLaneNum() && gridY > FieldGrid.GetBottomSidewalkLaneNum();
+    }
+
+    private bool IsWithinPlayableX(int gridX)
+    {
+        return gridX >= FieldGrid.GetFieldBuffer() && gridX < (FieldGrid.GetMaxLength() - FieldGrid.GetFieldBuffer());
+    }
+
+    public void UpdateCalledInVehicles()
+    {
+        calledInVehicles = calledInVehicles.Where(x => !IsWithinPlayableX(x.GetCurrentHeadGridPosition().x)).ToList();
+    }
+
 }

@@ -1,7 +1,7 @@
 ﻿public interface ISkill
 {
     Unit unit { get; set; }
-
-    public abstract void Execute();
-    public abstract void UpdateGridCoordAction(GridCoord coord);
+    GridCoord targetGrid { get; set; }
+    public void Execute();
+    public void UpdateGridCoordAction(GridCoord coord);
 }

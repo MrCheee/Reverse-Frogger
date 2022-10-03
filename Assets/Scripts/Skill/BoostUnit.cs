@@ -1,9 +1,20 @@
-﻿public class BoostUnit : Skill
+﻿public class BoostUnit : ISkill
 {
-    public BoostUnit(Unit target) : base(target) { }
+    public Unit unit { get; set; }
+    public GridCoord targetGrid { get; set; }
 
-    public override void Execute()
+    public BoostUnit(Unit target)
+    {
+        unit = target;
+    }
+
+    public void Execute()
     {
         unit.BoostUnit(1);
+    }
+
+    public void UpdateGridCoordAction(GridCoord coord)
+    {
+        return;
     }
 }

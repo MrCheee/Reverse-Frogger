@@ -8,6 +8,7 @@ TagManager:
   - Vehicle
   - Lane
   - SpeedToggle
+  - Locator
   layers:
   - Default
   - TransparentFX

@@ -7,7 +7,6 @@ public abstract class Vehicle : Unit
 {
     public int SpeedAddition { get; set; }
 
-    protected int size = 1;
     protected int maxSpeed = 1;
 
     private int laneSpeedAddition = 0;
@@ -18,6 +17,7 @@ public abstract class Vehicle : Unit
     {
         SetUpSize();
         _currentGridPosition = new GridCoord[size];
+        _currentGridPosition[0] = new GridCoord(dividerY, dividerY);
         base.Awake();
     }
 
