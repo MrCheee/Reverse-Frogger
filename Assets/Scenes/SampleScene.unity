@@ -2682,17 +2682,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 6444693020893891370, guid: 6280dc07dcaac1a4d84d9c185299a95f, type: 3}
   m_PrefabInstance: {fileID: 1489010294}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &196250662 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7545693073191270345, guid: 6280dc07dcaac1a4d84d9c185299a95f, type: 3}
-  m_PrefabInstance: {fileID: 1489010294}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &200605607
 GameObject:
   m_ObjectHideFlags: 0
@@ -3676,8 +3665,8 @@ GameObject:
   - component: {fileID: 262456028}
   - component: {fileID: 262456027}
   m_Layer: 5
-  m_Name: ChangeUp
-  m_TagString: Untagged
+  m_Name: LaneChangeUp
+  m_TagString: LaneChange
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3746,19 +3735,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 262456028}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2078264374}
-        m_TargetAssemblyTypeName: UserControl, Scripts
-        m_MethodName: LaneChangeUp
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &262456028
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5828,17 +5805,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7621967968537997363, guid: dfc3d1bb19f060b4aa3ae4090e225118, type: 3}
   m_PrefabInstance: {fileID: 1308662053}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &439930108 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6341387731674713296, guid: dfc3d1bb19f060b4aa3ae4090e225118, type: 3}
-  m_PrefabInstance: {fileID: 1308662053}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &440100501
 GameObject:
   m_ObjectHideFlags: 0
@@ -13046,7 +13012,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1092670301
 RectTransform:
   m_ObjectHideFlags: 0
@@ -13066,7 +13032,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 351.56433, y: 97.692505}
+  m_AnchoredPosition: {x: 1384, y: 97.692505}
   m_SizeDelta: {x: 95.2315, y: 89.8174}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1121859176
@@ -15434,7 +15400,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2878304559865020550, guid: dfc3d1bb19f060b4aa3ae4090e225118, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7621967968537997363, guid: dfc3d1bb19f060b4aa3ae4090e225118, type: 3}
       propertyPath: m_Pivot.x
@@ -16516,7 +16482,7 @@ GameObject:
   - component: {fileID: 1386263081}
   - component: {fileID: 1386263080}
   m_Layer: 5
-  m_Name: DownImage
+  m_Name: LaneChangeDownImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -17739,7 +17705,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9012041584185254847, guid: 6280dc07dcaac1a4d84d9c185299a95f, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6280dc07dcaac1a4d84d9c185299a95f, type: 3}
@@ -22876,7 +22842,7 @@ GameObject:
   - component: {fileID: 1891270066}
   - component: {fileID: 1891270065}
   m_Layer: 5
-  m_Name: UpImage
+  m_Name: LaneChangeUpImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -23894,8 +23860,8 @@ GameObject:
   - component: {fileID: 1955724051}
   - component: {fileID: 1955724050}
   m_Layer: 5
-  m_Name: ChangeDown
-  m_TagString: Untagged
+  m_Name: LaneChangeDown
+  m_TagString: LaneChange
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -23964,19 +23930,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1955724051}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2078264374}
-        m_TargetAssemblyTypeName: UserControl, Scripts
-        m_MethodName: LaneChangeDown
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1955724051
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25428,7 +25382,6 @@ GameObject:
   - component: {fileID: 2078264372}
   - component: {fileID: 2078264373}
   - component: {fileID: 2078264374}
-  - component: {fileID: 2078264375}
   m_Layer: 0
   m_Name: MainManager
   m_TagString: Untagged
@@ -25556,29 +25509,6 @@ MonoBehaviour:
   - {fileID: 1874795790}
   - {fileID: 2088365743}
   - {fileID: 732100521}
-  invalidVehicleDropSelectionImg: {fileID: 439930108}
-  validVehicleDropSelectionImg: {fileID: 196250662}
-  invalidVehicleLaneSelectionImg: {fileID: 1268190548}
-  validVehicleLaneSelectionImg: {fileID: 1968795319}
---- !u!114 &2078264375
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2078264368}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2590aece92cd9f346aaff9914b7b2a0d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GameCamera: {fileID: 963194227}
-  canvas: {fileID: 692182517}
-  laneChangeUI: {fileID: 1092670301}
-  laneChangeUpButton: {fileID: 262456027}
-  laneChangeDownButton: {fileID: 1955724050}
-  laneChangeUpButtonImg: {fileID: 1891270064}
-  laneChangeDownButtonImg: {fileID: 1386263079}
 --- !u!1 &2082948155
 GameObject:
   m_ObjectHideFlags: 0
@@ -26962,7 +26892,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3163360227350280839, guid: 4bbbda07933827643a1c3e691bc359a6, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -225
+      value: 1613
       objectReference: {fileID: 0}
     - target: {fileID: 3163360227350280839, guid: 4bbbda07933827643a1c3e691bc359a6, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -26986,7 +26916,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7840313730679923813, guid: 4bbbda07933827643a1c3e691bc359a6, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4bbbda07933827643a1c3e691bc359a6, type: 3}
@@ -27003,7 +26933,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1475513864425971284, guid: 2cd3beff4603ecd4faecc2ba954322ed, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2348601507580040445, guid: 2cd3beff4603ecd4faecc2ba954322ed, type: 3}
       propertyPath: m_Pivot.x
@@ -27071,7 +27001,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2348601507580040445, guid: 2cd3beff4603ecd4faecc2ba954322ed, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -225
+      value: 1628
       objectReference: {fileID: 0}
     - target: {fileID: 2348601507580040445, guid: 2cd3beff4603ecd4faecc2ba954322ed, type: 3}
       propertyPath: m_AnchoredPosition.y

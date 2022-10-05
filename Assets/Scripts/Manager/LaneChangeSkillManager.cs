@@ -2,35 +2,118 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class LaneChangeManager : MonoBehaviour
+public class LaneChangeSkillManager : ISkillManager
 {
-    public Camera GameCamera;
-    [SerializeField] private Canvas canvas;
-    [SerializeField] private RectTransform laneChangeUI;
-    [SerializeField] private Button laneChangeUpButton;
-    [SerializeField] private Button laneChangeDownButton;
-    [SerializeField] private RectTransform laneChangeUpButtonImg;
-    [SerializeField] private RectTransform laneChangeDownButtonImg;
+    public SkillType m_SkillType { get; set; }
+    public ISkill m_Skill { get; set; }
+    public int m_SkillCost { get; set; }
+    public bool m_LockedIn { get; set; }
+
+    private Camera GameCamera;
+    private Canvas canvas;
+    private GraphicRaycasterManager graphicRaycasterManager;
+    private RectTransform laneChangeUI;
+    private Button laneChangeUpButton;
+    private Button laneChangeDownButton;
+    private RectTransform laneChangeUpButtonImg;
+    private RectTransform laneChangeDownButtonImg;
+
     private Color laneChangeOnColor;
     private Color laneChangeOffColor;
     private Color laneChangeBlockColor;
-    private ISkill currentLaneChangeSkillHolder;
 
-    private void Start()
+    public LaneChangeSkillManager()
     {
+        m_SkillType = SkillType.LaneChange;
+        m_Skill = null;
+        m_SkillCost = 2;
+        m_LockedIn = false;
+
+        GameCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
+        canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
+        graphicRaycasterManager = GameObject.Find("Canvas").GetComponent<GraphicRaycasterManager>();
+
+        laneChangeUI = GameObject.Find("LaneChangeDirections").GetComponent<RectTransform>();
+        laneChangeUpButton = GameObject.Find("LaneChangeUp").GetComponent<Button>();
+        laneChangeDownButton = GameObject.Find("LaneChangeDown").GetComponent<Button>();
+        laneChangeUpButtonImg = GameObject.Find("LaneChangeUpImage").GetComponent<RectTransform>();
+        laneChangeDownButtonImg = GameObject.Find("LaneChangeDownImage").GetComponent<RectTransform>();
+
+        laneChangeUpButton.onClick.AddListener(delegate { AssignLaneChangeUp(); });
+        laneChangeDownButton.onClick.AddListener(delegate { AssignLaneChangeDown(); });
+
         laneChangeOnColor = new Color(255, 182, 0, 0.5f);
         laneChangeOffColor = new Color(161, 161, 161, 0.5f);
         laneChangeBlockColor = new Color(255, 0, 0, 0.5f);
+
     }
 
-    public void RegisterLaneChangeTarget(ISkill currentSkill)
+    public void InitialiseSkill(Unit unit)
     {
-        currentLaneChangeSkillHolder = currentSkill;
+        m_Skill = new LaneChange(unit);
+    }
 
-        // To make the lane change UI be centred onto the selected grid, even if user clicks at random spot on the vehicle
-        Vector3 selectedScreenPos = CalculateScreenPosFromUnitHeadPosition(); 
-        RepositionLaneChangeUI(selectedScreenPos);
-        CheckLaneChangeFeasibility();
+    public void UpdateSkillUnit(Unit unit)
+    {
+        if (m_Skill == null)
+        {
+            InitialiseSkill(unit);
+        }
+        else
+        {
+            m_Skill.unit = unit;
+        }
+    }
+
+    public void ExecuteUpdateCheck()
+    {
+        return;
+    }
+
+    public bool ProcessSelectionAndCompletedSkill(Unit selectedUnit)
+    {
+        bool completedSkillSelection = false;
+        if (m_Skill != null)
+        {
+            GameObject selectedLaneChangeUI = graphicRaycasterManager.GetSelectedLaneChangeUI();
+            if (selectedLaneChangeUI != null && selectedLaneChangeUI.GetComponent<Button>().enabled)
+            {
+                m_LockedIn = true;
+                completedSkillSelection = true;
+            }
+        }
+        return completedSkillSelection;
+    }
+
+    public bool CancelSelection(Unit selectedUnit)
+    {
+        return false;
+    }
+
+    public void DeactivateSkillUI()
+    {
+        laneChangeUI.gameObject.SetActive(false);
+    }
+
+    public void RemoveSkillTarget()
+    {
+        m_Skill = null;
+        m_LockedIn = false;
+        laneChangeUI.gameObject.SetActive(false);
+        TurnOffLaneChangeButton(laneChangeUpButtonImg);
+        TurnOffLaneChangeButton(laneChangeDownButtonImg);
+    }
+
+    public void ProcessSelection(Unit selectedUnit)
+    {
+        // Lane Change only works on vehicles
+        if (selectedUnit != null && selectedUnit.gameObject.tag == "Vehicle")
+        {
+            UpdateSkillUnit(selectedUnit);
+            Vector3 selectedScreenPos = CalculateScreenPosFromUnitHeadPosition();
+            RepositionLaneChangeUI(selectedScreenPos);
+            CheckLaneChangeFeasibility();
+        }
     }
 
     private void RepositionLaneChangeUI(Vector3 screenPos)
@@ -45,6 +128,10 @@ public class LaneChangeManager : MonoBehaviour
 
     public void AssignLaneChangeUp()
     {
+        if (m_Skill != null)
+        {
+            m_Skill.UpdateGridCoordAction(new GridCoord(0, 1));
+        }
         TurnOnLaneChangeButton(laneChangeUpButtonImg);
         if (laneChangeDownButton.enabled)
         {
@@ -54,6 +141,10 @@ public class LaneChangeManager : MonoBehaviour
 
     public void AssignLaneChangeDown()
     {
+        if (m_Skill != null)
+        {
+            m_Skill.UpdateGridCoordAction(new GridCoord(0, -1));
+        }
         TurnOnLaneChangeButton(laneChangeDownButtonImg);
         if (laneChangeUpButton.enabled)
         {
@@ -63,13 +154,13 @@ public class LaneChangeManager : MonoBehaviour
 
     private void CheckLaneChangeFeasibility()
     {
-        if (currentLaneChangeSkillHolder.unit.isStunned())
+        if (m_Skill.unit.isStunned())
         {
             BlockLaneChangeButton(laneChangeUpButton, laneChangeUpButtonImg);
             BlockLaneChangeButton(laneChangeDownButton, laneChangeDownButtonImg);
         }
 
-        GridCoord[] gridsToCheck = currentLaneChangeSkillHolder.unit.GetAllCurrentGridPosition();
+        GridCoord[] gridsToCheck = m_Skill.unit.GetAllCurrentGridPosition();
 
         // Check if lane changing upwards is possible
         if (gridsToCheck.Any(x => CheckIfLaneChangeIsBlocked(x, new GridCoord(0, 1))))
@@ -95,7 +186,7 @@ public class LaneChangeManager : MonoBehaviour
         bool vehicleInGrid = Helper.IsUnitOfTypeInTheWay(nextGrid, "Vehicle");
         bool bruteInGrid = Helper.IsUnitOfTypeInTheWay(nextGrid, "Brute");
         bool blockedBecauseOfMotorbike = false;
-        if (currentLaneChangeSkillHolder.unit.GetName() != "Motorbike")
+        if (m_Skill.unit.GetName() != "Motorbike")
         {
             blockedBecauseOfMotorbike = CheckIfMotorbikeIsInbetweenLane(currentGrid, moveGrid);
         }
@@ -191,25 +282,22 @@ public class LaneChangeManager : MonoBehaviour
 
     private Vector3 CalculateScreenPosFromUnitHeadPosition()
     {
-        GridCoord selectedGrid = currentLaneChangeSkillHolder.unit.GetCurrentHeadGridPosition();
+        GridCoord selectedGrid = m_Skill.unit.GetCurrentHeadGridPosition();
         Vector3 selectedGridPos = FieldGrid.GetSingleGrid(selectedGrid).GetGridCentrePoint();
         return GameCamera.WorldToScreenPoint(selectedGridPos);
     }
 
-    public ISkill GetCurrentSkillHolder()
+    public void ExecuteSkill()
     {
-        return currentLaneChangeSkillHolder;
+        if (m_LockedIn)
+        {
+            m_Skill.Execute();
+            RemoveSkillTarget();
+        }
     }
 
-    public void ResetLaneChangeUI()
+    public void ActivateSkillUI()
     {
-        laneChangeUI.gameObject.SetActive(false);
-    }
-
-    public void RemoveSkillTarget()
-    {
-        laneChangeUI.gameObject.SetActive(false);
-        TurnOffLaneChangeButton(laneChangeUpButtonImg);
-        TurnOffLaneChangeButton(laneChangeDownButtonImg);
+        return;
     }
 }

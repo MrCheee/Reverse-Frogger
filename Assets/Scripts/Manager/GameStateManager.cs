@@ -68,7 +68,6 @@ public class GameStateManager : MonoBehaviour
                     ResetLaneSpeedToggles();
                     AddPlayerSkillOrb(1);  // Player gets 1 skill orb every turn
                     userControl.UpdateSkillTogglesFunctionality();
-                    userControl.UpdateCalledInVehicles();
                     break;
 
                 case GameState.Player:

@@ -38,4 +38,14 @@ public class Helper
         float s = scaleFactor;
         return new Vector2(x, y) / s;
     }
+
+    public static bool IsTargetedGridInALane(int gridY)
+    {
+        return gridY != FieldGrid.GetDividerLaneNum() && gridY < FieldGrid.GetTopSidewalkLaneNum() && gridY > FieldGrid.GetBottomSidewalkLaneNum();
+    }
+
+    public static bool IsWithinPlayableX(int gridX)
+    {
+        return gridX >= FieldGrid.GetFieldBuffer() && gridX < (FieldGrid.GetMaxLength() - FieldGrid.GetFieldBuffer());
+    }
 }

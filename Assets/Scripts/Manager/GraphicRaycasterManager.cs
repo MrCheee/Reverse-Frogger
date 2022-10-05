@@ -33,4 +33,17 @@ public class GraphicRaycasterManager : MonoBehaviour
     {
         return !m_TargetResults.Where(x => x.gameObject.CompareTag("Locator")).Any(x => x.gameObject.name == "InvalidGridSelection");
     }
+
+    public GameObject GetSelectedLaneChangeUI()
+    {
+        var laneChangeElements = m_TargetResults.Where(x => x.gameObject.CompareTag("LaneChange"));
+        if (laneChangeElements.Count() > 0)
+        {
+            return laneChangeElements.First().gameObject;
+        }
+        else
+        {
+            return null;
+        }
+    }
 }

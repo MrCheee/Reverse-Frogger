@@ -9,6 +9,7 @@ TagManager:
   - Lane
   - SpeedToggle
   - Locator
+  - LaneChange
   layers:
   - Default
   - TransparentFX
