@@ -8,20 +8,20 @@
 
     public override void SetMovementPattern()
     {
-        movementPattern.Add(new GridCoord(0, 1));
+        movementPattern.Add(new GridCoord(0, direction));
     }
 
     public override void TakeVehicleInTheWayAction()
     {
         yAdjustment = -0.25f;
-        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, 1)));
+        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction)));
     }
 
     public override void TakeNoVehicleInTheWayAction()
     {
         if (yAdjustment == -0.25f)
         {
-            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, 1), yAdjustment));
+            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction), yAdjustment));
         }
         yAdjustment = 0;
     }

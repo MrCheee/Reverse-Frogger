@@ -139,7 +139,7 @@ public abstract class Vehicle : Unit
                     }
                 }
                 if (IsEnemyTypeInTheWay(nextGrid, "Bloat")) quickExit = true;
-                MoveUnitsOnTopOfVehicle(nextMove);
+                //MoveUnitsOnTopOfVehicle(nextMove);
                 (nextMove, nextGrid) = TakeMovementAction(moveQueue, nextMove, nextGrid);
             }
             if (quickExit) break;
@@ -172,6 +172,12 @@ public abstract class Vehicle : Unit
             nextGrid = Helper.AddGridCoords(nextGrid, nextMove);
         }
         return (nextMove, nextGrid);
+    }
+
+    public override void GiveMovementCommand(GridCoord moveGrid)
+    {
+        MoveUnitsOnTopOfVehicle(moveGrid);
+        commandStack.Enqueue(new MoveToGridCommand(moveGrid));
     }
 
     public virtual void HandleBruteInTheWay(Unit brute)

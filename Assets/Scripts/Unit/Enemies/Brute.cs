@@ -3,10 +3,10 @@
 public class Brute : Enemy
 {
     int[] noKnockbackYPos = new int[4] {
-        FieldGrid.GetDividerLaneNum() - 1,   // Left Lane 1 - no vehicle to hit
-        FieldGrid.GetDividerLaneNum() - 2,   // Left Lane 2 - cannot hit vehicle to next lane (next lane is divider)
-        FieldGrid.GetDividerLaneNum() + FieldGrid.GetNumberOfLanes(),  // Right Lane 1 - no vehicle to hit
-        FieldGrid.GetDividerLaneNum() + FieldGrid.GetNumberOfLanes() - 1    // Right Lane 2 - cannot hit vehicle to next lane (next lane is sidewalk)
+        FieldGrid.GetDividerLaneNum() + 1,   // Right Lane 1 - no vehicle to hit
+        FieldGrid.GetDividerLaneNum() + 2,   // Right Lane 2 - cannot hit vehicle to next lane (next lane is divider)
+        FieldGrid.GetDividerLaneNum() - FieldGrid.GetNumberOfLanes(),  // Left Lane 4 - no vehicle to hit
+        FieldGrid.GetDividerLaneNum() - FieldGrid.GetNumberOfLanes() + 1    // Left Lane 3 - cannot hit vehicle to next lane (next lane is sidewalk)
     };
     bool movementBlocked = true;
 
@@ -23,7 +23,7 @@ public class Brute : Enemy
     
     public override void SetMovementPattern()
     {
-        movementPattern.Add(new GridCoord(0, 1));
+        movementPattern.Add(new GridCoord(0, direction));
     }
 
     public override void TakeVehicleInTheWayAction()
@@ -31,8 +31,8 @@ public class Brute : Enemy
         movementBlocked = true;
         if (!noKnockbackYPos.Contains(_currentGridPosition.y))   // Brute is in a lane that can knockback vehicles
         {
-            GridCoord targetGrid = new GridCoord(_currentGridPosition.x, _currentGridPosition.y + 1);
-            GridCoord destinationGrid = new GridCoord(_currentGridPosition.x, _currentGridPosition.y + 2);
+            GridCoord targetGrid = new GridCoord(_currentGridPosition.x, _currentGridPosition.y + direction);
+            GridCoord destinationGrid = new GridCoord(_currentGridPosition.x, _currentGridPosition.y + direction * 2);
 
             // If vehicle in front is knockback-able, and there is no vehicle blocking its knockback, then knockback and move forward
             if (FieldGrid.GetSingleGrid(targetGrid).IsUnitTagInGrid("Knockback-able Vehicle"))
@@ -40,16 +40,14 @@ public class Brute : Enemy
                 if (!Helper.IsVehicleInTheWay(destinationGrid))
                 {
                     Unit veh = FieldGrid.GetSingleGrid(targetGrid).GetUnitWithTag("Knockback-able Vehicle");
-                    veh.IssueCommand(new MoveToGridCommand(new GridCoord(0, 1)));
+                    veh.IssueCommand(new MoveToGridCommand(new GridCoord(0, direction)));
                     movementBlocked = false;
                 }
             }
         }
         if (movementBlocked)
         {
-            GridCoord currentGrid = GetCurrentHeadGridPosition();
-            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, 1)));
-            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, 0)));
+            ExecuteConcussedMovement();
         }
     }
 

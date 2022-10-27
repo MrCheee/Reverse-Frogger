@@ -11,9 +11,9 @@ public class BabyForesight : Enemy
 
     public override void SetMovementPattern()
     {
-        movementPattern.Add(new GridCoord(-1, 1));
-        movementPattern.Add(new GridCoord(0, 1));
-        movementPattern.Add(new GridCoord(1, 1));
+        movementPattern.Add(new GridCoord(-1, direction));
+        movementPattern.Add(new GridCoord(0, direction));
+        movementPattern.Add(new GridCoord(1, direction));
     }
 
     public override IEnumerator TakeTurn()

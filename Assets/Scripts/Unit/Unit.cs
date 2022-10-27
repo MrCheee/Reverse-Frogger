@@ -152,7 +152,7 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         commandStack.Enqueue(cmd);
     }
 
-    public void GiveMovementCommand(GridCoord moveGrid)
+    public virtual void GiveMovementCommand(GridCoord moveGrid)
     {
         commandStack.Enqueue(new MoveToGridCommand(moveGrid));
     }

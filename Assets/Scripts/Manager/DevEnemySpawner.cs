@@ -2,56 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemySpawner : MonoBehaviour
+public class DevEnemySpawner : MonoBehaviour, IEnemySpawner
 {
     [SerializeField] private GameObject[] enemyPrefabs;
 
     List<EnemyType> _currentSpawnList;
-    int spawnY = FieldGrid.GetFieldBuffer();
+    int spawnY = FieldGrid.GetMaxHeight() - FieldGrid.GetFieldBuffer() - 1;
     int spawnXMin = FieldGrid.GetFieldBuffer() + 2;
     int spawnXMax = FieldGrid.GetMaxLength() - FieldGrid.GetFieldBuffer() - 2;
+    int level = 2;
 
     // Start is called before the first frame update
     void Start()
     {
-        SetSpawnList();
-    }
-
-    void SetSpawnList()
-    {
-        // Testing Enemy Spawn
-        //_currentSpawnList = new List<EnemyType>()
-        //{
-        //    EnemyType.Flatten
-        //};
-
-        // Even Proportion Enemy Spawn
-        //_currentSpawnList = new List<EnemyType>() { 
-        //    EnemyType.Soldier, 
-        //    EnemyType.Sprinter, 
-        //    EnemyType.Skater,
-        //    EnemyType.Brute,
-        //    EnemyType.Bloat,
-        //    EnemyType.BabyForesight,
-        //    EnemyType.Charger,
-        //    EnemyType.Flatten,
-        //    EnemyType.Jumper,
-        //    EnemyType.Vaulter,
-        //    EnemyType.LShield,
-        //    EnemyType.RShield
-        //};
-
-        // Weak Enemies Skewed Proportion
-        _currentSpawnList = new List<EnemyType>() {
-            EnemyType.Soldier,
-            EnemyType.Soldier,
-            EnemyType.Soldier,
-            EnemyType.Soldier,
-            EnemyType.Sprinter,
-            EnemyType.Sprinter,
-            EnemyType.Skater,
-            EnemyType.Skater,
-            EnemyType.Skater,
+        _currentSpawnList = new List<EnemyType>()
+        {
+            EnemyType.Soldier, 
+            EnemyType.Sprinter, 
             EnemyType.Skater,
             EnemyType.Brute,
             EnemyType.Bloat,
@@ -60,22 +27,17 @@ public class EnemySpawner : MonoBehaviour
             EnemyType.Flatten,
             EnemyType.Jumper,
             EnemyType.Vaulter,
-            EnemyType.Vaulter,
             EnemyType.LShield,
             EnemyType.RShield
         };
     }
 
-    public void SpawnXEnemiesAtRandom(int number)
+    public void SpawnEnemies()
     {
         List<int> reservedSpawnX = new List<int>();
-        if (number > (spawnXMax - spawnXMin))
-        {
-            Debug.Log($"Requested too many enemies to spawn, there is limited space of {spawnXMax - spawnXMin}!!");
-            return;
-        }
+        int spawnCount = Mathf.Min(level, spawnXMax - spawnXMin);
 
-        for (int i = 0; i < number; i++)
+        for (int i = 0; i < spawnCount; i++)
         {
             int spawnIndex = Random.Range(0, _currentSpawnList.Count);
             EnemyType enemyIndex = _currentSpawnList[spawnIndex];
@@ -88,6 +50,16 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
+    public void IncrementLevel()
+    {
+        return;
+    }
+
+    public void ReduceLevel()
+    {
+        return;
+    }
+
     int RandomNonRepeating(List<int> selectedNumbers, int start, int end)
     {
         int selected;
@@ -98,3 +70,4 @@ public class EnemySpawner : MonoBehaviour
         return selected;
     }
 }
+

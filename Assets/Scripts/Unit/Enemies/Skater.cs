@@ -10,20 +10,24 @@ public class Skater : Enemy
 
     public override void SetMovementPattern()
     {
-        movementPattern.Add(new GridCoord(1, 1));
+        movementPattern.Add(new GridCoord(1, direction));
     }
 
     public override void TakeVehicleInTheWayAction()
     {
         skipTurn = 1;
+        ExecuteConcussedMovement();
+    }
 
+    protected override void ExecuteConcussedMovement()
+    {
         GridCoord currentGrid = GetCurrentHeadGridPosition();
         GridCoord moveGrid = new GridCoord(movementPattern.Last().x, 0);
         GridCoord _targetGrid = new GridCoord(currentGrid.x + moveGrid.x, currentGrid.y + moveGrid.y);
         int right = moveGrid.x > 0 ? -1 : 1;
-        int top = 1;
-        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(_targetGrid).GetCornerPoint(right, top)));
+        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(_targetGrid).GetCornerPoint(right, direction)));
         commandStack.Enqueue(new MoveToGridCommand(moveGrid));
+        FieldGrid.AddGridToReposition(Helper.AddGridCoords(currentGrid, moveGrid));
     }
 
     public override void PostTurnActions()

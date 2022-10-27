@@ -10,16 +10,13 @@ public class Soldier : Enemy
 
     public override void SetMovementPattern()
     {
-        movementPattern.Add(new GridCoord(0, 1));
+        movementPattern.Add(new GridCoord(0, direction));
     }
 
     public override void TakeVehicleInTheWayAction()
     {
         skipTurn = 1;
-
-        GridCoord currentGrid = GetCurrentHeadGridPosition();
-        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, 1)));
-        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, 0)));
+        ExecuteConcussedMovement();
     }
 
     public override string GetName()

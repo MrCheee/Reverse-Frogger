@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class GameStateManager : MonoBehaviour
 {
     [SerializeField] Button playerFinishButton;
-    EnemySpawner enemySpawner;
+    DevEnemySpawner enemySpawner;
     VehicleSpawner vehicleSpawner;
     LaneManager laneManager;
     UserControl userControl;
@@ -17,13 +17,13 @@ public class GameStateManager : MonoBehaviour
     bool playerTurnInProgress = false;
 
     int playerHealth = 10;
-    int playerSkillOrb = 10;
+    int playerSkillOrb = 0;
     int damageReceived = 0;
 
     // Start is called before the first frame update
     void Start()
     {
-        enemySpawner = gameObject.GetComponent<EnemySpawner>();
+        enemySpawner = gameObject.GetComponent<DevEnemySpawner>();
         vehicleSpawner = gameObject.GetComponent<VehicleSpawner>();
         laneManager = gameObject.GetComponent<LaneManager>();
         userControl = gameObject.GetComponent<UserControl>();
@@ -33,7 +33,7 @@ public class GameStateManager : MonoBehaviour
         AddPlayerSkillOrb(playerSkillOrb);
 
         playerFinishButton.onClick.AddListener(PlayerButtonOnClick);
-        StartCoroutine(CheckAndUpdateGameState(1f));
+        StartCoroutine(CheckAndUpdateGameState(0.5f));
     }
 
     IEnumerator CheckAndUpdateGameState(float waitTime)
@@ -51,7 +51,8 @@ public class GameStateManager : MonoBehaviour
 
                 case GameState.EnemySpawn:
                     uiMain.UpdateContent();
-                    enemySpawner.SpawnXEnemiesAtRandom(2);
+                    enemySpawner.SpawnEnemies();
+                    FieldGrid.TriggerGridsRepositioning();
 
                     Debug.Log("Spawned Enemies! Starting Vehicle Spawn sequence...");
                     gameStateIndex = GameState.VehicleSpawn;
@@ -94,6 +95,7 @@ public class GameStateManager : MonoBehaviour
                     break;
 
                 case GameState.Enemy: // Enemy Turn
+                    yield return new WaitForSeconds(waitTime);
                     uiMain.UpdateContent();
                     if (HaveUnitsOfTypeCompletedTurns("Enemy"))
                     {
@@ -116,6 +118,7 @@ public class GameStateManager : MonoBehaviour
                     break;
 
                 case GameState.Vehicle: // Vehicle Turn
+                    yield return new WaitForSeconds(waitTime);
                     uiMain.UpdateContent();
                     if (HaveUnitsOfTypeCompletedTurns("Vehicle"))
                     {

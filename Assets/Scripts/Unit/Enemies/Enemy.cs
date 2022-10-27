@@ -6,6 +6,7 @@ public abstract class Enemy : Unit
 {
     protected GridCoord _currentGridPosition;
     public bool Crossed { get; protected set; }
+    protected int direction = -1;
 
 
     protected override void SetAdditionalTag()
@@ -121,6 +122,14 @@ public abstract class Enemy : Unit
         return (nextMove, nextGrid);
     }
 
+    protected virtual void ExecuteConcussedMovement()
+    {
+        GridCoord currentGrid = GetCurrentHeadGridPosition();
+        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, direction)));
+        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, 0)));
+        FieldGrid.AddGridToReposition(currentGrid);
+    }
+
     public override void PreTurnActions()
     {
         return;
@@ -158,7 +167,14 @@ public abstract class Enemy : Unit
 
     public bool HasCrossedTheRoad(GridCoord nextGrid)
     {
-        return nextGrid.y >= FieldGrid.GetTopSidewalkLaneNum();
+        if (direction < 0)
+        {
+            return nextGrid.y <= FieldGrid.GetBottomSidewalkLaneNum();
+        }
+        else
+        {
+            return nextGrid.y >= FieldGrid.GetTopSidewalkLaneNum();
+        }
     }
 
     protected virtual void OnTriggerEnter(Collider other)
