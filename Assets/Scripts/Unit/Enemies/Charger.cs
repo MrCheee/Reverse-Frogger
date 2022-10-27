@@ -34,7 +34,7 @@
 
     public override string GetDescription()
     {
-        return "Movement Pattern: Charges up its movement over 3 turns. It will charge forward for 5 grids, " +
+        return "Movement Pattern: Charges up its movement over 3 turns. It will then charge forward for 5 grids, " +
             "or until it hits a vehicle. <br> <br>" +
             "Vehicle in the way: Runs into vehicle and become stunned for 1 turn.";
     }

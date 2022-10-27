@@ -26,7 +26,7 @@ public class Helper
 
     public static bool IsUnitOfTypeInTheWay(GridCoord targetGrid, string unitTag)
     {
-        return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetSingleGrid(targetGrid).GetListOfUnitsGameObjectTag().Contains(unitTag);
+        return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetSingleGrid(targetGrid).GetListOfUnitsTag().Contains(unitTag);
     }
 
     public static Vector2 ScreenPointToWorldPosition(Vector3 screenPos, float scaleFactor = 1)

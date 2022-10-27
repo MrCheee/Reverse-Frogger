@@ -7,8 +7,9 @@ using UnityEngine.UI;
 public class GameStateManager : MonoBehaviour
 {
     [SerializeField] Button playerFinishButton;
-    DevEnemySpawner enemySpawner;
-    VehicleSpawner vehicleSpawner;
+    IEnemySpawner enemySpawner;
+    IVehicleSpawner vehicleSpawner;
+    IPlayerSkillVehicleManager playerSkillVehicleManager;
     LaneManager laneManager;
     UserControl userControl;
     UIMain uiMain;
@@ -17,14 +18,18 @@ public class GameStateManager : MonoBehaviour
     bool playerTurnInProgress = false;
 
     int playerHealth = 10;
-    int playerSkillOrb = 0;
+    int playerSkillOrb = 3;
     int damageReceived = 0;
+    int enemyKilledCount = 0;
+    int totalKills = 0;
+    int level = 1;
 
     // Start is called before the first frame update
     void Start()
     {
-        enemySpawner = gameObject.GetComponent<DevEnemySpawner>();
-        vehicleSpawner = gameObject.GetComponent<VehicleSpawner>();
+        enemySpawner = gameObject.GetComponent<EndlessEnemySpawner>();
+        vehicleSpawner = gameObject.GetComponent<EndlessVehicleSpawner>();
+        playerSkillVehicleManager = gameObject.GetComponent<PlayerSkillVehicleManager>();
         laneManager = gameObject.GetComponent<LaneManager>();
         userControl = gameObject.GetComponent<UserControl>();
 
@@ -45,6 +50,7 @@ public class GameStateManager : MonoBehaviour
             switch (gameStateIndex)
             {
                 case GameState.Initialisation: // Initialisation phase, to transition to enemy turn
+                    vehicleSpawner.PopulateInitialVehicles();
                     Debug.Log("Initialisation Complete! Starting Enemy Spawn sequence...");
                     gameStateIndex = GameState.EnemySpawn;
                     break;
@@ -60,14 +66,15 @@ public class GameStateManager : MonoBehaviour
 
                 case GameState.VehicleSpawn:
                     uiMain.UpdateContent();
-                    vehicleSpawner.SpawnXVehiclesAtRandom(2);
+                    vehicleSpawner.SpawnVehicles();
 
                     Debug.Log("Spawned Vehicles! Starting Player's Turn...");
                     gameStateIndex = GameState.Player;
                     playerTurnInProgress = true;
+                    playerFinishButton.gameObject.SetActive(true);
                     EnableLaneSpeedToggles();
                     ResetLaneSpeedToggles();
-                    AddPlayerSkillOrb(1);  // Player gets 1 skill orb every turn
+                    //AddPlayerSkillOrb(1);  // Player gets 1 skill orb every turn
                     userControl.UpdateSkillTogglesFunctionality();
                     break;
 
@@ -87,7 +94,7 @@ public class GameStateManager : MonoBehaviour
                 case GameState.PlayerSkill:
                     uiMain.UpdateContent();
                     userControl.RefreshSkillsUI();
-                    vehicleSpawner.ReplacePlayerSkillVehicles();
+                    playerSkillVehicleManager.ReplacePlayerSkillVehicles();
                     Debug.Log("Finished executing Player Skills! Starting enemies turn...");
 
                     TriggerAllEnemiesTurn();
@@ -131,6 +138,7 @@ public class GameStateManager : MonoBehaviour
                         else
                         {
                             Debug.Log("All vehicles turn completed! Starting Enemy Spawn sequence...");
+                            UpdateGameLevel();  // Check for update to game level after tabulating enemy killed in the last vehicle round
                             gameStateIndex = GameState.EnemySpawn;
                         }
                     }
@@ -228,6 +236,7 @@ public class GameStateManager : MonoBehaviour
     private void PlayerButtonOnClick()
     {
         playerTurnInProgress = false;
+        playerFinishButton.gameObject.SetActive(false);
     }
 
     public void DamagePlayer(int damage)
@@ -242,9 +251,29 @@ public class GameStateManager : MonoBehaviour
         damageReceived = 0;
     }
 
+    public void EnemyKilled()
+    {
+        totalKills += 1;
+        enemyKilledCount += 1;
+        AddPlayerSkillOrb(1);
+        uiMain.UpdateKills(totalKills);
+    }
+
     public void AddPlayerSkillOrb(int count)
     {
         userControl.AddSkillOrb(count);
+    }
+
+    public void UpdateGameLevel()
+    {
+        while (enemyKilledCount >= 5)
+        {
+            enemyKilledCount -= 5;
+            level += 1;
+            uiMain.UpdateLevel(level);
+            enemySpawner.IncrementLevel();
+            vehicleSpawner.IncrementLevel();
+        }
     }
 
     private void CheckIfGameOver()

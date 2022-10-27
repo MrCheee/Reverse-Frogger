@@ -12,7 +12,8 @@ public class UserControl : MonoBehaviour
     public GameObject MarkerPrefab;
     private GraphicRaycasterManager graphicRaycasterManager;
     private UIMain uiMain;
-    private VehicleSpawner vehicleSpawner;
+    private DevVehicleSpawner vehicleSpawner;
+    private PlayerSkillVehicleManager playerSkillVehicleManager;
 
     [SerializeField] private Toggle[] skillToggles;
     [SerializeField] private Button[] carChoosingButtons;
@@ -28,7 +29,8 @@ public class UserControl : MonoBehaviour
     private void Awake()
     {
         uiMain = UIMain.Instance;
-        vehicleSpawner = gameObject.GetComponent<VehicleSpawner>();
+        vehicleSpawner = gameObject.GetComponent<DevVehicleSpawner>();
+        playerSkillVehicleManager = gameObject.GetComponent<PlayerSkillVehicleManager>();
         graphicRaycasterManager = GameObject.Find("Canvas").GetComponent<GraphicRaycasterManager>();
         skillSelected = SkillType.None;
         Marker.SetActive(false);
@@ -126,7 +128,9 @@ public class UserControl : MonoBehaviour
     {
         m_Selected = null;
         UIMain.Instance.SetNewInfoContent(null);
+        RemoveSkillTarget(skillSelected);
         ResetCurrentSelectedButton();
+        skillSelected = SkillType.None;
     }
 
     // Handle displaying the marker above the unit that is currently selected (or hiding it if no unit is selected)
@@ -192,11 +196,7 @@ public class UserControl : MonoBehaviour
     private void HandleSelectCar(int carNum)
     {
         Debug.Log("[HandleSelectCar]");
-        if (skillSelected != SkillType.CallInVeh && skillSelected != SkillType.AirDropVeh)
-        {
-            Debug.Log("[HandleSelectCar] Car select button pressed when selected skill is not call-in or air-drop!!!");
-        }
-        Unit selectedVehicle = vehicleSpawner.GetPlayerSkillVehicle(carNum).GetComponent<Unit>();
+        Unit selectedVehicle = playerSkillVehicleManager.GetPlayerSkillVehicle(carNum).GetComponent<Unit>();
         skillManagers[skillSelected].UpdateSkillUnit(selectedVehicle);
         skillManagers[skillSelected].DeactivateSkillUI();
     }
@@ -285,7 +285,10 @@ public class UserControl : MonoBehaviour
 
     private void RemoveSkillTarget(SkillType skill)
     {
-        skillManagers[skill].RemoveSkillTarget();
+        if (skillManagers.ContainsKey(skill))
+        {
+            skillManagers[skill].RemoveSkillTarget();
+        }
     }
 
     private void ResetAllSkillTargets()

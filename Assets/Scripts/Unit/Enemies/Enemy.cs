@@ -180,7 +180,7 @@ public abstract class Enemy : Unit
     protected virtual void OnTriggerEnter(Collider other)
     {
         Debug.Log($"{gameObject.name}: Hit by a car! @({_currentGridPosition.x}, {_currentGridPosition.y})...");
-        AddSkillOrbToPlayer();
+        gameStateManager.EnemyKilled();
         DestroySelf();
     }
 
@@ -192,10 +192,5 @@ public abstract class Enemy : Unit
     protected void TriggerDamageOnPlayer()
     {
         gameStateManager.DamagePlayer(damage);
-    }
-
-    protected void AddSkillOrbToPlayer()
-    {
-        gameStateManager.AddPlayerSkillOrb(1);
     }
 }

@@ -11,5 +11,6 @@
     RShield,
     BabyForesight,
     Bloat,
-    Flatten
+    Flatten,
+    None
 }

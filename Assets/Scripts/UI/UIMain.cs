@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class UIMain : MonoBehaviour
@@ -17,6 +18,8 @@ public class UIMain : MonoBehaviour
     public HealthBar HealthBar;
     public SkillOrbBar SkillOrbBar;
     public RectTransform VehicleSelectionUI;
+    public TextMeshProUGUI LevelText;
+    public TextMeshProUGUI KillsText;
 
     protected IUIInfoContent m_CurrentContent;
     protected List<Status> m_ContentBuffer = new List<Status>();
@@ -30,14 +33,6 @@ public class UIMain : MonoBehaviour
     private void OnDestroy()
     {
         Instance = null;
-    }
-
-    private void Update()
-    {
-        //This is not the most efficient, as we reconstruct everything every time. A more efficient way would check if
-        //there was some change since last time (could be made through a IsDirty function in the interface) or smarter
-        //update (match an entry content ta type and just update the count) but simplicity in this tutorial we do that
-        //every time, this won't be a bottleneck here.
     }
 
     public void SetNewInfoContent(IUIInfoContent content)
@@ -86,6 +81,16 @@ public class UIMain : MonoBehaviour
                 InfoPopup.AddToStatusContent(entry.statusType, entry.count);
             }
         }
+    }
+
+    public void UpdateLevel(int level)
+    {
+        LevelText.text = level.ToString();
+    }
+
+    public void UpdateKills(int kills)
+    {
+        KillsText.text = kills.ToString();
     }
 
     public void ActivateVehicleSelectionUI()

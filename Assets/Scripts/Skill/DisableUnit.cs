@@ -10,7 +10,7 @@
 
     public void Execute()
     {
-        unit.DisableUnit(2);
+        unit.DisableUnit(1);
     }
 
     public void UpdateGridCoordAction(GridCoord coord)

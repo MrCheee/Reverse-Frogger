@@ -99,7 +99,7 @@ public abstract class Vehicle : Unit
     {
         int retries = 0;
         bool quickExit = false;
-        int maxRetries = 5;
+        int maxRetries = 10;
         float retryInterval = 0.2f;
 
         if (ToSkipTurn()) yield break;
