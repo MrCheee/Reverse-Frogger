@@ -43,8 +43,9 @@
 
     public override string GetDescription()
     {
-        return "Movement Pattern: Moves 1 step forward per turn. <br> <br>" +
-            "Vehicle in the way: It will jump on top of the vehicle. <br> <br>" +
-            "Additional effects: It will move along with the vehicle's movement.";
+        return "Movement Pattern: <br>-Moves 1 step forward per turn. <br> <br>" +
+            "Vehicle in the way: <br>-It will jump on top of the vehicle. <br> <br>" +
+            "Additional effects: <br>-It will move along with the vehicle's movement while on top." +
+            "<br>-While on top, it can hop onto another vehicle's roof.";
     }
 }

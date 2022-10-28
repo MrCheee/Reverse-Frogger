@@ -115,9 +115,9 @@ public class Motorbike : Vehicle
 
     public override string GetDescription()
     {
-        return "Size: 1 width <br> <br>" +
-            "Speed: Base 1, Max 3 steps <br> <br>" +
-            "Additional effects: It will weave inbetween lanes if there is a slower or disabled vehicle in front of it. " +
-            "Can be displaced by strong enemies. Manual Lane Change possible.";
+        return "Size: 1 grid <br> <br>" +
+            "Speed: <br>-Base speed of 1 step, Maximum speed of 3 steps. <br> <br>" +
+            "Additional effects: <br>-It will weave inbetween lanes if there is a slower or disabled vehicle in front of it. " +
+            "<br>-Can be displaced by strong enemies. Manual lane change possible.";
     }
 }

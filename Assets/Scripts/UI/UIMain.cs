@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIMain : MonoBehaviour
 {
@@ -14,12 +15,20 @@ public class UIMain : MonoBehaviour
         void GetContent(ref List<Status> content);
     }
 
+    public RectTransform StartMenu;
     public InfoPopup InfoPopup;
+    public NewEnemyPopUp NewEnemyPopUp;
+    public RectTransform SkillsPopUp;
+    public RectTransform GameOverPopUp;
     public HealthBar HealthBar;
     public SkillOrbBar SkillOrbBar;
     public RectTransform VehicleSelectionUI;
     public TextMeshProUGUI LevelText;
     public TextMeshProUGUI KillsText;
+    public TextMeshProUGUI BestScoreText;
+
+    public Button SkillsInfoButton;
+    public Button SkillsPopUpCloseButton;
 
     protected IUIInfoContent m_CurrentContent;
     protected List<Status> m_ContentBuffer = new List<Status>();
@@ -33,6 +42,11 @@ public class UIMain : MonoBehaviour
     private void OnDestroy()
     {
         Instance = null;
+    }
+
+    public void CloseStartMenu()
+    {
+        StartMenu.gameObject.SetActive(false);
     }
 
     public void SetNewInfoContent(IUIInfoContent content)
@@ -93,6 +107,21 @@ public class UIMain : MonoBehaviour
         KillsText.text = kills.ToString();
     }
 
+    public void UpdateBestScore(int bestScore)
+    {
+        BestScoreText.text = bestScore.ToString();
+    }
+
+    public void DisplayGameOver()
+    {
+        GameOverPopUp.gameObject.SetActive(true);
+    }
+
+    public void DisplayNewEnemy(Enemy enemyUnit, Sprite enemyImage)
+    {
+        NewEnemyPopUp.DisplayNewEnemy(enemyUnit, enemyImage);
+    }
+
     public void ActivateVehicleSelectionUI()
     {
         VehicleSelectionUI.gameObject.SetActive(true);
@@ -136,5 +165,15 @@ public class UIMain : MonoBehaviour
     public void RefreshSkillOrbBar()
     {
         SkillOrbBar.FullRefreshSkillbar();
+    }
+
+    public void OpenSkillsInfo()
+    {
+        SkillsPopUp.gameObject.SetActive(true);
+    }
+
+    public void CloseSkillsInfo()
+    {
+        SkillsPopUp.gameObject.SetActive(false);
     }
 }

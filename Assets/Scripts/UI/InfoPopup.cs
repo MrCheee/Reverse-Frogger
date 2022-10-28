@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 
 public class InfoPopup : MonoBehaviour
@@ -11,6 +10,7 @@ public class InfoPopup : MonoBehaviour
     public RectTransform HealthTransform;
     public RectTransform StatusTransform;
     public Sprite HeartSprite;
+    public Sprite DamageSprite;
     public Sprite ChargingSprite;
     public Sprite StunnedSprite;
 
@@ -35,7 +35,10 @@ public class InfoPopup : MonoBehaviour
         newEntry.Status.text = "";
         //newEntry.Status.text = status;
         newEntry.Count.text = count.ToString();
-        if (status == "Charging")
+        if (status == "Damage")
+        {
+            newEntry.Icone.sprite = DamageSprite;
+        } else if (status == "Charging")
         {
             newEntry.Icone.sprite = ChargingSprite;
         } else if (status == "Stunned")

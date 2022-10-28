@@ -1,12 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class GameStateManager : MonoBehaviour
 {
     [SerializeField] Button playerFinishButton;
+    [SerializeField] Button startGame;
     IEnemySpawner enemySpawner;
     IVehicleSpawner vehicleSpawner;
     IPlayerSkillVehicleManager playerSkillVehicleManager;
@@ -14,11 +17,15 @@ public class GameStateManager : MonoBehaviour
     UserControl userControl;
     UIMain uiMain;
 
+    bool gameStart = false;
     GameState gameStateIndex = GameState.Initialisation;
     bool playerTurnInProgress = false;
+    [SerializeField] string[] enemyNames;
+    [SerializeField] Sprite[] enemyImgs;
+    Dictionary<string, Sprite> newEnemies;
 
-    int playerHealth = 10;
-    int playerSkillOrb = 3;
+    int playerHealth = 1;
+    int playerSkillOrb = 0;
     int damageReceived = 0;
     int enemyKilledCount = 0;
     int totalKills = 0;
@@ -38,7 +45,16 @@ public class GameStateManager : MonoBehaviour
         AddPlayerSkillOrb(playerSkillOrb);
 
         playerFinishButton.onClick.AddListener(PlayerButtonOnClick);
+        startGame.onClick.AddListener(StartGame);
         StartCoroutine(CheckAndUpdateGameState(0.5f));
+
+        LoadBestScore();
+
+        newEnemies = new Dictionary<string, Sprite>();
+        for (int i = 0; i < enemyNames.Length; i++)
+        {
+            newEnemies.Add(enemyNames[i], enemyImgs[i]);
+        }
     }
 
     IEnumerator CheckAndUpdateGameState(float waitTime)
@@ -50,15 +66,19 @@ public class GameStateManager : MonoBehaviour
             switch (gameStateIndex)
             {
                 case GameState.Initialisation: // Initialisation phase, to transition to enemy turn
-                    vehicleSpawner.PopulateInitialVehicles();
-                    Debug.Log("Initialisation Complete! Starting Enemy Spawn sequence...");
-                    gameStateIndex = GameState.EnemySpawn;
+                    if (gameStart)
+                    {
+                        Debug.Log("Game Started! Starting Enemy Spawn sequence...");
+                        vehicleSpawner.PopulateInitialVehicles();
+                        gameStateIndex = GameState.EnemySpawn;
+                    }
                     break;
 
                 case GameState.EnemySpawn:
                     uiMain.UpdateContent();
                     enemySpawner.SpawnEnemies();
                     FieldGrid.TriggerGridsRepositioning();
+                    CheckAndDisplayNewEnemies();
 
                     Debug.Log("Spawned Enemies! Starting Vehicle Spawn sequence...");
                     gameStateIndex = GameState.VehicleSpawn;
@@ -117,9 +137,15 @@ public class GameStateManager : MonoBehaviour
                         {
                             Debug.Log("All enemies turn completed! Starting vehicle's turn...");
                             UpdateRemovingHealth();
-                            CheckIfGameOver();
-                            TriggerAllVehiclesTurn();
-                            gameStateIndex = GameState.Vehicle;
+                            if (CheckIfGameOver())
+                            {
+                                gameStateIndex = GameState.GameOver; 
+                            }
+                            else
+                            {
+                                TriggerAllVehiclesTurn();
+                                gameStateIndex = GameState.Vehicle;
+                            }
                         }
                     }
                     break;
@@ -142,6 +168,9 @@ public class GameStateManager : MonoBehaviour
                             gameStateIndex = GameState.EnemySpawn;
                         }
                     }
+                    break;
+
+                case GameState.GameOver:
                     break;
 
                 default:
@@ -169,6 +198,21 @@ public class GameStateManager : MonoBehaviour
             int vehLaneSpeed = laneManager.GetLaneSpeed(veh.GetCurrentHeadGridPosition().y);
             veh.UpdateLaneSpeed(vehLaneSpeed);
             veh.BeginTurn();
+        }
+    }
+
+    private void CheckAndDisplayNewEnemies()
+    {
+        var enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        foreach (GameObject enemy in enemies)
+        {
+            Enemy enemyUnit = enemy.GetComponent<Enemy>();
+            string enemyName = enemyUnit.GetName();
+            if (newEnemies.ContainsKey(enemyName))
+            {
+                uiMain.DisplayNewEnemy(enemyUnit, newEnemies[enemyName]);
+                newEnemies.Remove(enemyName);
+            }
         }
     }
 
@@ -276,11 +320,75 @@ public class GameStateManager : MonoBehaviour
         }
     }
 
-    private void CheckIfGameOver()
+    private bool CheckIfGameOver()
     {
         if (playerHealth <= 0)
         {
+            SaveBestScore();
+            uiMain.DisplayGameOver();
             Debug.Log("GAME OVER! YOU LOSE!");
+            return true;
         }
+        else
+        {
+            return false;
+        }
+    }
+
+    private void StartGame()
+    {
+        uiMain.CloseStartMenu();
+        gameStart = true;       
+    }
+
+    public void RestartGame()
+    {
+        SceneManager.LoadScene(0);
+    }
+
+    public void SaveBestScore()
+    {
+        string path = Application.persistentDataPath + "/highscore.json";
+        SaveData data;
+        if (File.Exists(path))
+        {
+            string jsonIn = File.ReadAllText(path);
+            data = JsonUtility.FromJson<SaveData>(jsonIn);
+
+            if (totalKills > data.kills)
+            {
+                data.kills = totalKills;
+            }
+        }
+        else
+        {
+            data = new SaveData();
+            data.kills = totalKills;
+        }
+        
+        string jsonOut = JsonUtility.ToJson(data);
+        File.WriteAllText(Application.persistentDataPath + "/highscore.json", jsonOut);
+    }
+
+    public void LoadBestScore()
+    {
+        string path = Application.persistentDataPath + "/highscore.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
+
+            uiMain.UpdateBestScore(data.kills);
+        }
+        else
+        {
+            uiMain.UpdateBestScore(0);
+        }
+    }
+
+    [System.Serializable]
+    class SaveData
+    {
+        public int kills;
     }
 }

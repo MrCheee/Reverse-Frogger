@@ -63,9 +63,9 @@ public class Brute : Enemy
 
     public override string GetDescription()
     {
-        return "Movement Pattern: Moves 1 step forward per turn. <br> <br>" +
-            "Vehicle in the way: Will knock the vehicle forward into the next lane (if possible) and move forward, " +
-            "else it will stay in place. <br> <br> " + 
-            "Additional effects: Requires 2 hit to kill. 1st hit will stop the colliding vehicle in its track.";
+        return "Movement Pattern: <br>-Moves 1 step forward per turn. <br> <br>" +
+            "Vehicle in the way: <br>-Will knock the vehicle forward into the next lane (if the vehicle is displaceable and the lane is clear) " +
+            "and move forward, else it will stay in place. <br> <br> " +
+            "Additional effects: <br>-Requires 2 hit to kill. 1st hit will stop the colliding vehicle in its track.";
     }
 }

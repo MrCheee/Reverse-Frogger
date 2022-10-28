@@ -171,11 +171,12 @@ public class Vaulter : Enemy
 
     public override string GetDescription()
     {
-        return "Movement Pattern: Moves 1 step forward per turn. <br> <br>" +
-            "Vehicle in the way: If vault pole is still available, it will vault over to the lane after, landing on the ground " +
-            "or on top of the vehicle. If no pole is available, it will run into the vehicle and become stunned for 1 turn. <br> <br> " +
-            "Additional effects: It begins with its vault held vertically and will be unable to vault until it can bring its pole down horizontally. " + 
-            "It can only vault once, thereafter losing its pole. Its pole extends one lane in front of it, and " +
-            "if a vehicle runs into the pole, it will destroy the pole and stun the vaulter for 1 turn.";
+        return "Movement Pattern: <br>-Moves 1 step forward per turn. <br> <br>" +
+            "Vehicle in the way: <br>-If vault pole is available, it will vault over the vehicle and move forward 3 steps. " +
+            "<br>-If no pole is available, it will run into the vehicle and becomes stunned for 1 turn. <br> <br> " +
+            "Additional effects: <br>-It begins with its vault held skywards and will be unable to vault until it can bring its pole down. " +
+            "<br>-It can only vault once, thereafter losing its pole. <br>-The pole extends one lane in front of it, and " +
+            "a vehicle can run into it, destroying it and stunning the vaulter for 1 turn." +
+            "<br>-After vaulting, it may land on top of a vehicle. While on top, it will move along with the vehicle and can hop onto another vehicle.";
     }
 }

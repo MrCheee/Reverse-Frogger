@@ -18,8 +18,8 @@
 
     public override string GetDescription()
     {
-        return "Size: 3 width <br> <br>" +
-            "Speed: Base 1, Max 1 steps <br> <br>" +
-            "Additional effects: Cannot be displaced forcibly by an enemy. Manual Lane Change possible.";
+        return "Size: 3 grids <br> <br>" +
+            "Speed: <br>-Base speed of 1 step. Maximum speed of 1 step. <br> <br>" +
+            "Additional effects: <br>-Cannot be displaced forcibly by an enemy. Manual lane change possible.";
     }
 }

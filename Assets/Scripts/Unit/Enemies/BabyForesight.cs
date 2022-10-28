@@ -123,15 +123,14 @@ public class BabyForesight : Enemy
 
     public override string GetName()
     {
-        return "Foresight (Baby)";
+        return "Foresight";
     }
 
     public override string GetDescription()
     {
-        return "Movement Pattern: Moves 1 step per turn, either diagonal left or straight forward or diagonal right. " +
-            "Always repositons to the middle when it hits the divider. " +
-            "Determines its movement based on vehicle spots in front of it. " +
-            "It will not intentionally move into a vehicle's path within its line of sight. <br> <br>" +
-            "Vehicle in the way: It will not move.";
+        return "Movement Pattern: <br>-Moves 1 step per turn, either diagonal left or straight forward or diagonal right. " +
+            "Vehicle in the way: <br>-It will not move." +
+            "Additional Effects: <br>-It determines its movement based on vehicle spots in front of it and will try to not intentionally move into a vehicle's path within its line of sight." +
+            "<br>-Always repositon back to the middle when it reaches the divider.";
     }
 }

@@ -6,5 +6,6 @@
     EnemySpawn,
     VehicleSpawn,
     Player,
-    PlayerSkill
+    PlayerSkill,
+    GameOver
 }

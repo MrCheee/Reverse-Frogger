@@ -9,7 +9,7 @@ public class EndlessEnemySpawner : MonoBehaviour, IEnemySpawner
     int spawnY = FieldGrid.GetMaxHeight() - FieldGrid.GetFieldBuffer() - 1;
     int spawnXMin = FieldGrid.GetFieldBuffer() + 2;
     int spawnXMax = FieldGrid.GetMaxLength() - FieldGrid.GetFieldBuffer() - 2;
-    int level = 2;
+    int level = 1;
     int spawnCount = 2;
     EnemyType forcedSpawn = EnemyType.None;
 
@@ -18,10 +18,10 @@ public class EndlessEnemySpawner : MonoBehaviour, IEnemySpawner
     {
         _currentSpawnList = new List<EnemyType>()
         {
-            EnemyType.Brute,
-            EnemyType.Brute
+            EnemyType.Soldier,
+            EnemyType.Soldier
         };
-        forcedSpawn = EnemyType.Brute;
+        forcedSpawn = EnemyType.Soldier;
     }
 
     public void SpawnEnemies()

@@ -24,8 +24,8 @@
 
     public override string GetDescription()
     {
-        return "Size: 1 width <br> <br>" +
-            "Speed: Base 2, Max 4 steps <br> <br>" +
-            "Additional effects: Can be displaced by strong enemies. Manual Lane Change possible.";
+        return "Size: 1 grid <br> <br>" +
+            "Speed: <br>-Base speed of 2 steps, Maximum speed of 4 steps. <br> <br>" +
+            "Additional effects: <br>-Can be displaced by strong enemies. Manual lane change possible.";
     }
 }

@@ -216,6 +216,7 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     public virtual void GetContent(ref List<Status> content)
     {
         content.Add(new Status("Health", health));
+        content.Add(new Status("Damage", damage));
         content.Add(new Status("Stunned", skipTurn));
         content.Add(new Status("Charging", charging));
     }

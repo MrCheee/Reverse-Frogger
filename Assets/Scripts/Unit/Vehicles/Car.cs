@@ -25,8 +25,8 @@ public class Car : Vehicle
 
     public override string GetDescription()
     {
-        return "Size: 1 width <br> <br>" +
-            "Speed: Base 1, Max 3 steps <br> <br>" +
-            "Additional effects: Can be displaced by strong enemies. Manual Lane Change possible.";
+        return "Size: 1 grid <br> <br>" +
+            "Speed: <br>-Base speed of 1 step, Maximum speed of 3 steps. <br> <br>" +
+            "Additional effects: <br>-Can be displaced by strong enemies. Manual lane change possible.";
     }
 }

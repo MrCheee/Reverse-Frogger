@@ -25,7 +25,7 @@
 
     public override string GetDescription()
     {
-        return "Movement Pattern: Moves 2 step forward per turn. <br> <br>" +
-            "Vehicle in the way: Runs into vehicle and become stunned for 2 turns.";
+        return "Movement Pattern: <br>-Moves 2 step forward per turn. <br> <br>" +
+            "Vehicle in the way: <br>-Runs into the vehicle and becomes stunned for 2 turns.";
     }
 }
