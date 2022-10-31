@@ -19,6 +19,8 @@ public class CallInVehSkillManager : ISkillManager
     private List<Unit> calledInVehicles;
     GridCoord currentVehicleSkillHoverGrid;
 
+    GameObject SkillMarker;
+
     public CallInVehSkillManager()
     {
         m_SkillType = SkillType.CallInVeh;
@@ -34,6 +36,8 @@ public class CallInVehSkillManager : ISkillManager
         uiMain = UIMain.Instance;
         invalidVehicleLaneSelectionImg = GameObject.Find("InvalidLaneSelection").GetComponent<RectTransform>();
         validVehicleLaneSelectionImg = GameObject.Find("ValidLaneSelection").GetComponent<RectTransform>();
+
+        SkillMarker = GameObject.Find("CallinVehSkillMarker");
     }
 
     public void InitialiseSkill(Unit unit)
@@ -98,6 +102,10 @@ public class CallInVehSkillManager : ISkillManager
                 Debug.Log($"[CallInVeh] Ready for execution, target at ({currentTargetedGrid.x}, {currentTargetedGrid.y})");
                 m_LockedIn = true;
                 completedSkill = true;
+
+                GridCoord laneCentreGrid = new GridCoord(FieldGrid.GetMaxLength() / 2, currentTargetedGrid.y);
+                SkillMarker.transform.position = FieldGrid.GetSingleGrid(laneCentreGrid).GetGridCentrePoint();
+                SkillMarker.SetActive(true);
             }
             else
             {
@@ -149,6 +157,7 @@ public class CallInVehSkillManager : ISkillManager
         m_Skill = null;
         m_LockedIn = false;
         validVehicleLaneSelectionImg.gameObject.SetActive(false);
+        SkillMarker.SetActive(false);
     }
 
     public void ActivateSkillUI()
@@ -170,6 +179,7 @@ public class CallInVehSkillManager : ISkillManager
             Debug.Log(m_Skill.unit);
             m_Skill.Execute();
             RemoveSkillTarget();
+            SkillMarker.SetActive(false);
         }
     }
 }

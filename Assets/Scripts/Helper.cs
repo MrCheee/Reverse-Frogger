@@ -24,6 +24,11 @@ public class Helper
         return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetSingleGrid(targetGrid).GetListOfUnitsGameObjectTag().Contains("Vehicle");
     }
 
+    public static bool IsEnemyInTheWay(GridCoord targetGrid)
+    {
+        return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetSingleGrid(targetGrid).GetListOfUnitsGameObjectTag().Contains("Enemy");
+    }
+
     public static bool IsUnitOfTypeInTheWay(GridCoord targetGrid, string unitTag)
     {
         return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetSingleGrid(targetGrid).GetListOfUnitsTag().Contains(unitTag);

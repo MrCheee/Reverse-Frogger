@@ -36,7 +36,7 @@ public class UserControl : MonoBehaviour
         Marker.SetActive(false);
 
         skillManagers = new Dictionary<SkillType, ISkillManager> {
-            { SkillType.Assassinate, new AssassinateSkillManager() },
+            { SkillType.Assassinate, new SnipeSkillManager() },
             { SkillType.CallInVeh, new CallInVehSkillManager() },
             { SkillType.AirDropVeh, new AirDropVehSkillManager() },
             { SkillType.LaneChange, new LaneChangeSkillManager() },
@@ -208,9 +208,9 @@ public class UserControl : MonoBehaviour
 
     public void RefreshSkillsUI()
     {
-        consumedSkillOrbCount = 0;
         uiMain.RefreshSkillOrbBar();
         ResetSkillBar();
+        consumedSkillOrbCount = 0;
     }
 
     private void SetActiveSkill(SkillType skill)

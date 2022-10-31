@@ -5,7 +5,7 @@ public class Bloat : Enemy
     protected override void SetHealthAndDamage()
     {
         health = 1;
-        damage = 1;
+        damage = 2;
     }
     protected override void SetAdditionalTag()
     {

@@ -18,7 +18,7 @@ public class Brute : Enemy
     protected override void SetHealthAndDamage()
     {
         health = 2;
-        damage = 2;
+        damage = 4;
     }
     
     public override void SetMovementPattern()

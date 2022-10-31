@@ -1,5 +1,11 @@
 ﻿public class RightShield : Soldier
 {
+    protected override void SetHealthAndDamage()
+    {
+        health = 1;
+        damage = 2;
+    }
+    
     protected override void SetAdditionalTag()
     {
         unitTag = "RShield";

@@ -17,7 +17,7 @@ public class GameStateManager : MonoBehaviour
     UserControl userControl;
     UIMain uiMain;
 
-    bool gameStart = false;
+    bool gameStart = true;
     GameState gameStateIndex = GameState.Initialisation;
     bool playerTurnInProgress = false;
     [SerializeField] string[] enemyNames;
@@ -25,7 +25,7 @@ public class GameStateManager : MonoBehaviour
     Dictionary<string, Sprite> newEnemies;
 
     int playerHealth = 1;
-    int playerSkillOrb = 0;
+    int playerSkillOrb = 10;
     int damageReceived = 0;
     int enemyKilledCount = 0;
     int totalKills = 0;

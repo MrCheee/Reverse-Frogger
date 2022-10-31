@@ -68,6 +68,11 @@ public class FieldGrid
         return !(gridCoord.x < 0 || gridCoord.x >= fieldLength || gridCoord.y < 0 || gridCoord.y >= fieldHeight);
     }
 
+    public static bool IsWithinPlayableField(GridCoord gridCoord)
+    {
+        return !(gridCoord.x < fieldBuffer || gridCoord.x >= fieldLength - fieldBuffer || gridCoord.y < fieldBuffer || gridCoord.y >= fieldHeight - fieldBuffer);
+    }
+
     public static int GetMaxHeight()
     {
         return fieldHeight;

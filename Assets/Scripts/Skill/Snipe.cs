@@ -1,16 +1,16 @@
-﻿public class Assassinate : ISkill
+﻿public class Snipe : ISkill
 {
     public Unit unit { get; set; }
     public GridCoord targetGrid { get; set; }
 
-    public Assassinate(Unit target)
+    public Snipe(Unit target)
     {
         unit = target;
     }
 
     public void Execute()
     {
-        unit.DestroySelf();
+        unit.TakeDamage(1);
     }
 
     public void UpdateGridCoordAction(GridCoord coord)
