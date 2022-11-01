@@ -18,7 +18,6 @@ public class UIMain : MonoBehaviour
     public RectTransform StartMenu;
     public InfoPopup InfoPopup;
     public NewEnemyPopUp NewEnemyPopUp;
-    public RectTransform SkillsPopUp;
     public RectTransform GameOverPopUp;
     public HealthBar HealthBar;
     public SkillOrbBar SkillOrbBar;
@@ -27,8 +26,11 @@ public class UIMain : MonoBehaviour
     public TextMeshProUGUI KillsText;
     public TextMeshProUGUI BestScoreText;
 
-    public Button SkillsInfoButton;
-    public Button SkillsPopUpCloseButton;
+    GameLogWindow GameLogWindow;
+    GameStateToggles gameStateToggles;
+
+    [SerializeField] Camera GameCamera;
+    public GameObject EnemyKilledPrefab;
 
     protected IUIInfoContent m_CurrentContent;
     protected List<Status> m_ContentBuffer = new List<Status>();
@@ -37,6 +39,8 @@ public class UIMain : MonoBehaviour
     {
         Instance = this;
         InfoPopup.gameObject.SetActive(false);
+        GameLogWindow = GameObject.Find("GameLogWindow").GetComponent<GameLogWindow>();
+        gameStateToggles = GameObject.Find("GameStateIndicator").GetComponent<GameStateToggles>();
     }
 
     private void OnDestroy()
@@ -167,13 +171,20 @@ public class UIMain : MonoBehaviour
         SkillOrbBar.FullRefreshSkillbar();
     }
 
-    public void OpenSkillsInfo()
+    public void UpdateGameLog(string newLog)
     {
-        SkillsPopUp.gameObject.SetActive(true);
+        GameLogWindow.AddToGameLog(newLog);
     }
 
-    public void CloseSkillsInfo()
+    public void UpdateGameState(GameState currentGameState)
     {
-        SkillsPopUp.gameObject.SetActive(false);
+        gameStateToggles.UpdateGameState(currentGameState);
+    }
+
+    public void DisplayKilledEnemy(Vector3 killedPos)
+    {
+        var killedUI = Instantiate(EnemyKilledPrefab, GameCamera.WorldToScreenPoint(killedPos), EnemyKilledPrefab.transform.rotation, transform);
+        killedUI.transform.localScale -= new Vector3(0.4f, 0.4f, 0.4f);
+        killedUI.transform.SetSiblingIndex(0);
     }
 }

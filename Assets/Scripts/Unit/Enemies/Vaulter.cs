@@ -23,6 +23,24 @@ public class Vaulter : Enemy
         movementPattern.Add(new GridCoord(0, direction));
     }
 
+    public override IEnumerator PreTurnActions()
+    {
+        GridCoord nextMove = movementPattern[0];
+        GridCoord nextGrid = Helper.AddGridCoords(_currentGridPosition, nextMove);
+
+        if (!vaultReady)
+        {
+            if (!Helper.IsVehicleInTheWay(nextGrid))
+            {
+                commandStack.Enqueue(new RotateCommand(Vector3.left, 90, 90));
+                vaultReady = true;
+            }
+        }
+
+        TurnInProgress = false;
+        yield break;
+    }
+
     public override IEnumerator TakeTurn()
     {
         float retryInterval = 0.2f;
@@ -35,8 +53,6 @@ public class Vaulter : Enemy
         }
         if (ToSkipTurn()) yield break;
         if (StillChargingUp()) yield break;
-
-        PreTurnActions();
 
         PrepareMovement(out Queue<GridCoord> moveQueue, out GridCoord nextMove, out GridCoord nextGrid);
         GridCoord nextnextGrid;
@@ -97,7 +113,6 @@ public class Vaulter : Enemy
             yield return new WaitForSeconds(0.2f);
         }
         TurnInProgress = false;
-        PostTurnActions();
     }
 
     public void TakeVehicleInNextGridAction()

@@ -59,8 +59,6 @@ public abstract class Enemy : Unit
         if (ToSkipTurn()) yield break;
         if (StillChargingUp()) yield break;
 
-        PreTurnActions();
-
         PrepareMovement(out Queue<GridCoord> moveQueue, out GridCoord nextMove, out GridCoord nextGrid);
 
         while (moveQueue.Count > 0)
@@ -96,7 +94,6 @@ public abstract class Enemy : Unit
             yield return new WaitForSeconds(0.2f);
         }
         TurnInProgress = false;
-        PostTurnActions();
     }
 
     protected void PrepareMovement(out Queue<GridCoord> moveQueue, out GridCoord nextMove, out GridCoord nextGrid)
@@ -106,10 +103,6 @@ public abstract class Enemy : Unit
         nextGrid = Helper.AddGridCoords(_currentGridPosition, nextMove);
     }
 
-    protected bool CheckIfCompletedPreviousMovement()
-    {
-        return commandStack.Count == 0;
-    }
 
     protected (GridCoord, GridCoord) GetNextMovementAction(Queue<GridCoord> moveQueue, GridCoord nextMove, GridCoord nextGrid)
     {
@@ -130,14 +123,16 @@ public abstract class Enemy : Unit
         FieldGrid.AddGridToReposition(currentGrid);
     }
 
-    public override void PreTurnActions()
+    public override IEnumerator PreTurnActions()
     {
-        return;
+        TurnInProgress = false;
+        yield break;
     }
 
-    public override void PostTurnActions()
+    public override IEnumerator PostTurnActions()
     {
-        charging = chargePerTurn;
+        TurnInProgress = false;
+        yield break;
     }
 
     public override void TakeVehicleInTheWayAction()
@@ -179,8 +174,9 @@ public abstract class Enemy : Unit
 
     protected virtual void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"{gameObject.name}: Hit by a car! @({_currentGridPosition.x}, {_currentGridPosition.y})...");
-        gameStateManager.EnemyKilled();
+        //Debug.Log($"{gameObject.name}: Hit by a car! @({_currentGridPosition.x}, {_currentGridPosition.y})...");
+        string killedInfo = $"{gameObject.GetComponent<Unit>().GetName()} has been run over at Grid [{_currentGridPosition.x}, {_currentGridPosition.y}]!";
+        gameStateManager.EnemyKilled(transform.position, killedInfo);
         DestroySelf();
     }
 

@@ -75,13 +75,13 @@ public abstract class Vehicle : Unit
         }
     }
 
-    public override void PreTurnActions()
+    public override IEnumerator PreTurnActions()
     {
-        return;
+        yield break;
     }
-    public override void PostTurnActions()
+    public override IEnumerator PostTurnActions()
     {
-        return;
+        yield break;
     }
     public override void TakeVehicleInTheWayAction()
     {
@@ -155,11 +155,6 @@ public abstract class Vehicle : Unit
         moveQueue = UpdateMovementWithLaneSpeed(moveQueue);
         nextMove = moveQueue.Peek();
         nextGrid = Helper.AddGridCoords(_currentGridPosition[0], nextMove);
-    }
-
-    bool CheckIfCompletedPreviousMovement()
-    {
-        return commandStack.Count == 0;
     }
 
     (GridCoord, GridCoord) TakeMovementAction(Queue<GridCoord> moveQueue, GridCoord nextMove, GridCoord nextGrid)

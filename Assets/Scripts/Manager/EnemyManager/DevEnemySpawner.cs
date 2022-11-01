@@ -50,6 +50,11 @@ public class DevEnemySpawner : MonoBehaviour, IEnemySpawner
         }
     }
 
+    public void SetDifficulty(string difficultyLevel)
+    {
+        return;
+    }
+
     public void IncrementLevel()
     {
         return;

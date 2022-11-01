@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections;
+using System.Linq;
 
 public class Skater : Enemy
 {
@@ -30,9 +31,11 @@ public class Skater : Enemy
         FieldGrid.AddGridToReposition(Helper.AddGridCoords(currentGrid, moveGrid));
     }
 
-    public override void PostTurnActions()
+    public override IEnumerator PostTurnActions()
     {
         ReverseMotion();
+        TurnInProgress = false;
+        yield break;
     }
 
     public void ReverseMotion()

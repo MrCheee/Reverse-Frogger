@@ -14,4 +14,5 @@
     void DeactivateSkillUI();
     void RemoveSkillTarget();
     void ExecuteSkill();
+    string GetExecuteLog();
 }

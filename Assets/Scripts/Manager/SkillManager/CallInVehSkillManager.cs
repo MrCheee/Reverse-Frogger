@@ -182,4 +182,10 @@ public class CallInVehSkillManager : ISkillManager
             SkillMarker.SetActive(false);
         }
     }
+
+    public string GetExecuteLog()
+    {
+        Unit targetUnit = m_Skill.unit.GetComponent<Unit>();
+        return $"Call in Vehicle Skill used to call in a {targetUnit.GetName()} on Lane {m_Skill.targetGrid.y}";
+    }
 }

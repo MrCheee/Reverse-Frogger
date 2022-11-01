@@ -91,4 +91,10 @@ public class DisableUnitSkillManager : ISkillManager
             SkillMarker.SetActive(false);
         }
     }
+
+    public string GetExecuteLog()
+    {
+        Unit targetUnit = m_Skill.unit.GetComponent<Unit>();
+        return $"Disable Unit Skill used on {targetUnit.GetName()} at Grid [{targetUnit.GetCurrentHeadGridPosition().x}, {targetUnit.GetCurrentHeadGridPosition().y}].";
+    }
 }

@@ -16,7 +16,7 @@ public class FieldGrid
     private static int sidewalkBottomY;
     private static int sidewalkTopY;
 
-    private static List<GridCoord> gridsToReposition = new List<GridCoord>();
+    private static HashSet<GridCoord> gridsToReposition = new HashSet<GridCoord>();
     private SingleGrid[,] field = new SingleGrid[fieldLength, fieldHeight];
 
     private static readonly FieldGrid _instance = new FieldGrid();

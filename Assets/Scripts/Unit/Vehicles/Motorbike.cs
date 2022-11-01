@@ -20,7 +20,6 @@ public class Motorbike : Vehicle
         if (ToSkipTurn()) yield break;
 
         TurnInProgress = true;
-        PreTurnActions();
         int retries = 0;
         int vehicleCheck = 0;
         bool moved = false;
@@ -86,7 +85,6 @@ public class Motorbike : Vehicle
             }
         }
         TurnInProgress = false;
-        PostTurnActions();
     }
 
     // Motorbike will deal no damage to a brute

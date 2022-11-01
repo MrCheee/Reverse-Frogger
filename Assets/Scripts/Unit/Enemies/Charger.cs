@@ -1,4 +1,6 @@
-﻿public class Charger : Enemy
+﻿using System.Collections;
+
+public class Charger : Enemy
 {
     protected override void SetHealthAndDamage()
     {
@@ -19,6 +21,13 @@
         {
             movementPattern.Add(new GridCoord(0, direction));
         }
+    }
+
+    public override IEnumerator PostTurnActions()
+    {
+        charging = chargePerTurn;
+        TurnInProgress = false;
+        yield break;
     }
 
     public override void TakeVehicleInTheWayAction()

@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 public class Brute : Enemy
 {
@@ -26,29 +28,78 @@ public class Brute : Enemy
         movementPattern.Add(new GridCoord(0, direction));
     }
 
-    public override void TakeVehicleInTheWayAction()
+    public override IEnumerator PreTurnActions()
     {
-        movementBlocked = true;
+        if (Crossed || skipTurn > 0 || charging > 0)
+        {
+            TurnInProgress = false;
+            yield break;
+        }
+
+        GridCoord nextMove = movementPattern[0];
+        GridCoord nextGrid = Helper.AddGridCoords(_currentGridPosition, nextMove);
+        if (Helper.IsVehicleInTheWay(nextGrid))
+        {
+            KnockbackVehicleInTheWay();
+        }
+
+        TurnInProgress = false;
+        yield break;
+    }
+
+    private void KnockbackVehicleInTheWay()
+    {
         if (!noKnockbackYPos.Contains(_currentGridPosition.y))   // Brute is in a lane that can knockback vehicles
         {
             GridCoord targetGrid = new GridCoord(_currentGridPosition.x, _currentGridPosition.y + direction);
             GridCoord destinationGrid = new GridCoord(_currentGridPosition.x, _currentGridPosition.y + direction * 2);
-
+        
             // If vehicle in front is knockback-able, and there is no vehicle blocking its knockback, then knockback and move forward
             if (FieldGrid.GetSingleGrid(targetGrid).IsUnitTagInGrid("Knockback-able Vehicle"))
             {
-                if (!Helper.IsVehicleInTheWay(destinationGrid))
+                bool vehicleBlockingDestination = Helper.IsVehicleInTheWay(destinationGrid);
+                bool bruteBlockingDestination = false;
+
+                bool bruteAtDestination = Helper.IsUnitOfTypeInTheWay(destinationGrid, "Brute");
+                if (bruteAtDestination)
+                {
+                    List<Unit> allBrutes = FieldGrid.GetSingleGrid(destinationGrid).GetListOfUnitsWithTag("Brute");
+                    bruteBlockingDestination = allBrutes.Any(x => x.GetHealth() == 2);
+                }
+
+                if (!vehicleBlockingDestination && !bruteBlockingDestination)
                 {
                     Unit veh = FieldGrid.GetSingleGrid(targetGrid).GetUnitWithTag("Knockback-able Vehicle");
-                    veh.IssueCommand(new MoveToGridCommand(new GridCoord(0, direction)));
-                    movementBlocked = false;
+                    veh.IssueCommand(new MoveToTargetGridCommand(destinationGrid));
                 }
             }
         }
-        if (movementBlocked)
-        {
-            ExecuteConcussedMovement();
-        }
+    }
+
+    public override void TakeVehicleInTheWayAction()
+    {
+        //movementBlocked = true;
+        //if (!noKnockbackYPos.Contains(_currentGridPosition.y))   // Brute is in a lane that can knockback vehicles
+        //{
+        //    GridCoord targetGrid = new GridCoord(_currentGridPosition.x, _currentGridPosition.y + direction);
+        //    GridCoord destinationGrid = new GridCoord(_currentGridPosition.x, _currentGridPosition.y + direction * 2);
+        //
+        //    // If vehicle in front is knockback-able, and there is no vehicle blocking its knockback, then knockback and move forward
+        //    if (FieldGrid.GetSingleGrid(targetGrid).IsUnitTagInGrid("Knockback-able Vehicle"))
+        //    {
+        //        if (!Helper.IsVehicleInTheWay(destinationGrid))
+        //        {
+        //            Unit veh = FieldGrid.GetSingleGrid(targetGrid).GetUnitWithTag("Knockback-able Vehicle");
+        //            veh.IssueCommand(new MoveToGridCommand(new GridCoord(0, direction)));
+        //            movementBlocked = false;
+        //        }
+        //    }
+        //}
+        //if (movementBlocked)
+        //{
+        //    ExecuteConcussedMovement();
+        //}
+        ExecuteConcussedMovement();
     }
 
     public override bool HaltMovementByVehicleInTheWay()

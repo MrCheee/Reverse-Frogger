@@ -35,7 +35,6 @@ public class EndlessVehicleSpawner : MonoBehaviour, IVehicleSpawner
             VehicleType.FastCar,
             VehicleType.FastCar,
             VehicleType.Motorbike,
-            VehicleType.Motorbike,
             VehicleType.Truck,
             VehicleType.Bus
         };

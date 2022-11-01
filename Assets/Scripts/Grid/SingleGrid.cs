@@ -102,6 +102,7 @@ public class SingleGrid : ISingleGrid
     public void RemoveObject(int gameobjID)
     {
         _objectsID.Remove(gameobjID);
+        FieldGrid.AddGridToReposition(_gridCoord);
     }
 
     public Vector3 GetGridCentrePoint()

@@ -178,4 +178,10 @@ public class AirDropVehSkillManager : ISkillManager
             SkillMarker.SetActive(false);
         }
     }
+
+    public string GetExecuteLog()
+    {
+        Unit targetUnit = m_Skill.unit.GetComponent<Unit>();
+        return $"Air Drop Vehicle Skill used to drop a {targetUnit.GetName()} at Grid [{m_Skill.targetGrid.x}, {m_Skill.targetGrid.y}]";
+    }
 }

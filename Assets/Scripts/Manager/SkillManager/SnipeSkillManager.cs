@@ -100,4 +100,10 @@ public class SnipeSkillManager : ISkillManager
             SkillMarker.SetActive(false);
         }
     }
+
+    public string GetExecuteLog()
+    {
+        Unit targetUnit = m_Skill.unit.GetComponent<Unit>();
+        return $"Snipe Skill used on {targetUnit.GetName()} at Grid [{targetUnit.GetCurrentHeadGridPosition().x}, {targetUnit.GetCurrentHeadGridPosition().y}].";
+    }
 }

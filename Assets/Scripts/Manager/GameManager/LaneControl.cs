@@ -55,21 +55,6 @@ public class LaneControl : MonoBehaviour
         }
     }
 
-    void ToggleSpeedUp()
-    {
-        LaneSpeed = Mathf.Min(maxSpeed, LaneSpeed + 1);
-    }
-
-    void ToggleSpeedDown()
-    {
-        LaneSpeed = Mathf.Max(minSpeed, LaneSpeed - 1);
-    }
-
-    void ToggleSpeedSame()
-    {
-        LaneSpeed = Mathf.Max(minSpeed, LaneSpeed - 1);
-    }
-
     void UpdateSpeedIndicators()
     {
         int tmpSpeed = Mathf.Max(minSpeed, Mathf.Min(maxSpeed, LaneSpeed + speedToggle));

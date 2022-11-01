@@ -274,6 +274,7 @@ public class UserControl : MonoBehaviour
         {
             if (entry.Value.m_LockedIn)
             {
+                uiMain.UpdateGameLog(entry.Value.GetExecuteLog());
                 entry.Value.ExecuteSkill();
                 skillOrbsConsumed += entry.Value.m_SkillCost;
                 currentSkillOrbCount -= entry.Value.m_SkillCost;

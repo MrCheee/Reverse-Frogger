@@ -39,6 +39,18 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         StartCoroutine("TakeTurn");
     }
 
+    public void BeginPreTurn()
+    {
+        TurnInProgress = true;
+        StartCoroutine("PreTurnActions");
+    }
+
+    public void BeginPostTurn()
+    {
+        TurnInProgress = true;
+        StartCoroutine("PostTurnActions");
+    }
+
     protected abstract void SetHealthAndDamage();
     protected abstract void SetAdditionalTag();
     protected abstract void SetChargePerTurn();
@@ -48,13 +60,18 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     public abstract void AddToFieldGridPosition(GridCoord position);
     public abstract void RemoveFromFieldGridPosition();
     public abstract void SetCurrentGridPosition(GridCoord position);
-    public abstract void PreTurnActions();
+    public abstract IEnumerator PreTurnActions();
     public abstract IEnumerator TakeTurn();
-    public abstract void PostTurnActions();
+    public abstract IEnumerator PostTurnActions();
     public abstract void CheckConditionsToDestroy();
     public abstract void TakeVehicleInTheWayAction();
     public abstract void TakeNoVehicleInTheWayAction();
     public abstract bool HaltMovementByVehicleInTheWay();
+
+    public bool CheckIfCompletedPreviousMovement()
+    {
+        return commandStack.Count == 0;
+    }
 
     protected bool ToSkipTurn()
     {
@@ -93,6 +110,11 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         transform.Translate(moveDirection * moveSpeed * Time.deltaTime, Space.World);
     }
 
+    public void Rotate(Vector3 rotateAxis, float rotateAmt)
+    {
+        transform.RotateAround(transform.position, rotateAxis, rotateAmt);
+    }
+
     public bool ReachedPosition(Vector3 target)
     {
         return Helper.vectorDistanceIgnoringYAxis(transform.position, target) <= 0.1f;
@@ -101,7 +123,6 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     public void DestroySelf()
     {
         Debug.Log($"[{gameObject.name}] Destroying self...");
-        health = 0;
         RemoveFromFieldGridPosition();
         Destroy(gameObject);
     }

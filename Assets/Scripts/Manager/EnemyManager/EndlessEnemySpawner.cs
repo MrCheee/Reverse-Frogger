@@ -4,24 +4,86 @@ using UnityEngine;
 public class EndlessEnemySpawner : MonoBehaviour, IEnemySpawner
 {
     [SerializeField] private GameObject[] enemyPrefabs;
+    private GameLogWindow gameLogWindow;
 
     List<EnemyType> _currentSpawnList;
     int spawnY = FieldGrid.GetMaxHeight() - FieldGrid.GetFieldBuffer() - 1;
     int spawnXMin = FieldGrid.GetFieldBuffer() + 2;
     int spawnXMax = FieldGrid.GetMaxLength() - FieldGrid.GetFieldBuffer() - 2;
-    int level = 1;
-    int spawnCount = 2;
+    int level;
+    int spawnCount;
     EnemyType forcedSpawn = EnemyType.None;
 
     // Start is called before the first frame update
     void Start()
     {
+        gameLogWindow = GameObject.Find("GameLogWindow").GetComponent<GameLogWindow>();
+    }
+
+    public void SetDifficulty(string difficultyLevel)
+    {
+        if (difficultyLevel == "Easy")
+        {
+            EasyModeInit();
+        }
+        else if (difficultyLevel == "Medium")
+        {
+            MediumModeInit();
+        }
+        else if (difficultyLevel == "Hard")
+        {
+            HardModeInit();
+        }
+    }
+
+    private void EasyModeInit()
+    {
+        _currentSpawnList = new List<EnemyType>()
+        {
+            EnemyType.Jumper,
+            EnemyType.Jumper
+        };
+        forcedSpawn = EnemyType.Jumper;
+        level = 1;
+        spawnCount = 2;
+    }
+
+    private void MediumModeInit()
+    {
         _currentSpawnList = new List<EnemyType>()
         {
             EnemyType.Soldier,
-            EnemyType.Soldier
+            EnemyType.Skater,
+            EnemyType.Sprinter,
+            EnemyType.Charger,
+            EnemyType.Brute,
+            EnemyType.Vaulter,
+            EnemyType.Bloat,
+            EnemyType.Jumper,
+            EnemyType.Flatten,
+            EnemyType.BabyForesight
         };
-        forcedSpawn = EnemyType.Soldier;
+        forcedSpawn = EnemyType.Brute;
+        level = 10;
+        spawnCount = 2;
+    }
+
+    private void HardModeInit()
+    {
+        _currentSpawnList = new List<EnemyType>()
+        {
+            EnemyType.Sprinter,
+            EnemyType.Charger,
+            EnemyType.Brute,
+            EnemyType.Vaulter,
+            EnemyType.Bloat,
+            EnemyType.Jumper,
+            EnemyType.Flatten,
+            EnemyType.BabyForesight
+        };
+        forcedSpawn = EnemyType.Brute;
+        level = 10;
+        spawnCount = 3;
     }
 
     public void SpawnEnemies()
@@ -47,6 +109,7 @@ public class EndlessEnemySpawner : MonoBehaviour, IEnemySpawner
             Vector3 spawnPos = FieldGrid.GetSingleGrid(spawnGrid).GetGridCentrePoint();
             GameObject enemy = Instantiate(enemyPrefabs[(int)enemyIndex], spawnPos, enemyPrefabs[(int)enemyIndex].transform.rotation);
             enemy.GetComponent<Enemy>().AddToFieldGridPosition(spawnGrid);
+            gameLogWindow.AddToGameLog($"{enemy.GetComponent<Unit>().GetName()} has spawned at Grid [{spawnGrid.x}, {spawnGrid.y}]!");
         }
     }
 
@@ -154,6 +217,10 @@ public class EndlessEnemySpawner : MonoBehaviour, IEnemySpawner
                 _currentSpawnList.Add(EnemyType.Jumper);
                 _currentSpawnList.Add(EnemyType.Jumper);
                 forcedSpawn = EnemyType.Brute;
+                break;
+            case 25:
+                break;
+            case 30:
                 break;
             default:
                 break;
