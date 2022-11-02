@@ -1,4 +1,6 @@
-﻿public class Flatten : Enemy
+﻿using System.Collections;
+
+public class Flatten : Enemy
 {
     protected override void SetHealthAndDamage()
     {
@@ -21,9 +23,32 @@
     {
         if (yAdjustment == -0.25f)
         {
+            animator.SetBool("Flatten", false);
             commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction), yAdjustment));
         }
         yAdjustment = 0;
+    }
+
+    public override IEnumerator PreTurnActions()
+    {
+        if (Crossed || skipTurn > 0 || charging > 0)
+        {
+            TurnInProgress = false;
+            yield break;
+        }
+
+        GridCoord nextMove = movementPattern[0];
+        GridCoord nextGrid = Helper.AddGridCoords(_currentGridPosition, nextMove);
+        if (Helper.IsVehicleInTheWay(nextGrid))
+        {
+            if (!animator.GetBool("Flatten"))
+            {
+                animator.SetTrigger("ToFlatten");
+                animator.SetBool("Flatten", true);
+            }
+        }
+        TurnInProgress = false;
+        yield break;
     }
 
     public override bool HaltMovementByVehicleInTheWay()

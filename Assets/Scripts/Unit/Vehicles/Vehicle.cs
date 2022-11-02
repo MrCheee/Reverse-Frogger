@@ -18,6 +18,7 @@ public abstract class Vehicle : Unit
         SetUpSize();
         _currentGridPosition = new GridCoord[size];
         _currentGridPosition[0] = new GridCoord(dividerY, dividerY);
+        moveSpeed = 7.5f;
         base.Awake();
     }
 
@@ -104,6 +105,7 @@ public abstract class Vehicle : Unit
 
         if (ToSkipTurn()) yield break;
 
+        actionTaken = true;
         TurnInProgress = true;
         PreTurnActions();
 

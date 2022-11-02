@@ -8,7 +8,6 @@ public abstract class Enemy : Unit
     public bool Crossed { get; protected set; }
     protected int direction = -1;
 
-
     protected override void SetAdditionalTag()
     {
         unitTag = "Normal";
@@ -59,6 +58,9 @@ public abstract class Enemy : Unit
         if (ToSkipTurn()) yield break;
         if (StillChargingUp()) yield break;
 
+        animator.SetBool("Moving", true);
+        actionTaken = true;
+
         PrepareMovement(out Queue<GridCoord> moveQueue, out GridCoord nextMove, out GridCoord nextGrid);
 
         while (moveQueue.Count > 0)
@@ -93,6 +95,8 @@ public abstract class Enemy : Unit
 
             yield return new WaitForSeconds(0.2f);
         }
+        charging = chargePerTurn;
+        //animator.SetBool("Moving", false);
         TurnInProgress = false;
     }
 
@@ -131,6 +135,7 @@ public abstract class Enemy : Unit
 
     public override IEnumerator PostTurnActions()
     {
+        animator.SetBool("Moving", false);
         TurnInProgress = false;
         yield break;
     }

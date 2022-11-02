@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Linq;
+using UnityEngine;
 
 public class BabyForesight : Enemy
 {
@@ -24,7 +25,9 @@ public class BabyForesight : Enemy
             yield break;
         }
         if (ToSkipTurn()) yield break;
-        
+
+        actionTaken = true;
+
         bool[] vehiclesInTheWay = new bool[3];
         for (int i = 0; i < movementPattern.Count; i++)
         {
@@ -96,11 +99,25 @@ public class BabyForesight : Enemy
             }
         }
 
+        if (nextMove.y == direction)
+        {
+            animator.SetTrigger("ToMove");
+            animator.SetBool("Moving", true);
+            if (nextMove.y == -1)
+            {
+                GetComponentInChildren<SpriteRenderer>().flipX = true;
+            }
+            else
+            {
+                GetComponentInChildren<SpriteRenderer>().flipX = false;
+            }
+        }
+
         GridCoord nextGrid = Helper.AddGridCoords(_currentGridPosition, nextMove);
         GiveMovementCommand(nextMove);
 
         // If it has moved forward
-        if (nextMove.y > 0)
+        if (nextMove.y == direction)
         {
             // Check if crossed the road
             if (HasCrossedTheRoad(nextGrid))
@@ -113,10 +130,16 @@ public class BabyForesight : Enemy
             {
                 int gridCentre = (FieldGrid.GetMaxLength() - 1) / 2;
                 GridCoord repositionToCentreMove = new GridCoord(gridCentre - nextGrid.x, 0);
+                if (repositionToCentreMove.y == -1)
+                {
+                    GetComponentInChildren<SpriteRenderer>().flipX = true;
+                } else
+                {
+                    GetComponentInChildren<SpriteRenderer>().flipX = false;
+                }
                 GiveMovementCommand(repositionToCentreMove);
             }
         }
-
         TurnInProgress = false;
     }
 

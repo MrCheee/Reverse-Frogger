@@ -26,6 +26,15 @@ public class MoveToGridCommand : MoveCommand
             UpdateGridOnMovement(unit);
             moveReady = true;
         }
+        if (!executed)
+        {
+            if (unit.GetName() != "Shield" && _moveDirection.x != 0)
+            {
+                bool toFlip = _moveDirection.x < 0;
+                unit.FlipUnitSprite(toFlip);
+            }
+            executed = true;
+        }
         MoveToTarget(unit);
     }
 

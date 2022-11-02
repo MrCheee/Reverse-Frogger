@@ -69,6 +69,7 @@ public class Brute : Enemy
 
                 if (!vehicleBlockingDestination && !bruteBlockingDestination)
                 {
+                    animator.SetTrigger("Knockback");
                     Unit veh = FieldGrid.GetSingleGrid(targetGrid).GetUnitWithTag("Knockback-able Vehicle");
                     veh.IssueCommand(new MoveToTargetGridCommand(destinationGrid));
                 }

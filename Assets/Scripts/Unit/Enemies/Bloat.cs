@@ -25,11 +25,11 @@ public class Bloat : Enemy
 
     protected override void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"Hit by a car! @({_currentGridPosition.x}, {_currentGridPosition.y})...");
-
+        animator.SetTrigger("Killed");
+        string killedInfo = $"{gameObject.GetComponent<Unit>().GetName()} has been run over at Grid [{_currentGridPosition.x}, {_currentGridPosition.y}]!";
+        gameStateManager.EnemyKilled(transform.position, killedInfo);
         other.gameObject.GetComponentInParent<Unit>().DisableUnit(2);
-
-        DestroySelf();
+        DestroySelf(1f);
     }
 
     public override string GetName()

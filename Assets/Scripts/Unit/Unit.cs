@@ -4,7 +4,7 @@ using UnityEngine;
 
 public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
 {
-    [SerializeField] private float moveSpeed = 1f;
+    protected float moveSpeed = 7.5f;
 
     protected int size = 1;
     protected int health = 0;
@@ -14,17 +14,21 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     protected int charging = 0;
     protected int boosted = 0;
 
+    protected bool actionTaken = false;
+
     protected string unitTag;
     protected Queue<Command> commandStack = new Queue<Command>();
     protected Command _currentCommand;
     protected List<GridCoord> movementPattern = new List<GridCoord>();
     protected GameStateManager gameStateManager;
+    protected Animator animator;
     public float yAdjustment { get; protected set; }
     public bool TurnInProgress { get; protected set; }
 
     protected virtual void Awake()
     {
         gameStateManager = GameObject.Find("MainManager").GetComponent<GameStateManager>();
+        animator = GetComponentInChildren<Animator>();
 
         // Each enemy will define its own movement pattern and it will be assigned to the private variable on startup
         SetHealthAndDamage();
@@ -89,6 +93,7 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         if (charging > 0)
         {
             charging -= 1;
+            animator.SetTrigger("Charging");
             TurnInProgress = false;
             return true;
         }
@@ -120,11 +125,11 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         return Helper.vectorDistanceIgnoringYAxis(transform.position, target) <= 0.1f;
     }
 
-    public void DestroySelf()
+    public void DestroySelf(float deathTimer = 0f)
     {
         Debug.Log($"[{gameObject.name}] Destroying self...");
         RemoveFromFieldGridPosition();
-        Destroy(gameObject);
+        Destroy(gameObject, deathTimer);
     }
 
     // [To Be Added] Update  will only run these command execution when in its correct game state
@@ -222,6 +227,14 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     public bool isStunned()
     {
         return skipTurn > 0;
+    }
+
+    public void FlipUnitSprite(bool flip)
+    {
+        if (tag == "Enemy")
+        {
+            GetComponentInChildren<SpriteRenderer>().flipX = flip;
+        }
     }
 
     public virtual string GetName()

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Linq;
+using UnityEngine;
 
 public class Skater : Enemy
 {
@@ -33,7 +34,12 @@ public class Skater : Enemy
 
     public override IEnumerator PostTurnActions()
     {
-        ReverseMotion();
+        if (actionTaken)
+        {
+            ReverseMotion();
+            actionTaken = false;
+        }
+        animator.SetBool("Moving", false);
         TurnInProgress = false;
         yield break;
     }

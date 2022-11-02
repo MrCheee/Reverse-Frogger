@@ -32,11 +32,11 @@ public class Vaulter : Enemy
         {
             if (!Helper.IsVehicleInTheWay(nextGrid))
             {
-                commandStack.Enqueue(new RotateCommand(Vector3.left, 90, 90));
+                GetComponentInChildren<VaultRotator>().GiveRotateCommand(Vector3.left, 75f);
                 vaultReady = true;
             }
         }
-
+        animator.SetBool("Moving", true);
         TurnInProgress = false;
         yield break;
     }
@@ -113,6 +113,7 @@ public class Vaulter : Enemy
             yield return new WaitForSeconds(0.2f);
         }
         TurnInProgress = false;
+        animator.SetBool("Moving", false);
     }
 
     public void TakeVehicleInNextGridAction()

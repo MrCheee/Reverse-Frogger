@@ -10,7 +10,7 @@ public class Charger : Enemy
 
     protected override void SetChargePerTurn()
     {
-        chargePerTurn = 3;
+        chargePerTurn = 1;
         charging = chargePerTurn;
     }
 
@@ -21,13 +21,6 @@ public class Charger : Enemy
         {
             movementPattern.Add(new GridCoord(0, direction));
         }
-    }
-
-    public override IEnumerator PostTurnActions()
-    {
-        charging = chargePerTurn;
-        TurnInProgress = false;
-        yield break;
     }
 
     public override void TakeVehicleInTheWayAction()

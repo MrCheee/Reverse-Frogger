@@ -56,10 +56,10 @@ public class GameStateManager : MonoBehaviour
         LoadBestScore();
 
         newEnemies = new Dictionary<string, Sprite>();
-        for (int i = 0; i < enemyNames.Length; i++)
-        {
-            newEnemies.Add(enemyNames[i], enemyImgs[i]);
-        }
+        //for (int i = 0; i < enemyNames.Length; i++)
+        //{
+        //    newEnemies.Add(enemyNames[i], enemyImgs[i]);
+        //}
     }
 
     IEnumerator CheckAndUpdateGameState()

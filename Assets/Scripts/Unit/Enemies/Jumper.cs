@@ -1,4 +1,6 @@
-﻿public class Jumper : Enemy
+﻿using System.Collections;
+
+public class Jumper : Enemy
 {
     protected override void SetHealthAndDamage()
     {
@@ -19,6 +21,8 @@
     public override void TakeVehicleInTheWayAction()
     {
         yAdjustment = 3;
+        animator.SetTrigger("Jump");
+        animator.SetBool("Moving", false);
         commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction)));
     }
 
@@ -26,7 +30,13 @@
     {
         if (yAdjustment == 3)
         {
+            animator.SetTrigger("Jump");
+            animator.SetBool("Moving", false);
             commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction), yAdjustment));
+        }
+        else
+        {
+            animator.SetBool("Moving", true);
         }
         yAdjustment = 0;
     }
