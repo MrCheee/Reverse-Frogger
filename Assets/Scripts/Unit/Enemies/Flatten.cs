@@ -58,7 +58,7 @@ public class Flatten : Enemy
 
     public override string GetName()
     {
-        return "Flatten";
+        return "Mutated Blood";
     }
 
     public override string GetDescription()

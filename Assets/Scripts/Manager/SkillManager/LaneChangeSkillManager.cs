@@ -15,8 +15,8 @@ public class LaneChangeSkillManager : ISkillManager
     private RectTransform laneChangeUI;
     private Button laneChangeUpButton;
     private Button laneChangeDownButton;
-    private RectTransform laneChangeUpButtonImg;
-    private RectTransform laneChangeDownButtonImg;
+    private Image laneChangeUpButtonImg;
+    private Image laneChangeDownButtonImg;
 
     private Color laneChangeOnColor;
     private Color laneChangeOffColor;
@@ -38,15 +38,15 @@ public class LaneChangeSkillManager : ISkillManager
         laneChangeUI = GameObject.Find("LaneChangeDirections").GetComponent<RectTransform>();
         laneChangeUpButton = GameObject.Find("LaneChangeUp").GetComponent<Button>();
         laneChangeDownButton = GameObject.Find("LaneChangeDown").GetComponent<Button>();
-        laneChangeUpButtonImg = GameObject.Find("LaneChangeUpImage").GetComponent<RectTransform>();
-        laneChangeDownButtonImg = GameObject.Find("LaneChangeDownImage").GetComponent<RectTransform>();
+        laneChangeUpButtonImg = GameObject.Find("LaneChangeUp").GetComponent<Image>();
+        laneChangeDownButtonImg = GameObject.Find("LaneChangeDown").GetComponent<Image>();
 
         laneChangeUpButton.onClick.AddListener(delegate { AssignLaneChangeUp(); });
         laneChangeDownButton.onClick.AddListener(delegate { AssignLaneChangeDown(); });
 
-        laneChangeOnColor = new Color(255, 182, 0, 0.5f);
-        laneChangeOffColor = new Color(161, 161, 161, 0.5f);
-        laneChangeBlockColor = new Color(255, 0, 0, 0.5f);
+        laneChangeOnColor = new Color(255, 182, 0, 0.75f);
+        laneChangeOffColor = new Color(255, 255, 255, 0.75f);
+        laneChangeBlockColor = new Color(255, 0, 0, 0.75f);
 
         SkillMarker = GameObject.Find("LaneChangeSkillMarker");
     }
@@ -277,20 +277,20 @@ public class LaneChangeSkillManager : ISkillManager
         }
     }
 
-    private void TurnOnLaneChangeButton(RectTransform buttonImg)
+    private void TurnOnLaneChangeButton(Image buttonImg)
     {
-        buttonImg.GetComponent<Image>().color = laneChangeOnColor;
+        buttonImg.color = laneChangeOnColor;
     }
 
-    private void TurnOffLaneChangeButton(RectTransform buttonImg)
+    private void TurnOffLaneChangeButton(Image buttonImg)
     {
-        buttonImg.GetComponent<Image>().color = laneChangeOffColor;
+        buttonImg.color = laneChangeOffColor;
     }
 
-    private void BlockLaneChangeButton(Button button, RectTransform buttonImg)
+    private void BlockLaneChangeButton(Button button, Image buttonImg)
     {
         button.enabled = false;
-        buttonImg.GetComponent<Image>().color = laneChangeBlockColor;
+        buttonImg.color = laneChangeBlockColor;
     }
 
     private Vector3 CalculateScreenPosFromUnitHeadPosition()

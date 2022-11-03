@@ -21,7 +21,7 @@ public class Soldier : Enemy
 
     public override string GetName()
     {
-        return "Soldier";
+        return "Blob";
     }
 
     public override string GetDescription()

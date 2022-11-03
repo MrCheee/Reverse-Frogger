@@ -48,7 +48,7 @@ public class Jumper : Enemy
 
     public override string GetName()
     {
-        return "Jumper";
+        return "Imp";
     }
 
     public override string GetDescription()

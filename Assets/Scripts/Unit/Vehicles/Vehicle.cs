@@ -96,6 +96,7 @@ public abstract class Vehicle : Unit
     {
         return true;
     }
+
     public override IEnumerator TakeTurn()
     {
         int retries = 0;
@@ -105,9 +106,10 @@ public abstract class Vehicle : Unit
 
         if (ToSkipTurn()) yield break;
 
+        animator.SetBool("Moving", true);
+
         actionTaken = true;
         TurnInProgress = true;
-        PreTurnActions();
 
         PrepareMovement(out Queue<GridCoord> moveQueue, out GridCoord nextMove, out GridCoord nextGrid);
 
@@ -148,7 +150,7 @@ public abstract class Vehicle : Unit
             yield return new WaitForSeconds(0.2f);
         }
         TurnInProgress = false;
-        PostTurnActions();
+        animator.SetBool("Moving", false);
     }
 
     void PrepareMovement(out Queue<GridCoord> moveQueue, out GridCoord nextMove, out GridCoord nextGrid)

@@ -145,7 +145,7 @@ public class BabyForesight : Enemy
 
     public override string GetName()
     {
-        return "Foresight";
+        return "Mutated Brain";
     }
 
     public override string GetDescription()

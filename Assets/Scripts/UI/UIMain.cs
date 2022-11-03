@@ -25,6 +25,7 @@ public class UIMain : MonoBehaviour
     public TextMeshProUGUI LevelText;
     public TextMeshProUGUI KillsText;
     public TextMeshProUGUI BestScoreText;
+    public GameObject ReferenceGrid;
 
     GameLogWindow GameLogWindow;
     GameStateToggles gameStateToggles;
@@ -121,9 +122,9 @@ public class UIMain : MonoBehaviour
         GameOverPopUp.gameObject.SetActive(true);
     }
 
-    public void DisplayNewEnemy(Enemy enemyUnit, Sprite enemyImage)
+    public void DisplayNewEnemy(Enemy enemyUnit)
     {
-        NewEnemyPopUp.DisplayNewEnemy(enemyUnit, enemyImage);
+        NewEnemyPopUp.DisplayNewEnemy(enemyUnit);
     }
 
     public void ActivateVehicleSelectionUI()
@@ -186,5 +187,17 @@ public class UIMain : MonoBehaviour
         var killedUI = Instantiate(EnemyKilledPrefab, GameCamera.WorldToScreenPoint(killedPos), EnemyKilledPrefab.transform.rotation, transform);
         killedUI.transform.localScale -= new Vector3(0.4f, 0.4f, 0.4f);
         killedUI.transform.SetSiblingIndex(0);
+    }
+
+    public void ToggleReferenceGrid()
+    {
+        if (ReferenceGrid.activeInHierarchy)
+        {
+            ReferenceGrid.SetActive(false);
+        }
+        else
+        {
+            ReferenceGrid.SetActive(true);
+        }
     }
 }

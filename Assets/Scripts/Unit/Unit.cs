@@ -21,7 +21,7 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     protected Command _currentCommand;
     protected List<GridCoord> movementPattern = new List<GridCoord>();
     protected GameStateManager gameStateManager;
-    protected Animator animator;
+    public Animator animator;
     public float yAdjustment { get; protected set; }
     public bool TurnInProgress { get; protected set; }
 

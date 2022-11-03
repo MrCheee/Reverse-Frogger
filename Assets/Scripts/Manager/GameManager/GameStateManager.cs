@@ -21,9 +21,7 @@ public class GameStateManager : MonoBehaviour
     bool gameStart = true;
     GameState gameStateIndex = GameState.Initialisation;
     bool playerTurnInProgress = false;
-    [SerializeField] string[] enemyNames;
-    [SerializeField] Sprite[] enemyImgs;
-    Dictionary<string, Sprite> newEnemies;
+    HashSet<string> newEnemies;
 
     int playerHealth = 10;
     int playerSkillOrb = 10;
@@ -55,11 +53,19 @@ public class GameStateManager : MonoBehaviour
 
         LoadBestScore();
 
-        newEnemies = new Dictionary<string, Sprite>();
-        //for (int i = 0; i < enemyNames.Length; i++)
-        //{
-        //    newEnemies.Add(enemyNames[i], enemyImgs[i]);
-        //}
+        newEnemies = new HashSet<string>() { 
+            "Blob", 
+            "Ghoul", 
+            "Killer Crab", 
+            "Charger",  
+            "Imp", 
+            "Mutated Vaulter",
+            "Minotaur", 
+            "Shark Soldier", 
+            "Mutated Brain", 
+            "Bloat", 
+            "Mutated Blood" 
+        };
     }
 
     IEnumerator CheckAndUpdateGameState()
@@ -291,9 +297,9 @@ public class GameStateManager : MonoBehaviour
         {
             Enemy enemyUnit = enemy.GetComponent<Enemy>();
             string enemyName = enemyUnit.GetName();
-            if (newEnemies.ContainsKey(enemyName))
+            if (newEnemies.Contains(enemyName))
             {
-                uiMain.DisplayNewEnemy(enemyUnit, newEnemies[enemyName]);
+                uiMain.DisplayNewEnemy(enemyUnit);
                 newEnemies.Remove(enemyName);
             }
         }

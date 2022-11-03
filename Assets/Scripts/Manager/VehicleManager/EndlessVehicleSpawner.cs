@@ -34,7 +34,7 @@ public class EndlessVehicleSpawner : MonoBehaviour, IVehicleSpawner
             VehicleType.Car,
             VehicleType.FastCar,
             VehicleType.FastCar,
-            VehicleType.Motorbike,
+            //VehicleType.Motorbike,
             VehicleType.Truck,
             VehicleType.Bus
         };
@@ -58,7 +58,17 @@ public class EndlessVehicleSpawner : MonoBehaviour, IVehicleSpawner
             GameObject veh = Instantiate(vehPrefabs[(int)vehIndex], spawnPos, spawnRotation);
 
             veh.GetComponent<Vehicle>().AddToFieldGridPosition(spawnGrid);
-            if (spawnY < dividerY) veh.GetComponent<Vehicle>().ReverseMotion();
+            if (spawnY < dividerY)
+            {
+                veh.GetComponent<Vehicle>().ReverseMotion();
+            }
+            else
+            {
+                foreach (SpriteRenderer vehSprite in veh.GetComponentsInChildren<SpriteRenderer>())
+                {
+                    vehSprite.flipY = true;
+                }
+            }
         }
     }
 
@@ -86,7 +96,17 @@ public class EndlessVehicleSpawner : MonoBehaviour, IVehicleSpawner
             GameObject veh = Instantiate(vehPrefabs[(int)vehIndex], spawnPos, spawnRotation);
 
             veh.GetComponent<Vehicle>().AddToFieldGridPosition(spawnGrid);
-            if (spawnY < dividerY) veh.GetComponent<Vehicle>().ReverseMotion();
+            if (spawnY < dividerY)
+            {
+                veh.GetComponent<Vehicle>().ReverseMotion();
+            }
+            else
+            {
+                foreach (SpriteRenderer vehSprite in veh.GetComponentsInChildren<SpriteRenderer>())
+                {
+                    vehSprite.flipY = true;
+                }
+            }
         }
     }
 

@@ -14,18 +14,18 @@
 
     public override void TakeVehicleInTheWayAction()
     {
-        skipTurn = 2;
+        skipTurn = 1;
         ExecuteConcussedMovement();
     }
 
     public override string GetName()
     {
-        return "Sprinter";
+        return "Ghoul";
     }
 
     public override string GetDescription()
     {
         return "Movement Pattern: <br>-Moves 2 step forward per turn. <br> <br>" +
-            "Vehicle in the way: <br>-Runs into the vehicle and becomes stunned for 2 turns.";
+            "Vehicle in the way: <br>-Runs into the vehicle and becomes stunned for 1 turn.";
     }
 }

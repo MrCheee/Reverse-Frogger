@@ -51,12 +51,12 @@ public class Skater : Enemy
 
     public override string GetName()
     {
-        return "Skater";
+        return "Killer Crab";
     }
 
     public override string GetDescription()
     {
-        return "Movement Pattern: <br>-Moves 1 step forward and left or forward and right, alternating between them. <br> <br>" +
+        return "Movement Pattern: <br>-Moves 1 step diagonally forward (left or right), alternating between left and right. <br> <br>" +
             "Vehicle in the way: <br>-Runs into the vehicle, becomes stunned for 1 turn, and is displaced horizontally.";
     }
 }

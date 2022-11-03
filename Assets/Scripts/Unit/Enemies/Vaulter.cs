@@ -87,6 +87,7 @@ public class Vaulter : Enemy
             {
                 if (Helper.IsVehicleInTheWay(nextGrid))
                 {
+                    Debug.Log("Not vaulted, and vehicle in the way.");
                     TakeVehicleInNextGridAction();
                     if (HaltMovementByVehicleInTheWay()) break;
                 }
@@ -118,7 +119,6 @@ public class Vaulter : Enemy
 
     public void TakeVehicleInNextGridAction()
     {
-        GridCoord currentGrid = GetCurrentHeadGridPosition();
         if (yAdjustment == 0)  // If not on another vehicle, then give "knocked" movement and skip turn
         {
             skipTurn = 1;
@@ -182,7 +182,7 @@ public class Vaulter : Enemy
 
     public override string GetName()
     {
-        return "Vaulter";
+        return "Mutated Vaulter";
     }
 
     public override string GetDescription()

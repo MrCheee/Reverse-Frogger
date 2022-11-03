@@ -112,7 +112,7 @@ public class SingleGrid : ISingleGrid
 
     public Vector3 GetCornerPoint(int right, int top)
     {
-        return new Vector3((float)(_centrePoint.x + right * 1.5), 0, (float)(_centrePoint.z + top * 2));
+        return new Vector3((float)(_centrePoint.x + right * 1.5), 0, (float)(_centrePoint.z + top * 1.5));
     }
 
     public Vector3 GetInBetweenPoint(int front, int top)

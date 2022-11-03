@@ -110,7 +110,7 @@ public class Brute : Enemy
 
     public override string GetName()
     {
-        return "Brute";
+        return "Minotaur";
     }
 
     public override string GetDescription()
