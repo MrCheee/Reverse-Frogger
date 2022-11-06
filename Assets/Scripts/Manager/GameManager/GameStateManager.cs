@@ -33,6 +33,7 @@ public class GameStateManager : MonoBehaviour
 
     float waitTime = 0.5f;
     float shortWaitTime = 0.25f;
+    float gameStartWaitTime = 2f;
 
     // Start is called before the first frame update
     void Start()
@@ -53,6 +54,7 @@ public class GameStateManager : MonoBehaviour
 
         LoadBestScore();
 
+        //newEnemies = new HashSet<string>();
         newEnemies = new HashSet<string>() { 
             "Blob", 
             "Ghoul", 
@@ -85,6 +87,7 @@ public class GameStateManager : MonoBehaviour
                         Debug.Log("Init --> EnemySpawn");
                         gameStateIndex = GameState.EnemySpawn;
                         uiMain.UpdateGameState(gameStateIndex);
+                        yield return new WaitForSeconds(gameStartWaitTime);
                     }
                     break;
 
@@ -92,8 +95,7 @@ public class GameStateManager : MonoBehaviour
                     uiMain.UpdateContent();
                     enemySpawner.SpawnEnemies();
                     FieldGrid.TriggerGridsRepositioning();
-                    CheckAndDisplayNewEnemies();
-
+                    
                     Debug.Log("EnemySpawn --> VehicleSpawn");
                     gameStateIndex = GameState.VehicleSpawn;
                     break;
@@ -104,6 +106,7 @@ public class GameStateManager : MonoBehaviour
 
                     Debug.Log("VehicleSpawn --> Player");
                     gameStateIndex = GameState.Player;
+                    CheckAndDisplayNewEnemies();
                     playerTurnInProgress = true;
                     playerFinishButton.gameObject.SetActive(true);
                     EnableLaneSpeedToggles();

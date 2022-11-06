@@ -11,7 +11,7 @@ public class BoostUnitSkillManager : ISkillManager
 
     public BoostUnitSkillManager()
     {
-        SkillMarker = GameObject.Find("BoostSkillMarker");
+        SkillMarker = GameObject.Find("BoostTarget");
         m_SkillType = SkillType.BoostUnit;
         m_Skill = null;
         m_SkillCost = 3;

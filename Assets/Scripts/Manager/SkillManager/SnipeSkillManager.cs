@@ -15,7 +15,7 @@ public class SnipeSkillManager : ISkillManager
         m_Skill = null;
         m_SkillCost = 8;
         m_LockedIn = false;
-        SkillMarker = GameObject.Find("SnipeSkillMarker");
+        SkillMarker = GameObject.Find("SnipeTarget");
     }
 
     public void InitialiseSkill(Unit unit)

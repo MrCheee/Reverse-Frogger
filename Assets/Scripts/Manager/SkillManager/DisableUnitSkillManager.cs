@@ -15,7 +15,7 @@ public class DisableUnitSkillManager : ISkillManager
         m_Skill = null;
         m_SkillCost = 3;
         m_LockedIn = false;
-        SkillMarker = GameObject.Find("DisableSkillMarker");
+        SkillMarker = GameObject.Find("DisableTarget");
     }
 
     public void InitialiseSkill(Unit unit)

@@ -3,6 +3,7 @@
 public class SlidingWindow : MonoBehaviour
 {
     protected bool opened;
+    protected bool move;
     protected Vector3 closedPosition;
     protected Vector3 openedPosition;
     protected float moveSpeed;
@@ -10,41 +11,69 @@ public class SlidingWindow : MonoBehaviour
     private void Start()
     {
         opened = false;
-        closedPosition = new Vector3(2139, 514, 0); // 219, -26, 0
-        openedPosition = new Vector3(1702, 514, 0);
+        closedPosition = new Vector3(2135, 724, 0); // 219, -26, 0
+        openedPosition = new Vector3(1695, 724, 0);
         moveSpeed = 700f;
     }
 
     private void Update()
     {
-        if (opened)
+        if (move)
         {
-            if (!ReachedDestination(openedPosition))
+            if (opened)
             {
-                transform.Translate(Vector3.left * moveSpeed * Time.deltaTime);
+                if (ReachedDestination(openedPosition))
+                {
+                    move = false;
+                }
+                else
+                {
+                    transform.Translate(Vector3.left * moveSpeed * Time.deltaTime);
+                    if (transform.position.x < openedPosition.x)
+                    {
+                        transform.position = openedPosition;
+                    }
+                }
             }
-        }
-        else
-        {
-            if (!ReachedDestination(closedPosition))
+            else
             {
-                transform.Translate(Vector3.right * moveSpeed * Time.deltaTime);
+                if (ReachedDestination(closedPosition))
+                {
+                    move = false;
+                }
+                else
+                {
+                    transform.Translate(Vector3.right * moveSpeed * Time.deltaTime);
+                    if (transform.position.x > closedPosition.x)
+                    {
+                        transform.position = closedPosition;
+                    }
+                }
             }
         }
     }
 
     bool ReachedDestination(Vector3 target)
     {
-        return Vector3.Distance(transform.position, target) <= 1f;
+        return Vector3.Distance(transform.position, target) <= 0.5f;
     }
 
-    public void OpenLogWindow()
+    public void ToggleWindow()
     {
-        opened = true;
+        move = true;
+        if (opened)
+        {
+            opened = false;
+        }
+        else
+        {
+            opened = true;
+        }
     }
 
-    public void CloseLogWindow()
+    public void CloseWindow()
     {
+        move = true;
         opened = false;
     }
 }

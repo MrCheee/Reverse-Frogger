@@ -40,10 +40,10 @@ public class EndlessEnemySpawner : MonoBehaviour, IEnemySpawner
     {
         _currentSpawnList = new List<EnemyType>()
         {
-            EnemyType.Vaulter,
-            EnemyType.Jumper
+            EnemyType.Soldier,
+            EnemyType.Soldier
         };
-        forcedSpawn = EnemyType.Jumper;
+        forcedSpawn = EnemyType.Soldier;
         level = 1;
         spawnCount = 2;
     }

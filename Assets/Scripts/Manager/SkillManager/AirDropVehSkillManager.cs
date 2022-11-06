@@ -18,8 +18,6 @@ public class AirDropVehSkillManager : ISkillManager
 
     GridCoord currentVehicleSkillHoverGrid;
 
-    GameObject SkillMarker;
-
     public AirDropVehSkillManager()
     {
         m_SkillType = SkillType.AirDropVeh;
@@ -34,8 +32,6 @@ public class AirDropVehSkillManager : ISkillManager
         uiMain = UIMain.Instance;
         invalidVehicleDropSelectionImg = GameObject.Find("InvalidGridSelection").GetComponent<Image>();
         validVehicleDropSelectionImg = GameObject.Find("ValidGridSelection").GetComponent<Image>();
-
-        SkillMarker = GameObject.Find("AirdropSkillMarker");
     }
 
     public void InitialiseSkill(Unit unit)
@@ -91,8 +87,6 @@ public class AirDropVehSkillManager : ISkillManager
                 Debug.Log($"[AirDropVeh] Ready for execution, target at ({currentTargetedGrid.x}, {currentTargetedGrid.y})");
                 m_LockedIn = true;
                 completedSkill = true;
-                SkillMarker.transform.position = FieldGrid.GetSingleGrid(currentTargetedGrid).GetGridCentrePoint();
-                SkillMarker.SetActive(true);
             }
             else
             {
@@ -156,7 +150,6 @@ public class AirDropVehSkillManager : ISkillManager
         m_Skill = null;
         m_LockedIn = false;
         validVehicleDropSelectionImg.gameObject.SetActive(false);
-        SkillMarker.SetActive(false);
     }
 
     public void ActivateSkillUI()
@@ -175,7 +168,6 @@ public class AirDropVehSkillManager : ISkillManager
         {
             m_Skill.Execute();
             RemoveSkillTarget();
-            SkillMarker.SetActive(false);
         }
     }
 

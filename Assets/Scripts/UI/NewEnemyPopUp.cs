@@ -34,7 +34,9 @@ public class NewEnemyPopUp : MonoBehaviour
 
             SpriteRenderer enemySpriteRenderer = enemyUnit.GetComponentInChildren<SpriteRenderer>();
             EnemyImage.sprite = enemySpriteRenderer.sprite;
-            EnemyImage.color = enemySpriteRenderer.color;
+            Color tempColor = enemySpriteRenderer.color;
+            tempColor.a = 1f;
+            EnemyImage.color = tempColor;
         }
     }
 
@@ -46,7 +48,9 @@ public class NewEnemyPopUp : MonoBehaviour
             Name.text = newEnemy.name;
             Description.text = newEnemy.description;
             EnemyImage.sprite = newEnemy.sprite;
-            EnemyImage.color = newEnemy.spriteColor;
+            Color tempColor = newEnemy.spriteColor;
+            tempColor.a = 1f;
+            EnemyImage.color = tempColor;
         }
         else
         {

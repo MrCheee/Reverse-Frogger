@@ -18,11 +18,9 @@ public class LaneChangeSkillManager : ISkillManager
     private Image laneChangeUpButtonImg;
     private Image laneChangeDownButtonImg;
 
-    private Color laneChangeOnColor;
-    private Color laneChangeOffColor;
-    private Color laneChangeBlockColor;
-
-    GameObject SkillMarker;
+    private Color laneChangeOnColor = new Color(0.07f, 1, 0, .5f);
+    private Color laneChangeOffColor = new Color(0.35f, 0.35f, 0.35f, .5f);
+    private Color laneChangeBlockColor = new Color(1, 0, 0, .5f);
 
     public LaneChangeSkillManager()
     {
@@ -38,17 +36,11 @@ public class LaneChangeSkillManager : ISkillManager
         laneChangeUI = GameObject.Find("LaneChangeDirections").GetComponent<RectTransform>();
         laneChangeUpButton = GameObject.Find("LaneChangeUp").GetComponent<Button>();
         laneChangeDownButton = GameObject.Find("LaneChangeDown").GetComponent<Button>();
-        laneChangeUpButtonImg = GameObject.Find("LaneChangeUp").GetComponent<Image>();
-        laneChangeDownButtonImg = GameObject.Find("LaneChangeDown").GetComponent<Image>();
+        laneChangeUpButtonImg = GameObject.Find("LaneChangeUpColor").GetComponent<Image>();
+        laneChangeDownButtonImg = GameObject.Find("LaneChangeDownColor").GetComponent<Image>();
 
         laneChangeUpButton.onClick.AddListener(delegate { AssignLaneChangeUp(); });
         laneChangeDownButton.onClick.AddListener(delegate { AssignLaneChangeDown(); });
-
-        laneChangeOnColor = new Color(255, 182, 0, 0.75f);
-        laneChangeOffColor = new Color(255, 255, 255, 0.75f);
-        laneChangeBlockColor = new Color(255, 0, 0, 0.75f);
-
-        SkillMarker = GameObject.Find("LaneChangeSkillMarker");
     }
 
     public void InitialiseSkill(Unit unit)
@@ -83,8 +75,6 @@ public class LaneChangeSkillManager : ISkillManager
             {
                 m_LockedIn = true;
                 completedSkillSelection = true;
-                SkillMarker.transform.position = m_Skill.unit.transform.position;
-                SkillMarker.SetActive(true);
             }
         }
         return completedSkillSelection;
@@ -107,7 +97,6 @@ public class LaneChangeSkillManager : ISkillManager
         laneChangeUI.gameObject.SetActive(false);
         TurnOffLaneChangeButton(laneChangeUpButtonImg);
         TurnOffLaneChangeButton(laneChangeDownButtonImg);
-        SkillMarker.SetActive(false);
     }
 
     public void ProcessSelection(Unit selectedUnit)
@@ -293,20 +282,12 @@ public class LaneChangeSkillManager : ISkillManager
         buttonImg.color = laneChangeBlockColor;
     }
 
-    private Vector3 CalculateScreenPosFromUnitHeadPosition()
-    {
-        GridCoord selectedGrid = m_Skill.unit.GetCurrentHeadGridPosition();
-        Vector3 selectedGridPos = FieldGrid.GetSingleGrid(selectedGrid).GetGridCentrePoint();
-        return GameCamera.WorldToScreenPoint(selectedGridPos);
-    }
-
     public void ExecuteSkill()
     {
         if (m_LockedIn)
         {
             m_Skill.Execute();
             RemoveSkillTarget();
-            SkillMarker.SetActive(false);
         }
     }
 

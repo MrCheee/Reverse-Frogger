@@ -1,8 +1,6 @@
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class UIMain : MonoBehaviour
 {
@@ -15,7 +13,7 @@ public class UIMain : MonoBehaviour
         void GetContent(ref List<Status> content);
     }
 
-    public RectTransform StartMenu;
+    public StartMenu StartMenu;
     public InfoPopup InfoPopup;
     public NewEnemyPopUp NewEnemyPopUp;
     public RectTransform GameOverPopUp;
@@ -28,7 +26,7 @@ public class UIMain : MonoBehaviour
     public GameObject ReferenceGrid;
 
     GameLogWindow GameLogWindow;
-    GameStateToggles gameStateToggles;
+    GameStateIndicators gameStateIndicators;
 
     [SerializeField] Camera GameCamera;
     public GameObject EnemyKilledPrefab;
@@ -41,7 +39,7 @@ public class UIMain : MonoBehaviour
         Instance = this;
         InfoPopup.gameObject.SetActive(false);
         GameLogWindow = GameObject.Find("GameLogWindow").GetComponent<GameLogWindow>();
-        gameStateToggles = GameObject.Find("GameStateIndicator").GetComponent<GameStateToggles>();
+        gameStateIndicators = GameObject.Find("GameStateIndicatorYellow").GetComponent<GameStateIndicators>();
     }
 
     private void OnDestroy()
@@ -51,7 +49,8 @@ public class UIMain : MonoBehaviour
 
     public void CloseStartMenu()
     {
-        StartMenu.gameObject.SetActive(false);
+        //StartMenu.gameObject.SetActive(false);
+        StartMenu.CloseMenu();
     }
 
     public void SetNewInfoContent(IUIInfoContent content)
@@ -83,22 +82,24 @@ public class UIMain : MonoBehaviour
             //Sprite icon = null;
             //if (ResourceDB != null)
             //    icon = ResourceDB.GetItem(entry.ResourceId)?.Icone;
-            if (entry.statusType == "Health")
-            {
-                if (entry.count == 0)
-                {
-                    InfoPopup.UpdateHealthContent("DEAD", entry.count);
-                }
-                else
-                {
-                    InfoPopup.UpdateHealthContent("HP", entry.count);
-                }
-            }
-            else
-            {
-                if (entry.count == 0) continue;
-                InfoPopup.AddToStatusContent(entry.statusType, entry.count);
-            }
+            //if (entry.statusType == "Health")
+            //{
+            //    if (entry.count == 0)
+            //    {
+            //        InfoPopup.UpdateHealthContent("DEAD", entry.count);
+            //    }
+            //    else
+            //    {
+            //        InfoPopup.UpdateHealthContent("HP", entry.count);
+            //    }
+            //}
+            //else
+            //{
+            //    if (entry.count == 0) continue;
+            //    InfoPopup.AddToStatusContent(entry.statusType, entry.count);
+            //}
+            if (entry.count == 0) continue;
+            InfoPopup.AddToStatusContent(entry.statusType, entry.count);
         }
     }
 
@@ -179,7 +180,7 @@ public class UIMain : MonoBehaviour
 
     public void UpdateGameState(GameState currentGameState)
     {
-        gameStateToggles.UpdateGameState(currentGameState);
+        gameStateIndicators.UpdateGameState(currentGameState);
     }
 
     public void DisplayKilledEnemy(Vector3 killedPos)
