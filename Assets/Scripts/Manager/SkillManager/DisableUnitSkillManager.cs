@@ -8,6 +8,7 @@ public class DisableUnitSkillManager : ISkillManager
     public bool m_LockedIn { get; set; }
 
     GameObject SkillMarker;
+    GameObject SkillIcon;
 
     public DisableUnitSkillManager()
     {
@@ -16,6 +17,7 @@ public class DisableUnitSkillManager : ISkillManager
         m_SkillCost = 3;
         m_LockedIn = false;
         SkillMarker = GameObject.Find("DisableTarget");
+        SkillIcon = GameObject.Find("DisableIcon");
     }
 
     public void InitialiseSkill(Unit unit)
@@ -44,10 +46,10 @@ public class DisableUnitSkillManager : ISkillManager
     {
         if (selectedUnit != null)
         {
-            UpdateSkillUnit(selectedUnit);
             m_LockedIn = true;
-            SkillMarker.transform.position = selectedUnit.transform.position;
-            SkillMarker.SetActive(true);
+            selectedUnit.AddTargetedSkill(m_SkillType);
+            UpdateSkillUnit(selectedUnit);
+            PositionSkillMarkerUI();
             return true;
         }
         else
@@ -73,6 +75,10 @@ public class DisableUnitSkillManager : ISkillManager
 
     public void RemoveSkillTarget()
     {
+        if (m_Skill != null && m_Skill.unit != null)
+        {
+            m_Skill.unit.RemoveTargetedSkill(m_SkillType);
+        }
         m_Skill = null;
         m_LockedIn = false;
         SkillMarker.SetActive(false);
@@ -96,5 +102,15 @@ public class DisableUnitSkillManager : ISkillManager
     {
         Unit targetUnit = m_Skill.unit.GetComponent<Unit>();
         return $"Disable Unit Skill used on {targetUnit.GetName()} at Grid [{targetUnit.GetCurrentHeadGridPosition().x}, {targetUnit.GetCurrentHeadGridPosition().y}].";
+    }
+
+    public void PositionSkillMarkerUI()
+    {
+        if (m_Skill != null)
+        {
+            SkillMarker.transform.position = m_Skill.unit.transform.position;
+            SkillIcon.transform.localPosition = new Vector3(m_Skill.unit.GetTargetedCount() * 1.25f, 0, -0.8f);
+            SkillMarker.SetActive(true);
+        }
     }
 }

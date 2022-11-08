@@ -8,6 +8,7 @@ public class SnipeSkillManager : ISkillManager
     public bool m_LockedIn { get; set; }
 
     GameObject SkillMarker;
+    GameObject SkillIcon;
 
     public SnipeSkillManager()
     {
@@ -16,6 +17,7 @@ public class SnipeSkillManager : ISkillManager
         m_SkillCost = 8;
         m_LockedIn = false;
         SkillMarker = GameObject.Find("SnipeTarget");
+        SkillIcon = GameObject.Find("SnipeIcon");
     }
 
     public void InitialiseSkill(Unit unit)
@@ -48,10 +50,10 @@ public class SnipeSkillManager : ISkillManager
             // Snipe cannot be used on enemies on top of vehicles (dangerous thematically)
             if (selectedUnit.GetComponent<Unit>().yAdjustment != 3)
             {
-                UpdateSkillUnit(selectedUnit);
                 m_LockedIn = true;
-                SkillMarker.transform.position = selectedUnit.transform.position;
-                SkillMarker.SetActive(true);
+                selectedUnit.AddTargetedSkill(m_SkillType);
+                UpdateSkillUnit(selectedUnit);
+                PositionSkillMarkerUI();
                 return true;
             }
             else
@@ -82,6 +84,10 @@ public class SnipeSkillManager : ISkillManager
 
     public void RemoveSkillTarget()
     {
+        if (m_Skill != null && m_Skill.unit != null)
+        {
+            m_Skill.unit.RemoveTargetedSkill(m_SkillType);
+        }
         m_Skill = null;
         m_LockedIn = false;
         SkillMarker.SetActive(false);
@@ -105,5 +111,15 @@ public class SnipeSkillManager : ISkillManager
     {
         Unit targetUnit = m_Skill.unit.GetComponent<Unit>();
         return $"Snipe Skill used on {targetUnit.GetName()} at Grid [{targetUnit.GetCurrentHeadGridPosition().x}, {targetUnit.GetCurrentHeadGridPosition().y}].";
+    }
+
+    public void PositionSkillMarkerUI()
+    {
+        if (m_Skill != null)
+        {
+            SkillMarker.transform.position = m_Skill.unit.transform.position;
+            SkillIcon.transform.localPosition = new Vector3(m_Skill.unit.GetTargetedCount() * 1.25f, 0, -0.8f);
+            SkillMarker.SetActive(true);
+        }
     }
 }

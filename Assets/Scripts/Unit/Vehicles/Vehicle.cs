@@ -19,18 +19,15 @@ public abstract class Vehicle : Unit
         _currentGridPosition = new GridCoord[size];
         _currentGridPosition[0] = new GridCoord(dividerY, dividerY);
         moveSpeed = 7.5f;
+        chargePerTurn = 0;
+        deathTimer = 1f;
         base.Awake();
     }
 
-    protected override void SetHealthAndDamage()
+    protected override void SetUnitAttributes()
     {
         health = 1;
         damage = 1;
-    }
-
-    protected override void SetChargePerTurn()
-    {
-        chargePerTurn = 0;
     }
 
     protected abstract void SetUpSize();
@@ -199,6 +196,21 @@ public abstract class Vehicle : Unit
         {
             DestroySelf();
         }
+    }
+
+    public override void DestroySelf()
+    {
+        RemoveFromFieldGridPosition();
+        if (health == 0)
+        {
+            DealDamageToPlayer();
+        }
+        Destroy(gameObject, deathTimer);
+    }
+
+    public virtual void DealDamageToPlayer()
+    {
+        gameStateManager.DamagePlayer(1);
     }
 
     public bool HasReachedEndOfRoad()

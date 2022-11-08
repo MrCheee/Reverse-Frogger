@@ -2,15 +2,11 @@
 
 public class Charger : Enemy
 {
-    protected override void SetHealthAndDamage()
+    protected override void SetUnitAttributes()
     {
         health = 1;
         damage = 2;
-    }
-
-    protected override void SetChargePerTurn()
-    {
-        chargePerTurn = 1;
+        chargePerTurn = 0;
         charging = chargePerTurn;
     }
 

@@ -13,11 +13,6 @@ public abstract class Enemy : Unit
         unitTag = "Normal";
     }
 
-    protected override void SetChargePerTurn()
-    {
-        chargePerTurn = 0;
-    }
-
     public override GridCoord GetCurrentHeadGridPosition()
     {
         return _currentGridPosition;
@@ -179,10 +174,16 @@ public abstract class Enemy : Unit
 
     protected virtual void OnTriggerEnter(Collider other)
     {
-        //Debug.Log($"{gameObject.name}: Hit by a car! @({_currentGridPosition.x}, {_currentGridPosition.y})...");
-        string killedInfo = $"{gameObject.GetComponent<Unit>().GetName()} has been run over at Grid [{_currentGridPosition.x}, {_currentGridPosition.y}]!";
-        gameStateManager.EnemyKilled(transform.position, killedInfo);
+        gameStateManager.VehicleHit(other.gameObject.GetComponentInParent<Unit>());
         DestroySelf();
+    }
+
+    public override void DestroySelf()
+    {
+        string killedInfo = $"{gameObject.GetComponent<Unit>().GetName()} has been run over at Grid [{_currentGridPosition.x}, {_currentGridPosition.y}]!";
+        gameStateManager.EnemyKilled(transform.position, killedInfo); 
+        RemoveFromFieldGridPosition();
+        Destroy(gameObject, deathTimer);
     }
 
     public void ChildTriggeredEnter(Collider other)

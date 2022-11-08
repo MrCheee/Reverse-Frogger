@@ -23,7 +23,13 @@ public class UIMain : MonoBehaviour
     public TextMeshProUGUI LevelText;
     public TextMeshProUGUI KillsText;
     public TextMeshProUGUI BestScoreText;
+    public TextMeshProUGUI BestScoreDifficulty;
     public GameObject ReferenceGrid;
+
+    public GameObject DamageTakenInfo;
+    public TextMeshProUGUI DamageTakenText;
+    public GameObject SkillGainInfo;
+    public TextMeshProUGUI SkillGainText;
 
     GameLogWindow GameLogWindow;
     GameStateIndicators gameStateIndicators;
@@ -79,25 +85,6 @@ public class UIMain : MonoBehaviour
         m_CurrentContent.GetContent(ref m_ContentBuffer);
         foreach (var entry in m_ContentBuffer)
         {
-            //Sprite icon = null;
-            //if (ResourceDB != null)
-            //    icon = ResourceDB.GetItem(entry.ResourceId)?.Icone;
-            //if (entry.statusType == "Health")
-            //{
-            //    if (entry.count == 0)
-            //    {
-            //        InfoPopup.UpdateHealthContent("DEAD", entry.count);
-            //    }
-            //    else
-            //    {
-            //        InfoPopup.UpdateHealthContent("HP", entry.count);
-            //    }
-            //}
-            //else
-            //{
-            //    if (entry.count == 0) continue;
-            //    InfoPopup.AddToStatusContent(entry.statusType, entry.count);
-            //}
             if (entry.count == 0) continue;
             InfoPopup.AddToStatusContent(entry.statusType, entry.count);
         }
@@ -113,8 +100,21 @@ public class UIMain : MonoBehaviour
         KillsText.text = kills.ToString();
     }
 
-    public void UpdateBestScore(int bestScore)
+    public void UpdateBestScore(string difficulty, int bestScore)
     {
+        BestScoreDifficulty.text = difficulty;
+        if (difficulty == "Easy")
+        {
+            BestScoreDifficulty.color = Color.green;
+        }
+        else if (difficulty == "Medium")
+        {
+            BestScoreDifficulty.color = Color.yellow;
+        }
+        else if (difficulty == "Hard")
+        {
+            BestScoreDifficulty.color = Color.red;
+        }
         BestScoreText.text = bestScore.ToString();
     }
 
@@ -145,6 +145,11 @@ public class UIMain : MonoBehaviour
 
     public void RemoveHealth(int damage)
     {
+        if (damage > 0)
+        {
+            DamageTakenText.text = damage.ToString();
+            DamageTakenInfo.SetActive(true);
+        }
         HealthBar.RemoveHealth(damage);
     }
 
@@ -171,6 +176,21 @@ public class UIMain : MonoBehaviour
     public void RefreshSkillOrbBar()
     {
         SkillOrbBar.FullRefreshSkillbar();
+    }
+
+    public void DisplaySkillGain(int gainedOrbCount)
+    {
+        if (gainedOrbCount > 0)
+        {
+            SkillGainText.text = gainedOrbCount.ToString();
+            SkillGainInfo.SetActive(true);
+        }
+    }
+
+    public void ResetHealthAndSkillGainInfo()
+    {
+        DamageTakenInfo.SetActive(false);
+        SkillGainInfo.SetActive(false);
     }
 
     public void UpdateGameLog(string newLog)

@@ -180,4 +180,9 @@ public class CallInVehSkillManager : ISkillManager
         Unit targetUnit = m_Skill.unit.GetComponent<Unit>();
         return $"Call in Vehicle Skill used to call in a {targetUnit.GetName()} on Lane {m_Skill.targetGrid.y}";
     }
+
+    public void PositionSkillMarkerUI()
+    {
+        return;
+    }
 }

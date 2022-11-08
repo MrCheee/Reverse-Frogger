@@ -3,6 +3,7 @@
 // for the target
 public class MoveToGridCommand : MoveCommand
 {
+    private float direction = -1f;
     private GridCoord _toMove;
     private GridCoord _targetGrid;
     
@@ -19,7 +20,12 @@ public class MoveToGridCommand : MoveCommand
             GridCoord currentGrid = unit.GetCurrentHeadGridPosition();
             _targetGrid = new GridCoord(currentGrid.x + _toMove.x, currentGrid.y + _toMove.y);
             Vector3 gridCentrePoint = FieldGrid.GetSingleGrid(_targetGrid).GetGridCentrePoint();
+            
             gridCentrePoint.y = unit.yAdjustment;
+            if (unit.yAdjustment > 0)
+            {
+                gridCentrePoint.z -= direction * 1.25f;
+            }
             _target = gridCentrePoint;
             _moveDirection = calculateMoveDirection(_target, unit.transform.position);
 

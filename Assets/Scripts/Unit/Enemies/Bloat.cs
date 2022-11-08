@@ -2,11 +2,14 @@
 
 public class Bloat : Enemy
 {
-    protected override void SetHealthAndDamage()
+    protected override void SetUnitAttributes()
     {
         health = 1;
         damage = 2;
+        deathTimer = 1f;
+        chargePerTurn = 0;
     }
+
     protected override void SetAdditionalTag()
     {
         unitTag = "Bloat";
@@ -26,10 +29,9 @@ public class Bloat : Enemy
     protected override void OnTriggerEnter(Collider other)
     {
         animator.SetTrigger("Killed");
-        string killedInfo = $"{gameObject.GetComponent<Unit>().GetName()} has been run over at Grid [{_currentGridPosition.x}, {_currentGridPosition.y}]!";
-        gameStateManager.EnemyKilled(transform.position, killedInfo);
+        gameStateManager.VehicleHit(other.gameObject.GetComponentInParent<Unit>());
         other.gameObject.GetComponentInParent<Unit>().DisableUnit(2);
-        DestroySelf(1f);
+        DestroySelf();
     }
 
     public override string GetName()

@@ -17,10 +17,11 @@ public class Brute : Enemy
         unitTag = "Brute";
     }
 
-    protected override void SetHealthAndDamage()
+    protected override void SetUnitAttributes()
     {
         health = 2;
         damage = 4;
+        chargePerTurn = 0;
     }
     
     public override void SetMovementPattern()
@@ -72,6 +73,7 @@ public class Brute : Enemy
                     animator.SetTrigger("Knockback");
                     Unit veh = FieldGrid.GetSingleGrid(targetGrid).GetUnitWithTag("Knockback-able Vehicle");
                     veh.IssueCommand(new MoveToTargetGridCommand(destinationGrid));
+                    gameStateManager.VehicleHit(veh, 2);
                 }
             }
         }
@@ -79,27 +81,6 @@ public class Brute : Enemy
 
     public override void TakeVehicleInTheWayAction()
     {
-        //movementBlocked = true;
-        //if (!noKnockbackYPos.Contains(_currentGridPosition.y))   // Brute is in a lane that can knockback vehicles
-        //{
-        //    GridCoord targetGrid = new GridCoord(_currentGridPosition.x, _currentGridPosition.y + direction);
-        //    GridCoord destinationGrid = new GridCoord(_currentGridPosition.x, _currentGridPosition.y + direction * 2);
-        //
-        //    // If vehicle in front is knockback-able, and there is no vehicle blocking its knockback, then knockback and move forward
-        //    if (FieldGrid.GetSingleGrid(targetGrid).IsUnitTagInGrid("Knockback-able Vehicle"))
-        //    {
-        //        if (!Helper.IsVehicleInTheWay(destinationGrid))
-        //        {
-        //            Unit veh = FieldGrid.GetSingleGrid(targetGrid).GetUnitWithTag("Knockback-able Vehicle");
-        //            veh.IssueCommand(new MoveToGridCommand(new GridCoord(0, direction)));
-        //            movementBlocked = false;
-        //        }
-        //    }
-        //}
-        //if (movementBlocked)
-        //{
-        //    ExecuteConcussedMovement();
-        //}
         ExecuteConcussedMovement();
     }
 

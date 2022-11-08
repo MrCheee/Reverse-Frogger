@@ -4,10 +4,11 @@ using UnityEngine;
 
 public class Skater : Enemy
 {
-    protected override void SetHealthAndDamage()
+    protected override void SetUnitAttributes()
     {
         health = 1;
         damage = 1;
+        chargePerTurn = 0;
     }
 
     public override void SetMovementPattern()

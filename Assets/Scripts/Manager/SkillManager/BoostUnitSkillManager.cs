@@ -8,14 +8,16 @@ public class BoostUnitSkillManager : ISkillManager
     public bool m_LockedIn { get; set; }
 
     GameObject SkillMarker;
+    GameObject SkillIcon;
 
     public BoostUnitSkillManager()
     {
-        SkillMarker = GameObject.Find("BoostTarget");
         m_SkillType = SkillType.BoostUnit;
         m_Skill = null;
         m_SkillCost = 3;
         m_LockedIn = false;
+        SkillMarker = GameObject.Find("BoostTarget");
+        SkillIcon = GameObject.Find("BoostIcon");
     }
 
     public void InitialiseSkill(Unit unit)
@@ -44,10 +46,10 @@ public class BoostUnitSkillManager : ISkillManager
     {
         if (selectedUnit != null)
         {
-            UpdateSkillUnit(selectedUnit);
             m_LockedIn = true;
-            SkillMarker.transform.position = selectedUnit.transform.position;
-            SkillMarker.SetActive(true);
+            selectedUnit.AddTargetedSkill(m_SkillType);
+            UpdateSkillUnit(selectedUnit);
+            PositionSkillMarkerUI();
             return true;
         }
         else
@@ -73,6 +75,10 @@ public class BoostUnitSkillManager : ISkillManager
 
     public void RemoveSkillTarget()
     {
+        if (m_Skill != null && m_Skill.unit != null)
+        {
+            m_Skill.unit.RemoveTargetedSkill(m_SkillType);
+        }
         m_Skill = null;
         m_LockedIn = false;
         SkillMarker.SetActive(false);
@@ -96,5 +102,15 @@ public class BoostUnitSkillManager : ISkillManager
     {
         Unit targetUnit = m_Skill.unit.GetComponent<Unit>();
         return $"Boost Unit Skill used on {targetUnit.GetName()} at Grid [{targetUnit.GetCurrentHeadGridPosition().x}, {targetUnit.GetCurrentHeadGridPosition().y}].";
+    }
+
+    public void PositionSkillMarkerUI()
+    {
+        if (m_Skill != null)
+        {
+            SkillMarker.transform.position = m_Skill.unit.transform.position;
+            SkillIcon.transform.localPosition = new Vector3(m_Skill.unit.GetTargetedCount() * 1.25f, 0, -0.8f);
+            SkillMarker.SetActive(true);
+        }
     }
 }

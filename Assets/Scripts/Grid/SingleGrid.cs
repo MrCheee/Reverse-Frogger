@@ -7,7 +7,15 @@ public class SingleGrid : ISingleGrid
 {
     GridCoord _gridCoord;
     Vector3 _centrePoint;
+    float direction = -1f;
     Dictionary<int, GameObject> _objectsID = new Dictionary<int, GameObject>();
+    Dictionary<string, float> enemiesOnTopPositioning = new Dictionary<string, float>()
+    {
+        { "Car", 0.3f },
+        { "Fast Car", 0.2f },
+        { "Truck", 0.5f },
+        { "Bus", 0.5f }
+    };
 
     public SingleGrid(int x, int y, Vector3 centrePoint)
     {
@@ -23,12 +31,19 @@ public class SingleGrid : ISingleGrid
     public void RepositionObjects()
     {
         List<Unit> allEnemies = GetListOfUnitsWithGameObjectTag("Enemy");
-        
+        List<Unit> enemiesOnTop = new List<Unit>();
+
+        if (_objectsID.Values.Select(x => x.tag).Contains("Vehicle"))
+        {
+            enemiesOnTop = allEnemies.Where(x => x.yAdjustment > 0).ToList();
+            allEnemies = allEnemies.Where(x => x.yAdjustment <= 0).ToList();
+        }
+
+        // For bottom enemies
         if (allEnemies.Count > 1)
         {
             allEnemies = RearrangeEnemies(allEnemies);
         }
-
         switch (allEnemies.Count)
         {
             case 2:
@@ -56,6 +71,20 @@ public class SingleGrid : ISingleGrid
             default:
                 // No repositioning if only 1 Unit or none is in the grid
                 break;
+        }
+
+        // For top enemies
+        if (enemiesOnTop.Count > 1)
+        {
+            int totalTopEnemies = enemiesOnTop.Count;
+            string vehicleName = _objectsID.Values.Where(x => x.tag == "Vehicle").First().GetComponent<Unit>().GetName();
+            float maxDeviationPos = enemiesOnTopPositioning[vehicleName];
+            float distInterval = (maxDeviationPos * 2) / (totalTopEnemies - 1);
+
+            for (int i = 0; i < enemiesOnTop.Count; i++)
+            {
+                enemiesOnTop[i].IssueCommand(new MoveWithinGridCommand(new Vector3(_centrePoint.x - maxDeviationPos + distInterval * i, 0, _centrePoint.z - direction * 1.25f)));
+            }
         }
     }
 

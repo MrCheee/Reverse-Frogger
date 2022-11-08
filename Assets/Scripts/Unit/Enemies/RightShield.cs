@@ -3,10 +3,11 @@ using UnityEngine;
 
 public class RightShield : Soldier
 {
-    protected override void SetHealthAndDamage()
+    protected override void SetUnitAttributes()
     {
         health = 1;
         damage = 2;
+        chargePerTurn = 0;
     }
 
     public override IEnumerator PostTurnActions()
@@ -29,7 +30,7 @@ public class RightShield : Soldier
 
     public override string GetName()
     {
-        return "Shark Soldier";
+        return "Shield Warrior";
     }
 
     public override string GetDescription()

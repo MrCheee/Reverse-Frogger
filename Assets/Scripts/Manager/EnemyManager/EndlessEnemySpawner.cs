@@ -43,7 +43,7 @@ public class EndlessEnemySpawner : MonoBehaviour, IEnemySpawner
             EnemyType.Soldier,
             EnemyType.Soldier
         };
-        forcedSpawn = EnemyType.Soldier;
+        forcedSpawn = EnemyType.Charger;
         level = 1;
         spawnCount = 2;
     }

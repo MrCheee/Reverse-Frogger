@@ -7,10 +7,11 @@ public class Vaulter : Enemy
     bool vaultAvailable = true;
     bool vaultReady = false;
 
-    protected override void SetHealthAndDamage()
+    protected override void SetUnitAttributes()
     {
         health = 1;
         damage = 1;
+        chargePerTurn = 0;
     }
 
     protected override void SetAdditionalTag()
@@ -190,9 +191,9 @@ public class Vaulter : Enemy
         return "Movement Pattern: <br>-Moves 1 step forward per turn. <br> <br>" +
             "Vehicle in the way: <br>-If vault pole is available, it will vault over the vehicle and move forward 3 steps. " +
             "<br>-If no pole is available, it will run into the vehicle and becomes stunned for 1 turn. <br> <br> " +
-            "Additional effects: <br>-It begins with its vault held skywards and will be unable to vault until it can bring its pole down. " +
-            "<br>-It can only vault once, thereafter losing its pole. <br>-The pole extends one lane in front of it, and " +
-            "a vehicle can run into it, destroying it and stunning the vaulter for 1 turn." +
-            "<br>-After vaulting, it may land on top of a vehicle. While on top, it will move along with the vehicle and can hop onto another vehicle.";
+            "Additional effects: <br>-It can only vault after it has brought down its pole. " +
+            "<br>-It can only vault once, thereafter losing its pole. <br>-When the pole is brought down, it extends one lane in front of it where " +
+            "it can be destroyed by a vehicle and stunning the vaulter for 1 turn." +
+            "<br>-After vaulting, it may land on top of a vehicle.";
     }
 }

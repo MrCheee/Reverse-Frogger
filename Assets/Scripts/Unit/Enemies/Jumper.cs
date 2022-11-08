@@ -2,10 +2,11 @@
 
 public class Jumper : Enemy
 {
-    protected override void SetHealthAndDamage()
+    protected override void SetUnitAttributes()
     {
         health = 1;
         damage = 1;
+        chargePerTurn = 0;
     }
 
     protected override void SetAdditionalTag()

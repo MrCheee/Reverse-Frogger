@@ -1,5 +1,11 @@
 ﻿public class Bus : Vehicle
 {
+    protected override void SetUnitAttributes()
+    {
+        health = 7;
+        damage = 1;
+    }
+
     protected override void SetUpSize()
     {
         size = 3;
@@ -9,6 +15,11 @@
     public override void SetMovementPattern()
     {
         movementPattern.Add(new GridCoord(1, 0));
+    }
+
+    public override void DealDamageToPlayer()
+    {
+        gameStateManager.DamagePlayer(3);
     }
 
     public override string GetName()

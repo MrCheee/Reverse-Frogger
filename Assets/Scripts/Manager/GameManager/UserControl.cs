@@ -21,6 +21,7 @@ public class UserControl : MonoBehaviour
     private Color skillLockedInColor;
     private Color skillDefaultColor;
     private bool[] skillLockedInStatus;
+    private bool skillExecutionInProgress = false;
 
     private Unit m_Selected = null;
     private SkillType skillSelected;
@@ -28,7 +29,7 @@ public class UserControl : MonoBehaviour
 
     private int currentSkillOrbCount = 0;
     private int consumedSkillOrbCount = 0;
-    private int maxOrbCount = 10;
+    private int maxSkillOrbCount = 10;
 
     private void Awake()
     {
@@ -216,6 +217,7 @@ public class UserControl : MonoBehaviour
 
     public void RefreshSkillsUI()
     {
+        currentSkillOrbCount = Mathf.Min(maxSkillOrbCount, currentSkillOrbCount);
         uiMain.RefreshSkillOrbBar();
         ResetSkillBar();
         consumedSkillOrbCount = 0;
@@ -284,26 +286,41 @@ public class UserControl : MonoBehaviour
 
     public void DispatchSkillCommands()
     {
-        int skillOrbsConsumed = 0;
+        skillExecutionInProgress = true;
+        StartCoroutine("ExecuteSkills");
+    }
+
+    private IEnumerator ExecuteSkills()
+    {
+        //int skillOrbsConsumed = 0;
         foreach (KeyValuePair<SkillType, ISkillManager> entry in skillManagers)
         {
             if (entry.Value.m_LockedIn)
             {
+                uiMain.RemoveSkillOrb(entry.Value.m_SkillCost);
                 uiMain.UpdateGameLog(entry.Value.GetExecuteLog());
                 entry.Value.ExecuteSkill();
-                skillOrbsConsumed += entry.Value.m_SkillCost;
+                //skillOrbsConsumed += entry.Value.m_SkillCost;
                 currentSkillOrbCount -= entry.Value.m_SkillCost;
+                yield return new WaitForSeconds(2f);
             }
         }
-        uiMain.RemoveSkillOrb(skillOrbsConsumed);
+        //uiMain.RemoveSkillOrb(skillOrbsConsumed);
         ResetAllSkillTargets();
+        skillExecutionInProgress = false;
+    }
+
+    public bool DispatchSkillCompleted()
+    {
+        return !skillExecutionInProgress;
     }
 
     private void RemoveSkillTarget(SkillType skill)
     {
-        if (skillManagers.ContainsKey(skill))
+        skillManagers[skill].RemoveSkillTarget();
+        foreach (ISkillManager mgr in skillManagers.Values)
         {
-            skillManagers[skill].RemoveSkillTarget();
+            mgr.PositionSkillMarkerUI();
         }
     }
 
@@ -317,7 +334,7 @@ public class UserControl : MonoBehaviour
 
     public void AddSkillOrb(int count)
     {
-        currentSkillOrbCount = Mathf.Min(maxOrbCount, currentSkillOrbCount + count);
+        currentSkillOrbCount += count;
         uiMain.AddSkillOrb(count);
     }
 
@@ -325,6 +342,7 @@ public class UserControl : MonoBehaviour
     {
         for (int i = 0; i < skillToggles.Length; i++)
         {
+            EnableSkillButton(skillToggles[i]);
             skillToggles[i].GetComponentInChildren<Image>().sprite = skillDefaultSprites[i];
             skillToggles[i].GetComponentInChildren<Image>().color = skillDefaultColor;
             skillToggles[i].isOn = false;
@@ -332,6 +350,17 @@ public class UserControl : MonoBehaviour
         }
     }
 
+    public void DisableSkillBar()
+    {
+        for (int i = 0; i < skillToggles.Length; i++)
+        {
+            if (skillToggles[i].isOn)
+            {
+                skillToggles[i].isOn = false;
+            }
+            DisableSkillButton(skillToggles[i]);
+        }
+    }
 
     public void UpdateSkillTogglesFunctionality()
     {

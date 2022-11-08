@@ -13,6 +13,8 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     protected int chargePerTurn = 0;
     protected int charging = 0;
     protected int boosted = 0;
+    protected float deathTimer = 0f;
+    protected List<SkillType> targeted = new List<SkillType>();
 
     protected bool actionTaken = false;
 
@@ -31,9 +33,8 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         animator = GetComponentInChildren<Animator>();
 
         // Each enemy will define its own movement pattern and it will be assigned to the private variable on startup
-        SetHealthAndDamage();
+        SetUnitAttributes();
         SetAdditionalTag();
-        SetChargePerTurn();
         SetMovementPattern();
     }
 
@@ -55,9 +56,8 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         StartCoroutine("PostTurnActions");
     }
 
-    protected abstract void SetHealthAndDamage();
+    protected abstract void SetUnitAttributes();
     protected abstract void SetAdditionalTag();
-    protected abstract void SetChargePerTurn();
     public abstract void SetMovementPattern();
     public abstract GridCoord GetCurrentHeadGridPosition();
     public abstract GridCoord[] GetAllCurrentGridPosition();
@@ -125,9 +125,9 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         return Helper.vectorDistanceIgnoringYAxis(transform.position, target) <= 0.1f;
     }
 
-    public void DestroySelf(float deathTimer = 0f)
+    public virtual void DestroySelf()
     {
-        Debug.Log($"[{gameObject.name}] Destroying self...");
+        //Debug.Log($"[{gameObject.name}] Destroying self...");
         RemoveFromFieldGridPosition();
         Destroy(gameObject, deathTimer);
     }
@@ -235,6 +235,21 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         {
             GetComponentInChildren<SpriteRenderer>().flipX = flip;
         }
+    }
+
+    public void AddTargetedSkill(SkillType skill)
+    {
+        targeted.Add(skill);
+    }
+
+    public void RemoveTargetedSkill(SkillType skill)
+    {
+        targeted.Remove(skill);
+    }
+
+    public int GetTargetedCount()
+    {
+        return targeted.Count;
     }
 
     public virtual string GetName()
