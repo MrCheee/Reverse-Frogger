@@ -181,7 +181,7 @@ public class CallInVehSkillManager : ISkillManager
         return $"Call in Vehicle Skill used to call in a {targetUnit.GetName()} on Lane {m_Skill.targetGrid.y}";
     }
 
-    public void PositionSkillMarkerUI()
+    public void RepositionSkillMarkerUI()
     {
         return;
     }

@@ -58,6 +58,7 @@ public class FieldGrid
     {
         if (gridCoord.x < 0 || gridCoord.x >= fieldLength || gridCoord.y < 0 || gridCoord.y >= fieldHeight)
         {
+            Debug.Log($"Error accessing ({gridCoord.x}, {gridCoord.y})");
             throw new AccessingFieldGridOutOfBoundsException();
         }
         return _instance.field[gridCoord.x, gridCoord.y];

@@ -226,7 +226,7 @@ public class LaneChangeSkillManager : ISkillManager
         return $"Lane Change Skill used on {targetUnit.GetName()} at Grid [{targetUnit.GetCurrentHeadGridPosition().x}, {targetUnit.GetCurrentHeadGridPosition().y}].";
     }
 
-    public void PositionSkillMarkerUI()
+    public void RepositionSkillMarkerUI()
     {
         return;
     }

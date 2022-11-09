@@ -320,7 +320,7 @@ public class UserControl : MonoBehaviour
         skillManagers[skill].RemoveSkillTarget();
         foreach (ISkillManager mgr in skillManagers.Values)
         {
-            mgr.PositionSkillMarkerUI();
+            mgr.RepositionSkillMarkerUI();
         }
     }
 

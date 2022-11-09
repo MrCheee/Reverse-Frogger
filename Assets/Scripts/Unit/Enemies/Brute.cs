@@ -4,10 +4,13 @@ using System.Linq;
 
 public class Brute : Enemy
 {
-    int[] noKnockbackYPos = new int[4] {
+    int[] noKnockbackYPos = new int[2] {
         FieldGrid.GetDividerLaneNum() + 1,   // Right Lane 1 - no vehicle to hit
+        FieldGrid.GetDividerLaneNum() - FieldGrid.GetNumberOfLanes()  // Left Lane 4 - no vehicle to hit
+    };
+    int[] KnockbackBlockYPos = new int[2]
+    {
         FieldGrid.GetDividerLaneNum() + 2,   // Right Lane 2 - cannot hit vehicle to next lane (next lane is divider)
-        FieldGrid.GetDividerLaneNum() - FieldGrid.GetNumberOfLanes(),  // Left Lane 4 - no vehicle to hit
         FieldGrid.GetDividerLaneNum() - FieldGrid.GetNumberOfLanes() + 1    // Left Lane 3 - cannot hit vehicle to next lane (next lane is sidewalk)
     };
     bool movementBlocked = true;
@@ -58,6 +61,7 @@ public class Brute : Enemy
             // If vehicle in front is knockback-able, and there is no vehicle blocking its knockback, then knockback and move forward
             if (FieldGrid.GetSingleGrid(targetGrid).IsUnitTagInGrid("Knockback-able Vehicle"))
             {
+                bool knockbackBlocked = KnockbackBlockYPos.Contains(_currentGridPosition.y);
                 bool vehicleBlockingDestination = Helper.IsVehicleInTheWay(destinationGrid);
                 bool bruteBlockingDestination = false;
 
@@ -68,12 +72,18 @@ public class Brute : Enemy
                     bruteBlockingDestination = allBrutes.Any(x => x.GetHealth() == 2);
                 }
 
-                if (!vehicleBlockingDestination && !bruteBlockingDestination)
+                animator.SetTrigger("Knockback");
+                Unit veh = FieldGrid.GetSingleGrid(targetGrid).GetUnitWithTag("Knockback-able Vehicle");
+                gameStateManager.VehicleHit(veh, 2);
+
+                if (!knockbackBlocked && !vehicleBlockingDestination && !bruteBlockingDestination)
                 {
-                    animator.SetTrigger("Knockback");
-                    Unit veh = FieldGrid.GetSingleGrid(targetGrid).GetUnitWithTag("Knockback-able Vehicle");
                     veh.IssueCommand(new MoveToTargetGridCommand(destinationGrid));
-                    gameStateManager.VehicleHit(veh, 2);
+                }
+                else
+                {
+                    veh.IssueCommand(new MoveWithinCurrentGridCommand(0, direction));
+                    veh.IssueCommand(new MoveWithinCurrentGridCommand(0, 0));
                 }
             }
         }

@@ -23,7 +23,7 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     protected Command _currentCommand;
     protected List<GridCoord> movementPattern = new List<GridCoord>();
     protected GameStateManager gameStateManager;
-    public Animator animator;
+    protected Animator animator;
     public float yAdjustment { get; protected set; }
     public bool TurnInProgress { get; protected set; }
 
@@ -137,29 +137,30 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     // Update will constantly check for commands to execute
     public void Update()
     {
-        if (_currentCommand != null)
+        if (health != 0)
         {
-            // Continue execution of current command if it is still uncompleted
-            if (!_currentCommand.IsFinished)
+            if (_currentCommand != null)
             {
-                _currentCommand.Execute(this);
+                // Continue execution of current command if it is still uncompleted
+                if (!_currentCommand.IsFinished)
+                {
+                    _currentCommand.Execute(this);
+                }
+                else // Remove command from stack and set current command to null
+                {
+                    commandStack.Dequeue();
+                    _currentCommand = null;
+                }
             }
-            else // Remove command from stack and set current command to null
+            else
             {
-                //Debug.Log("Pop Command");
-                commandStack.Dequeue();
-                _currentCommand = null;
-            }
-        }
-        else
-        {
-            CheckConditionsToDestroy();
+                CheckConditionsToDestroy();
 
-            // If no current command, check if any in stack, grab the top command if there is
-            if (commandStack.Count > 0)
-            {
-                //Debug.Log("Executing Command");
-                _currentCommand = commandStack.Peek();
+                // If no current command, check if any in stack, grab the top command if there is
+                if (commandStack.Count > 0)
+                {
+                    _currentCommand = commandStack.Peek();
+                }
             }
         }
     }

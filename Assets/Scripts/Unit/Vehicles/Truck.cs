@@ -2,7 +2,7 @@
 {
     protected override void SetUnitAttributes()
     {
-        health = 5;
+        health = 4;
         damage = 1;
     }
 

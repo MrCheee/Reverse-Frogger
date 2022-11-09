@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 
 public class AirDropVehicle : ISkill
 {
@@ -24,9 +25,11 @@ public class AirDropVehicle : ISkill
             }
             unit.transform.Rotate(Vector3.up, 180f);
         }
-        unit.gameObject.transform.position = FieldGrid.GetSingleGrid(targetGrid).GetGridCentrePoint();
-        unit.GetComponent<Vehicle>().AddToFieldGridPosition(targetGrid);
+
         unit.gameObject.SetActive(true);
+        unit.GetComponent<Vehicle>().AddToFieldGridPosition(targetGrid);
+        unit.gameObject.transform.position = FieldGrid.GetSingleGrid(targetGrid).GetGridCentrePoint() + new Vector3(0, 55, 55);
+        unit.GetComponent<Vehicle>().SimulateAirdrop();
     }
 
     public void UpdateGridCoordAction(GridCoord coord)

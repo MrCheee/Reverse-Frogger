@@ -22,68 +22,33 @@ public class EndlessEnemySpawner : MonoBehaviour, IEnemySpawner
 
     public void SetDifficulty(string difficultyLevel)
     {
-        if (difficultyLevel == "Easy")
+        forcedSpawn = EnemyType.Soldier;
+        level = 1;
+        if (difficultyLevel == "Hard")
         {
-            EasyModeInit();
+            _currentSpawnList = new List<EnemyType>()
+            {
+                EnemyType.Soldier
+            };
+            spawnCount = 3;
         }
         else if (difficultyLevel == "Medium")
         {
-            MediumModeInit();
+            _currentSpawnList = new List<EnemyType>()
+            {
+                EnemyType.Soldier
+            };
+            spawnCount = 2;
         }
-        else if (difficultyLevel == "Hard")
+        else
         {
-            HardModeInit();
+            _currentSpawnList = new List<EnemyType>()
+            {
+                EnemyType.Soldier,
+                EnemyType.Soldier
+            };
+            spawnCount = 2;
         }
-    }
-
-    private void EasyModeInit()
-    {
-        _currentSpawnList = new List<EnemyType>()
-        {
-            EnemyType.Soldier,
-            EnemyType.Soldier
-        };
-        forcedSpawn = EnemyType.Charger;
-        level = 1;
-        spawnCount = 2;
-    }
-
-    private void MediumModeInit()
-    {
-        _currentSpawnList = new List<EnemyType>()
-        {
-            EnemyType.Soldier,
-            EnemyType.Skater,
-            EnemyType.Sprinter,
-            EnemyType.Charger,
-            EnemyType.Brute,
-            EnemyType.Vaulter,
-            EnemyType.Bloat,
-            EnemyType.Jumper,
-            EnemyType.Flatten,
-            EnemyType.BabyForesight
-        };
-        forcedSpawn = EnemyType.Brute;
-        level = 10;
-        spawnCount = 2;
-    }
-
-    private void HardModeInit()
-    {
-        _currentSpawnList = new List<EnemyType>()
-        {
-            EnemyType.Sprinter,
-            EnemyType.Charger,
-            EnemyType.Brute,
-            EnemyType.Vaulter,
-            EnemyType.Bloat,
-            EnemyType.Jumper,
-            EnemyType.Flatten,
-            EnemyType.BabyForesight
-        };
-        forcedSpawn = EnemyType.Brute;
-        level = 10;
-        spawnCount = 3;
     }
 
     public void SpawnEnemies()

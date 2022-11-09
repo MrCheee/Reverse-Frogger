@@ -117,7 +117,12 @@ public abstract class Vehicle : Unit
 
             // Wait until all commands have been completed by the unit before issuing next move command
             if (!CheckIfCompletedPreviousMovement()) yield return new WaitForSeconds(retryInterval);
-            
+
+            if (skipTurn > 0)
+            {
+                break;
+            }
+
             // If vehicle is in the way, check again in 0.5s and move accordingly
             if (Helper.IsVehicleInTheWay(nextGrid))
             {
@@ -139,8 +144,10 @@ public abstract class Vehicle : Unit
                         break;
                     }
                 }
-                if (IsEnemyTypeInTheWay(nextGrid, "Bloat")) quickExit = true;
-                //MoveUnitsOnTopOfVehicle(nextMove);
+                if (IsEnemyTypeInTheWay(nextGrid, "Bloat"))
+                {
+                    quickExit = true;
+                }
                 (nextMove, nextGrid) = TakeMovementAction(moveQueue, nextMove, nextGrid);
             }
             if (quickExit) break;
@@ -179,6 +186,7 @@ public abstract class Vehicle : Unit
     public virtual void HandleBruteInTheWay(Unit brute)
     {
         brute.TakeDamage(damage);
+        TakeDamage(1);
         SimulateHitObstacle();
     }
 
@@ -186,8 +194,8 @@ public abstract class Vehicle : Unit
     {
         GridCoord currentGrid = GetCurrentHeadGridPosition();
         int right = currentGrid.y < dividerY ? -1 : 1;
-        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(right, 0)));
-        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, 0)));
+        commandStack.Enqueue(new MoveWithinCurrentGridCommand(right, 0));
+        commandStack.Enqueue(new MoveWithinCurrentGridCommand(0, 0));
     }
 
     public override void CheckConditionsToDestroy()
@@ -203,14 +211,10 @@ public abstract class Vehicle : Unit
         RemoveFromFieldGridPosition();
         if (health == 0)
         {
-            DealDamageToPlayer();
+            animator.SetTrigger("Explode");
+            deathTimer = 1.5f;
         }
         Destroy(gameObject, deathTimer);
-    }
-
-    public virtual void DealDamageToPlayer()
-    {
-        gameStateManager.DamagePlayer(1);
     }
 
     public bool HasReachedEndOfRoad()
@@ -310,5 +314,21 @@ public abstract class Vehicle : Unit
             position.x -= 1;
         }
         return position;
+    }
+
+    public void SimulateAirdrop()
+    {
+        StartCoroutine("AirdropMotion");
+    }
+
+    public IEnumerator AirdropMotion()
+    {
+        Vector3 targetPos = FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetGridCentrePoint();
+        Vector3 moveDirection = (targetPos - transform.position).normalized;
+        while (Vector3.Distance(targetPos, transform.position) > 0.5f)
+        {
+            transform.Translate(moveDirection * 50 * Time.deltaTime, Space.World);
+            yield return null;
+        }
     }
 }

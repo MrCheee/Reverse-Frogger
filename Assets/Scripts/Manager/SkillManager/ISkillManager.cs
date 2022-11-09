@@ -15,5 +15,5 @@
     void RemoveSkillTarget();
     void ExecuteSkill();
     string GetExecuteLog();
-    void PositionSkillMarkerUI();
+    void RepositionSkillMarkerUI();
 }

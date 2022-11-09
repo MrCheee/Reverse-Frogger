@@ -2,7 +2,7 @@
 {
     protected override void SetUnitAttributes()
     {
-        health = 7;
+        health = 5;
         damage = 1;
     }
 
@@ -15,11 +15,6 @@
     public override void SetMovementPattern()
     {
         movementPattern.Add(new GridCoord(1, 0));
-    }
-
-    public override void DealDamageToPlayer()
-    {
-        gameStateManager.DamagePlayer(3);
     }
 
     public override string GetName()

@@ -34,7 +34,6 @@ public class EndlessVehicleSpawner : MonoBehaviour, IVehicleSpawner
             VehicleType.Car,
             VehicleType.FastCar,
             VehicleType.FastCar,
-            //VehicleType.Motorbike,
             VehicleType.Truck,
             VehicleType.Bus
         };
@@ -56,7 +55,6 @@ public class EndlessVehicleSpawner : MonoBehaviour, IVehicleSpawner
             Quaternion spawnRotation = spawnY < dividerY ? vehPrefabs[(int)vehIndex].transform.rotation : vehPrefabs[(int)vehIndex].transform.rotation * Quaternion.Euler(0f, 180f, 0f);
 
             GameObject veh = Instantiate(vehPrefabs[(int)vehIndex], spawnPos, spawnRotation);
-
             veh.GetComponent<Vehicle>().AddToFieldGridPosition(spawnGrid);
             if (spawnY < dividerY)
             {
@@ -94,7 +92,6 @@ public class EndlessVehicleSpawner : MonoBehaviour, IVehicleSpawner
             Quaternion spawnRotation = spawnY < dividerY ? vehPrefabs[(int)vehIndex].transform.rotation : vehPrefabs[(int)vehIndex].transform.rotation * Quaternion.Euler(0f, 180f, 0f);
 
             GameObject veh = Instantiate(vehPrefabs[(int)vehIndex], spawnPos, spawnRotation);
-
             veh.GetComponent<Vehicle>().AddToFieldGridPosition(spawnGrid);
             if (spawnY < dividerY)
             {

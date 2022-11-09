@@ -75,7 +75,6 @@ public abstract class Enemy : Unit
             }
 
             // If not break away by vehicle in the way, issue the next movement command
-            //Debug.Log($"Issue Move command of ({nextMove.x}, {nextMove.y}) to ({nextGrid.x}, {nextGrid.y})");
             GiveMovementCommand(nextMove);
 
             // Halt further movement when enemy has crossed the road
@@ -91,7 +90,6 @@ public abstract class Enemy : Unit
             yield return new WaitForSeconds(0.2f);
         }
         charging = chargePerTurn;
-        //animator.SetBool("Moving", false);
         TurnInProgress = false;
     }
 
@@ -116,10 +114,8 @@ public abstract class Enemy : Unit
 
     protected virtual void ExecuteConcussedMovement()
     {
-        GridCoord currentGrid = GetCurrentHeadGridPosition();
-        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, direction)));
-        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, 0)));
-        FieldGrid.AddGridToReposition(currentGrid);
+        commandStack.Enqueue(new MoveWithinCurrentGridCommand(0, direction));
+        commandStack.Enqueue(new MoveWithinCurrentGridCommand(0, 0));
     }
 
     public override IEnumerator PreTurnActions()

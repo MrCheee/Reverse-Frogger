@@ -18,6 +18,8 @@ public class GameStateManager : MonoBehaviour
     UserControl userControl;
     UIMain uiMain;
 
+    [SerializeField] GameObject EnemyKilledPrefab;
+
     bool gameStart = true;
     GameState gameStateIndex = GameState.Initialisation;
     bool playerTurnInProgress = false;
@@ -31,6 +33,7 @@ public class GameStateManager : MonoBehaviour
     int totalKills = 0;
     int level = 1;
     string difficulty = "Easy";
+    bool altWave = false;
 
     float waitTime = 0.5f;
     float shortWaitTime = 0.25f;
@@ -53,7 +56,6 @@ public class GameStateManager : MonoBehaviour
         startGame.onClick.AddListener(StartGame);
         StartCoroutine(CheckAndUpdateGameState());
 
-        //newEnemies = new HashSet<string>();
         newEnemies = new HashSet<string>() { 
             "Blob", 
             "Ghoul", 
@@ -431,7 +433,12 @@ public class GameStateManager : MonoBehaviour
         orbReceived += 1;
         uiMain.UpdateKills(totalKills);
         uiMain.UpdateGameLog(killedInfo);
-        uiMain.DisplayKilledEnemy(killedPos);
+        DisplayKilledEnemy(killedPos);
+    }
+
+    private void DisplayKilledEnemy(Vector3 pos)
+    {
+        Instantiate(EnemyKilledPrefab, pos, EnemyKilledPrefab.transform.rotation);
     }
 
     public void VehicleHit(Unit vehicle, int damageDealt = 1)
@@ -458,14 +465,39 @@ public class GameStateManager : MonoBehaviour
 
     public void UpdateGameLevel()
     {
+        if (difficulty == "Hard" || difficulty == "Medium")
+        {
+            if (level < 5)
+            {
+                LevelUp();
+            }
+            else if (level >= 5 && level < 10)
+            {
+                if (altWave)
+                {
+                    LevelUp();
+                    altWave = false;
+                }
+                else
+                {
+                    altWave = true;
+                }
+            }
+        }
+
         while (enemyKilledCount >= 5)
         {
             enemyKilledCount -= 5;
-            level += 1;
-            uiMain.UpdateLevel(level);
-            enemySpawner.IncrementLevel();
-            vehicleSpawner.IncrementLevel();
+            LevelUp();
         }
+    }
+
+    private void LevelUp()
+    {
+        level += 1;
+        uiMain.UpdateLevel(level);
+        enemySpawner.IncrementLevel();
+        vehicleSpawner.IncrementLevel();
     }
 
     private bool CheckIfGameOver()
@@ -475,7 +507,6 @@ public class GameStateManager : MonoBehaviour
             SaveBestScore();
             uiMain.DisplayGameOver();
             uiMain.UpdateGameLog("GAME OVER! The frogs have conquered humanity!");
-            //Debug.Log("GAME OVER! YOU LOSE!");
             return true;
         }
         else
@@ -505,14 +536,12 @@ public class GameStateManager : MonoBehaviour
     public void SaveBestScore()
     {
         string path = Application.persistentDataPath + "/highscore.json";
-        Dictionary<string, int> killsByDifficulty;// = new Dictionary<string, int>();
-        //SaveData data;
+        Dictionary<string, int> killsByDifficulty;
 
         if (File.Exists(path))
         {
             string jsonIn = File.ReadAllText(path);
             killsByDifficulty = JsonUtility.FromJson<Dictionary<string, int>>(jsonIn);
-            //data = JsonUtility.FromJson<SaveData>(jsonIn);
 
             if (killsByDifficulty.ContainsKey(difficulty))
             {
@@ -525,28 +554,14 @@ public class GameStateManager : MonoBehaviour
             {
                 killsByDifficulty[difficulty] = totalKills;
             }
-            //if (data.killsByDifficulty.ContainsKey(difficulty))
-            //{
-            //    if (totalKills > data.killsByDifficulty[difficulty])
-            //    {
-            //        data.killsByDifficulty[difficulty] = totalKills;
-            //    }
-            //}
-            //else
-            //{
-            //    data.killsByDifficulty[difficulty] = totalKills;
-            //}
         }
         else
         {
             killsByDifficulty = new Dictionary<string, int>();
             killsByDifficulty.Add(difficulty, totalKills);
-            //data = new SaveData();
-            //data.killsByDifficulty.Add(difficulty, totalKills);
         }
 
         string jsonOut = JsonUtility.ToJson(killsByDifficulty);
-        //string jsonOut = JsonUtility.ToJson(data);
         File.WriteAllText(Application.persistentDataPath + "/highscore.json", jsonOut);
     }
 
@@ -557,7 +572,6 @@ public class GameStateManager : MonoBehaviour
         {
             string json = File.ReadAllText(path);
             Dictionary<string, int> killsByDifficulty = JsonUtility.FromJson<Dictionary<string, int>>(json);
-            //SaveData data = JsonUtility.FromJson<SaveData>(json);
 
             if (killsByDifficulty.ContainsKey(difficulty))
             {
@@ -567,21 +581,10 @@ public class GameStateManager : MonoBehaviour
             {
                 uiMain.UpdateBestScore(difficulty, 0);
             }
-            //if (data.killsByDifficulty.ContainsKey(difficulty))
-            //{
-            //    uiMain.UpdateBestScore(data.killsByDifficulty[difficulty]);
-            //}
-            //uiMain.UpdateBestScore(data.killsByDifficulty[difficulty]);
         }
         else
         {
             uiMain.UpdateBestScore(difficulty, 0);
         }
-    }
-
-    [System.Serializable]
-    class SaveData
-    {
-        public Dictionary<string, int> killsByDifficulty = new Dictionary<string, int>();
     }
 }

@@ -102,7 +102,6 @@ public class BabyForesight : Enemy
 
         if (nextMove.y == direction)
         {
-            animator.SetTrigger("ToMove");
             animator.SetBool("Moving", true);
             if (nextMove.y == -1)
             {

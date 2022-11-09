@@ -1,6 +1,8 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIMain : MonoBehaviour
 {
@@ -25,6 +27,7 @@ public class UIMain : MonoBehaviour
     public TextMeshProUGUI BestScoreText;
     public TextMeshProUGUI BestScoreDifficulty;
     public GameObject ReferenceGrid;
+    public GameObject DamageTakenPanel;
 
     public GameObject DamageTakenInfo;
     public TextMeshProUGUI DamageTakenText;
@@ -35,7 +38,6 @@ public class UIMain : MonoBehaviour
     GameStateIndicators gameStateIndicators;
 
     [SerializeField] Camera GameCamera;
-    public GameObject EnemyKilledPrefab;
 
     protected IUIInfoContent m_CurrentContent;
     protected List<Status> m_ContentBuffer = new List<Status>();
@@ -147,10 +149,36 @@ public class UIMain : MonoBehaviour
     {
         if (damage > 0)
         {
+            StartCoroutine("DisplayDamageTakenFlash");
             DamageTakenText.text = damage.ToString();
             DamageTakenInfo.SetActive(true);
         }
         HealthBar.RemoveHealth(damage);
+    }
+
+    private IEnumerator DisplayDamageTakenFlash()
+    {
+        DamageTakenPanel.SetActive(true);
+        Image panelImage = DamageTakenPanel.GetComponent<Image>();
+        Color red = panelImage.color;
+        float currentAlpha = 0f;
+        float targetAlpha = .25f;
+        float incrementAlpha = Time.deltaTime;
+        while (currentAlpha < targetAlpha)
+        {
+            currentAlpha += incrementAlpha;
+            red.a = currentAlpha;
+            panelImage.color = red;
+            yield return null;
+        }
+        while (currentAlpha > 0f)
+        {
+            currentAlpha -= incrementAlpha;
+            red.a = currentAlpha;
+            panelImage.color = red;
+            yield return null;
+        }
+        DamageTakenPanel.SetActive(false);
     }
 
     public void AddSkillOrb(int count)
@@ -201,13 +229,6 @@ public class UIMain : MonoBehaviour
     public void UpdateGameState(GameState currentGameState)
     {
         gameStateIndicators.UpdateGameState(currentGameState);
-    }
-
-    public void DisplayKilledEnemy(Vector3 killedPos)
-    {
-        var killedUI = Instantiate(EnemyKilledPrefab, GameCamera.WorldToScreenPoint(killedPos), EnemyKilledPrefab.transform.rotation, transform);
-        killedUI.transform.localScale -= new Vector3(0.4f, 0.4f, 0.4f);
-        killedUI.transform.SetSiblingIndex(0);
     }
 
     public void ToggleReferenceGrid()

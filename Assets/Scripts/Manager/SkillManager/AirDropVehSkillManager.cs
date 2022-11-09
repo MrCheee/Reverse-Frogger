@@ -177,7 +177,7 @@ public class AirDropVehSkillManager : ISkillManager
         return $"Air Drop Vehicle Skill used to drop a {targetUnit.GetName()} at Grid [{m_Skill.targetGrid.x}, {m_Skill.targetGrid.y}]";
     }
 
-    public void PositionSkillMarkerUI()
+    public void RepositionSkillMarkerUI()
     {
         return;
     }

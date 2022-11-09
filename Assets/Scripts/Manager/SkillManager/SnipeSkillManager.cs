@@ -7,8 +7,7 @@ public class SnipeSkillManager : ISkillManager
     public int m_SkillCost { get; set; }
     public bool m_LockedIn { get; set; }
 
-    GameObject SkillMarker;
-    GameObject SkillIcon;
+    SkillMarker m_SkillMarker;
 
     public SnipeSkillManager()
     {
@@ -16,8 +15,7 @@ public class SnipeSkillManager : ISkillManager
         m_Skill = null;
         m_SkillCost = 8;
         m_LockedIn = false;
-        SkillMarker = GameObject.Find("SnipeTarget");
-        SkillIcon = GameObject.Find("SnipeIcon");
+        m_SkillMarker = GameObject.Find("SnipeTarget").GetComponent<SkillMarker>();
     }
 
     public void InitialiseSkill(Unit unit)
@@ -53,7 +51,7 @@ public class SnipeSkillManager : ISkillManager
                 m_LockedIn = true;
                 selectedUnit.AddTargetedSkill(m_SkillType);
                 UpdateSkillUnit(selectedUnit);
-                PositionSkillMarkerUI();
+                m_SkillMarker.PositionSkillMarkerUI(selectedUnit.transform.position, selectedUnit.GetTargetedCount());
                 return true;
             }
             else
@@ -90,7 +88,7 @@ public class SnipeSkillManager : ISkillManager
         }
         m_Skill = null;
         m_LockedIn = false;
-        SkillMarker.SetActive(false);
+        m_SkillMarker.RemoveSkillTarget();
     }
 
     public void ProcessSelection(Unit selectedUnit)
@@ -103,7 +101,7 @@ public class SnipeSkillManager : ISkillManager
         if (m_LockedIn)
         {
             m_Skill.Execute();
-            SkillMarker.SetActive(false);
+            m_SkillMarker.ExecuteSkill();
         }
     }
 
@@ -113,13 +111,11 @@ public class SnipeSkillManager : ISkillManager
         return $"Snipe Skill used on {targetUnit.GetName()} at Grid [{targetUnit.GetCurrentHeadGridPosition().x}, {targetUnit.GetCurrentHeadGridPosition().y}].";
     }
 
-    public void PositionSkillMarkerUI()
+    public void RepositionSkillMarkerUI()
     {
-        if (m_Skill != null)
+        if (m_Skill != null && m_Skill.unit != null)
         {
-            SkillMarker.transform.position = m_Skill.unit.transform.position;
-            SkillIcon.transform.localPosition = new Vector3(m_Skill.unit.GetTargetedCount() * 1.25f, 0, -0.8f);
-            SkillMarker.SetActive(true);
+            m_SkillMarker.PositionSkillMarkerUI(m_Skill.unit.transform.position, m_Skill.unit.GetTargetedCount());
         }
     }
 }
