@@ -27,9 +27,12 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     public float yAdjustment { get; protected set; }
     public bool TurnInProgress { get; protected set; }
 
+    protected AudioSource audioSource;
+
     protected virtual void Awake()
     {
         gameStateManager = GameObject.Find("MainManager").GetComponent<GameStateManager>();
+        audioSource = GetComponentInChildren<AudioSource>();
         animator = GetComponentInChildren<Animator>();
 
         // Each enemy will define its own movement pattern and it will be assigned to the private variable on startup
@@ -82,6 +85,10 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         if (skipTurn > 0)
         {
             skipTurn -= 1;
+            if (skipTurn <= 0)
+            {
+                animator.SetBool("Stunned", false);
+            }
             TurnInProgress = false;
             return true;
         }
@@ -127,7 +134,7 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
 
     public virtual void DestroySelf()
     {
-        //Debug.Log($"[{gameObject.name}] Destroying self...");
+        health = 0;
         RemoveFromFieldGridPosition();
         Destroy(gameObject, deathTimer);
     }
@@ -137,7 +144,7 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     // Update will constantly check for commands to execute
     public void Update()
     {
-        if (health != 0)
+        if (health > 0)
         {
             if (_currentCommand != null)
             {
@@ -161,6 +168,13 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
                 {
                     _currentCommand = commandStack.Peek();
                 }
+                else
+                {
+                    if (!TurnInProgress)
+                    {
+                        animator.SetBool("Moving", false);
+                    }
+                }
             }
         }
     }
@@ -170,6 +184,7 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         health -= damageReceived;
         if (health <= 0)
         {
+            deathTimer = 1.5f;
             DestroySelf();
         }
     }
@@ -208,6 +223,7 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     public void DisableUnit(int disableTime)
     {
         skipTurn += disableTime;
+        animator.SetBool("Stunned", true);
     }
 
     public void BoostUnit(int boostCount)

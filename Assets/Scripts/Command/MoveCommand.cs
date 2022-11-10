@@ -9,7 +9,8 @@ public abstract class MoveCommand : Command
 
     public void MoveToTarget(Unit unit)
     {
-        unit.Move(_moveDirection);
+        unit.Move(calculateMoveDirection(_target, unit.transform.position));
+        //unit.Move(_moveDirection);
         if (unit.ReachedPosition(_target))
         {
             IsFinished = true;

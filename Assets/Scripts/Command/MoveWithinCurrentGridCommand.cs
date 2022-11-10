@@ -1,10 +1,10 @@
 ﻿public class MoveWithinCurrentGridCommand : MoveCommand
 {
     float manualYAdjustment;
-    int _right;
-    int _top;
+    float _right;
+    float _top;
 
-    public MoveWithinCurrentGridCommand(int right, int top, float manualY = 0)
+    public MoveWithinCurrentGridCommand(float right, float top, float manualY = 0)
     {
         _right = right;
         _top = top;

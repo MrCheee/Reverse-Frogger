@@ -16,7 +16,7 @@ public class Soldier : Enemy
 
     public override void TakeVehicleInTheWayAction()
     {
-        skipTurn = 1;
+        DisableUnit(1);
         ExecuteConcussedMovement();
     }
 

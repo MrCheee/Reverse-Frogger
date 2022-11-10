@@ -10,6 +10,7 @@ public class CallInVehSkillManager : ISkillManager
     public int m_SkillCost { get; set; }
     public bool m_LockedIn { get; set; }
 
+    private SkillSoundManager skillSoundManager;
     private Camera GameCamera;
     private GraphicRaycasterManager graphicRaycasterManager;
     private UIMain uiMain;
@@ -29,6 +30,7 @@ public class CallInVehSkillManager : ISkillManager
         currentVehicleSkillHoverGrid = new GridCoord(0, 0);
         calledInVehicles = new List<Unit>();
 
+        skillSoundManager = GameObject.Find("SkillSoundManager").GetComponent<SkillSoundManager>();
         GameCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
         graphicRaycasterManager = GameObject.Find("Canvas").GetComponent<GraphicRaycasterManager>();
         uiMain = UIMain.Instance;
@@ -43,7 +45,6 @@ public class CallInVehSkillManager : ISkillManager
 
     public void UpdateSkillUnit(Unit unit)
     {
-        Debug.Log($"[CallInVeh - UpdateSkillUnit] Assigning unit {unit}");
         if (m_Skill == null)
         {
             InitialiseSkill(unit);
@@ -81,30 +82,31 @@ public class CallInVehSkillManager : ISkillManager
         bool completedSkill = false;
         if (m_Skill != null)
         {
-            Debug.Log("[CallInVeh] In locator mode...");
-            if (graphicRaycasterManager.HasSelectedValidLocatorUI())
+            if (graphicRaycasterManager.HasSelectedLocatorUI())
             {
-                Debug.Log("[CallInVeh] Has selected valid grid...");
-                GridCoord currentTargetedGrid = FieldGrid.GetGridCoordFromWorldPosition(GameCamera.ScreenToWorldPoint(Input.mousePosition));
-                if (currentTargetedGrid.y < FieldGrid.GetDividerLaneNum())
+                if (graphicRaycasterManager.HasSelectedValidLocatorUI())
                 {
-                    currentTargetedGrid.x = FieldGrid.GetMaxLength() - FieldGrid.GetFieldBuffer();
+                    Debug.Log("[CallInVeh] Has selected valid grid...");
+                    skillSoundManager.PlaySkillConfirm();
+                    GridCoord currentTargetedGrid = FieldGrid.GetGridCoordFromWorldPosition(GameCamera.ScreenToWorldPoint(Input.mousePosition));
+                    if (currentTargetedGrid.y < FieldGrid.GetDividerLaneNum())
+                    {
+                        currentTargetedGrid.x = FieldGrid.GetMaxLength() - FieldGrid.GetFieldBuffer();
+                    }
+                    else
+                    {
+                        currentTargetedGrid.x = FieldGrid.GetFieldBuffer() - 1;
+                    }
+                    m_Skill.UpdateGridCoordAction(currentTargetedGrid);
+                    m_LockedIn = true;
+                    completedSkill = true;
                 }
                 else
                 {
-                    currentTargetedGrid.x = FieldGrid.GetFieldBuffer() - 1;
+                    Debug.Log("[CallInVeh] Has selected invalid grid...");
+                    skillSoundManager.PlayInvalidSelection();
+                    completedSkill = false;
                 }
-                m_Skill.UpdateGridCoordAction(currentTargetedGrid);
-                Debug.Log($"[CallInVeh] Ready for execution, target at ({currentTargetedGrid.x}, {currentTargetedGrid.y})");
-                m_LockedIn = true;
-                completedSkill = true;
-
-                GridCoord laneCentreGrid = new GridCoord(FieldGrid.GetMaxLength() / 2, currentTargetedGrid.y);
-            }
-            else
-            {
-                Debug.Log("[CallInVeh] Has selected invalid grid...");
-                completedSkill = false;
             }
         }
         return completedSkill;
@@ -168,8 +170,8 @@ public class CallInVehSkillManager : ISkillManager
     {
         if (m_LockedIn)
         {
+            skillSoundManager.PlayCallinVeh();
             calledInVehicles.Add(m_Skill.unit);
-            Debug.Log(m_Skill.unit);
             m_Skill.Execute();
             RemoveSkillTarget();
         }

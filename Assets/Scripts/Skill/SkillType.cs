@@ -3,8 +3,8 @@
     Assassinate,
     CallInVeh,
     AirDropVeh,
-    LaneChange,
     BoostUnit,
     DisableUnit,
+    LaneChange,
     None
 }

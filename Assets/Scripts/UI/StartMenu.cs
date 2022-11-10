@@ -10,15 +10,19 @@ public class StartMenu : MonoBehaviour
     float backgroundAlpha = 1f;
     Image BackgroundImg;
     Color BackgroundColor;
+    AudioSource menuAudioSource;
+    [SerializeField] AudioClip startGameSound;
 
     private void Start()
     {
+        menuAudioSource = GetComponent<AudioSource>();
         BackgroundImg = Background.GetComponent<Image>();
         BackgroundColor = BackgroundImg.color;
     }
 
     public void CloseMenu()
     {
+        menuAudioSource.PlayOneShot(startGameSound, 0.8f);
         Logo.SetActive(false);
         Window.SetActive(false);
         if (Background.activeInHierarchy)

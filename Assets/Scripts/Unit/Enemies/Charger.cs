@@ -6,7 +6,7 @@ public class Charger : Enemy
     {
         health = 1;
         damage = 2;
-        chargePerTurn = 0;
+        chargePerTurn = 3;
         charging = chargePerTurn;
     }
 
@@ -21,7 +21,7 @@ public class Charger : Enemy
 
     public override void TakeVehicleInTheWayAction()
     {
-        skipTurn = 1;
+        DisableUnit(1);
         ExecuteConcussedMovement();
     }
 

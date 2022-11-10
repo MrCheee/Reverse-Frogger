@@ -150,7 +150,7 @@ public class BabyForesight : Enemy
 
     public override string GetDescription()
     {
-        return "Movement Pattern: <br>-Moves 1 step per turn, either diagonal left or straight forward or diagonal right. <br> <br>" +
+        return "Movement Pattern: <br>-Moves 1 step per turn, either forward, diagonal left or diagonal right. <br> <br>" +
             "Vehicle in the way: <br>-It will not move. <br> <br>" +
             "Additional Effects: <br>-It determines its movement based on vehicle spots in front of it and will try to not intentionally move into a vehicle's path within its line of sight." +
             "<br>-Always repositon back to the middle when it reaches the divider.";

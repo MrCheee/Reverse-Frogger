@@ -8,9 +8,11 @@ public class SnipeSkillManager : ISkillManager
     public bool m_LockedIn { get; set; }
 
     SkillMarker m_SkillMarker;
+    private SkillSoundManager skillSoundManager;
 
     public SnipeSkillManager()
     {
+        skillSoundManager = GameObject.Find("SkillSoundManager").GetComponent<SkillSoundManager>();
         m_SkillType = SkillType.Assassinate;
         m_Skill = null;
         m_SkillCost = 8;
@@ -48,6 +50,7 @@ public class SnipeSkillManager : ISkillManager
             // Snipe cannot be used on enemies on top of vehicles (dangerous thematically)
             if (selectedUnit.GetComponent<Unit>().yAdjustment != 3)
             {
+                skillSoundManager.PlaySkillConfirm();
                 m_LockedIn = true;
                 selectedUnit.AddTargetedSkill(m_SkillType);
                 UpdateSkillUnit(selectedUnit);

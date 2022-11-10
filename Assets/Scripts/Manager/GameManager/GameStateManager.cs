@@ -18,6 +18,11 @@ public class GameStateManager : MonoBehaviour
     UserControl userControl;
     UIMain uiMain;
 
+    GameStateSoundManager gameStateSoundManager;
+    [SerializeField] AudioSource BGMAudioSource;
+    [SerializeField] AudioClip BGMMusic;
+    [SerializeField] AudioSource LevelUpAudioSource;
+
     [SerializeField] GameObject EnemyKilledPrefab;
 
     bool gameStart = true;
@@ -32,12 +37,12 @@ public class GameStateManager : MonoBehaviour
     int enemyKilledCount = 0;
     int totalKills = 0;
     int level = 1;
-    string difficulty = "Easy";
+    string difficulty = "Normal";
     bool altWave = false;
 
-    float waitTime = 0.5f;
+    float waitTime = .5f;
     float shortWaitTime = 0.25f;
-    float gameStartWaitTime = 2f;
+    float gameStartWaitTime = 1f;
 
     // Start is called before the first frame update
     void Start()
@@ -45,6 +50,7 @@ public class GameStateManager : MonoBehaviour
         enemySpawner = gameObject.GetComponent<EndlessEnemySpawner>();
         vehicleSpawner = gameObject.GetComponent<EndlessVehicleSpawner>();
         playerSkillVehicleManager = gameObject.GetComponent<PlayerSkillVehicleManager>();
+        gameStateSoundManager = GameObject.Find("GameStateSoundManager").GetComponent<GameStateSoundManager>();
         laneManager = gameObject.GetComponent<LaneManager>();
         userControl = gameObject.GetComponent<UserControl>();
 
@@ -85,6 +91,9 @@ public class GameStateManager : MonoBehaviour
                         InitialiseDifficulty();
                         LoadBestScore();
                         vehicleSpawner.PopulateInitialVehicles();
+                        BGMAudioSource.clip = BGMMusic;
+                        BGMAudioSource.pitch = 0.75f;
+                        BGMAudioSource.Play();
 
                         Debug.Log("Init --> EnemySpawn");
                         gameStateIndex = GameState.EnemySpawn;
@@ -95,6 +104,7 @@ public class GameStateManager : MonoBehaviour
 
                 case GameState.EnemySpawn:
                     uiMain.UpdateContent();
+                    gameStateSoundManager.PlayEnemySpawnGameState();
                     enemySpawner.SpawnEnemies();
                     FieldGrid.TriggerGridsRepositioning();
                     
@@ -198,6 +208,7 @@ public class GameStateManager : MonoBehaviour
                                 TriggerAllVehiclesTurn();
                                 gameStateIndex = GameState.Vehicle;
                                 uiMain.UpdateGameState(gameStateIndex);
+                                gameStateSoundManager.PlayVehicleGameState();
                             }
                         }
                     }
@@ -238,6 +249,7 @@ public class GameStateManager : MonoBehaviour
                         if (HaveBoostedUnitsOfType("Vehicle"))
                         {
                             Debug.Log("Vehicle --> Vehicle (Boosted)");
+                            gameStateSoundManager.PlayVehicleGameState();
                             TriggerBoostedUnitsOfTypeTurn("Vehicle");
                             ReduceBoostOnUnitsOfType("Vehicle");
                             gameStateIndex = GameState.Vehicle;
@@ -443,7 +455,7 @@ public class GameStateManager : MonoBehaviour
 
     public void VehicleHit(Unit vehicle, int damageDealt = 1)
     {
-        if (difficulty == "Hard")
+        if (difficulty == "Expert")
         {
             vehicle.TakeDamage(damageDealt);
         }
@@ -465,7 +477,7 @@ public class GameStateManager : MonoBehaviour
 
     public void UpdateGameLevel()
     {
-        if (difficulty == "Hard" || difficulty == "Medium")
+        if (difficulty == "Expert" || difficulty == "Advanced")
         {
             if (level < 5)
             {
@@ -498,6 +510,7 @@ public class GameStateManager : MonoBehaviour
         uiMain.UpdateLevel(level);
         enemySpawner.IncrementLevel();
         vehicleSpawner.IncrementLevel();
+        LevelUpAudioSource.Play(); ;
     }
 
     private bool CheckIfGameOver()

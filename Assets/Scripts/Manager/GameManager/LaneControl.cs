@@ -9,17 +9,18 @@ public class LaneControl : MonoBehaviour
     private int speedToggle = 0;
     private int minSpeed = 1;
     private int maxSpeed = 3;
+    AudioSource audioSource;
 
     public int LaneSpeed { get => laneSpeed; private set => laneSpeed = value; }
 
     // Start is called before the first frame update
     void Start()
     {
+        audioSource = GetComponent<AudioSource>();
         for (int i = 0; i < speedIndicators.Length; i++)
         {
             speedIndicators[i] = gameObject.transform.GetChild(i).gameObject;
         }
-
         InitSpeedIndicator();
     }
 
@@ -30,6 +31,7 @@ public class LaneControl : MonoBehaviour
 
     public void AddSpeed(bool toggledOn)
     {
+        audioSource.Play();
         if (toggledOn)
         {
             speedToggle = 1;
@@ -39,6 +41,7 @@ public class LaneControl : MonoBehaviour
 
     public void LowerSpeed(bool toggledOn)
     {
+        audioSource.Play();
         if (toggledOn)
         {
             speedToggle = -1;
@@ -48,6 +51,7 @@ public class LaneControl : MonoBehaviour
 
     public void SameSpeed(bool toggledOn)
     {
+        audioSource.Play();
         if (toggledOn)
         {
             speedToggle = 0;

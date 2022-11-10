@@ -170,13 +170,15 @@ public abstract class Enemy : Unit
 
     protected virtual void OnTriggerEnter(Collider other)
     {
+        other.gameObject.GetComponentInParent<Vehicle>().Collided();
         gameStateManager.VehicleHit(other.gameObject.GetComponentInParent<Unit>());
         DestroySelf();
     }
 
     public override void DestroySelf()
     {
-        string killedInfo = $"{gameObject.GetComponent<Unit>().GetName()} has been run over at Grid [{_currentGridPosition.x}, {_currentGridPosition.y}]!";
+        health = 0;
+        string killedInfo = $"{gameObject.GetComponent<Unit>().GetName()} has been killed at Grid [{_currentGridPosition.x}, {_currentGridPosition.y}]!";
         gameStateManager.EnemyKilled(transform.position, killedInfo); 
         RemoveFromFieldGridPosition();
         Destroy(gameObject, deathTimer);

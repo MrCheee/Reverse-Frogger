@@ -23,19 +23,19 @@ public class Bloat : Enemy
 
     public override void TakeVehicleInTheWayAction()
     {
-        skipTurn = 1;
+        DisableUnit(1);
         ExecuteConcussedMovement();
     }
 
-    protected override void OnTriggerEnter(Collider other)
+    public override void DestroySelf()
     {
+        health = 0;
         animator.SetTrigger("Killed");
-        gameStateManager.VehicleHit(other.gameObject.GetComponentInParent<Unit>());
-
         DisableVehiclesWithinRadius();
-
-        //other.gameObject.GetComponentInParent<Unit>().DisableUnit(2);
-        DestroySelf();
+        string killedInfo = $"{gameObject.GetComponent<Unit>().GetName()} has been killed at Grid [{_currentGridPosition.x}, {_currentGridPosition.y}]!";
+        gameStateManager.EnemyKilled(transform.position, killedInfo);
+        RemoveFromFieldGridPosition();
+        Destroy(gameObject, deathTimer);
     }
 
     private void DisableVehiclesWithinRadius()
@@ -72,6 +72,7 @@ public class Bloat : Enemy
     {
         return "Movement Pattern: <br>-Moves 1 step forward per turn. <br> <br>" +
             "Vehicle in the way: <br>-Runs into the vehicle and becomes stunned for 1 turn. <br> <br>" +
-            "Additional effects: <br>-When a vehicle kills it, it will explode onto the vehicle, stunning the vehicle for 2 turns.";
+            "Additional effects: <br>-When it is killed, it will explode toxic vapour in a 1 grid radius, " +
+            "stopping all vehicles around it in their tracks and stunning them for 1 turn.";
     }
 }

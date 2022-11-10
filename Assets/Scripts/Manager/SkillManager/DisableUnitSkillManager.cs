@@ -8,9 +8,11 @@ public class DisableUnitSkillManager : ISkillManager
     public bool m_LockedIn { get; set; }
 
     SkillMarker m_SkillMarker;
+    private SkillSoundManager skillSoundManager;
 
     public DisableUnitSkillManager()
     {
+        skillSoundManager = GameObject.Find("SkillSoundManager").GetComponent<SkillSoundManager>();
         m_SkillType = SkillType.DisableUnit;
         m_Skill = null;
         m_SkillCost = 3;
@@ -44,6 +46,7 @@ public class DisableUnitSkillManager : ISkillManager
     {
         if (selectedUnit != null)
         {
+            skillSoundManager.PlaySkillConfirm();
             m_LockedIn = true;
             selectedUnit.AddTargetedSkill(m_SkillType);
             UpdateSkillUnit(selectedUnit);

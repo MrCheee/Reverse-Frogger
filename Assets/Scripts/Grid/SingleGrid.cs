@@ -56,17 +56,17 @@ public class SingleGrid : ISingleGrid
                 allEnemies[2].IssueCommand(new MoveWithinGridCommand(_centrePoint + Vector3.right + Vector3.forward));
                 break;
             case 4:
-                allEnemies[0].IssueCommand(new MoveWithinGridCommand(_centrePoint + Vector3.left + Vector3.forward));
-                allEnemies[1].IssueCommand(new MoveWithinGridCommand(_centrePoint + Vector3.left + Vector3.back));
-                allEnemies[2].IssueCommand(new MoveWithinGridCommand(_centrePoint + Vector3.right + Vector3.forward));
-                allEnemies[3].IssueCommand(new MoveWithinGridCommand(_centrePoint + Vector3.right + Vector3.back));
+                allEnemies[0].IssueCommand(new MoveWithinGridCommand(_centrePoint + (Vector3.left * 1.5f) + Vector3.forward));
+                allEnemies[1].IssueCommand(new MoveWithinGridCommand(_centrePoint + (Vector3.left * .5f) + Vector3.back));
+                allEnemies[2].IssueCommand(new MoveWithinGridCommand(_centrePoint + (Vector3.right * .5f) + Vector3.forward));
+                allEnemies[3].IssueCommand(new MoveWithinGridCommand(_centrePoint + (Vector3.right * 1.5f) + Vector3.back));
                 break;
             case 5:
-                allEnemies[0].IssueCommand(new MoveWithinGridCommand(_centrePoint + Vector3.left + Vector3.forward));
-                allEnemies[1].IssueCommand(new MoveWithinGridCommand(_centrePoint + Vector3.left + Vector3.back));
-                allEnemies[2].IssueCommand(new MoveWithinGridCommand(_centrePoint + Vector3.right + Vector3.forward));
-                allEnemies[3].IssueCommand(new MoveWithinGridCommand(_centrePoint + Vector3.right + Vector3.back));
-                allEnemies[4].IssueCommand(new MoveWithinGridCommand(_centrePoint));
+                allEnemies[0].IssueCommand(new MoveWithinGridCommand(_centrePoint + (Vector3.left * 1.5f) + Vector3.forward));
+                allEnemies[1].IssueCommand(new MoveWithinGridCommand(_centrePoint + (Vector3.left * .75f) + Vector3.back));
+                allEnemies[2].IssueCommand(new MoveWithinGridCommand(_centrePoint + Vector3.forward));
+                allEnemies[3].IssueCommand(new MoveWithinGridCommand(_centrePoint + (Vector3.right * .75f) + Vector3.back));
+                allEnemies[4].IssueCommand(new MoveWithinGridCommand(_centrePoint + (Vector3.right * 1.5f) + Vector3.forward));
                 break;
             default:
                 // No repositioning if only 1 Unit or none is in the grid
@@ -139,12 +139,12 @@ public class SingleGrid : ISingleGrid
         return _centrePoint;
     }
 
-    public Vector3 GetCornerPoint(int right, int top)
+    public Vector3 GetCornerPoint(float right, float top)
     {
-        return new Vector3((float)(_centrePoint.x + right * 1.5), 0, (float)(_centrePoint.z + top * 1.5));
+        return new Vector3((float)(_centrePoint.x + right * 1.25), 0, (float)(_centrePoint.z + top * 1.5));
     }
 
-    public Vector3 GetInBetweenPoint(int front, int top)
+    public Vector3 GetInBetweenPoint(float front, float top)
     {
         return new Vector3((float)(_centrePoint.x + front * 1.75), 0, (float)(_centrePoint.z + top * 2));
     }

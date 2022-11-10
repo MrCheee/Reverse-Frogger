@@ -12,7 +12,7 @@ public class EndlessEnemySpawner : MonoBehaviour, IEnemySpawner
     int spawnXMax = FieldGrid.GetMaxLength() - FieldGrid.GetFieldBuffer() - 2;
     int level;
     int spawnCount;
-    EnemyType forcedSpawn = EnemyType.None;
+    Queue<EnemyType> forcedSpawn = new Queue<EnemyType>();
 
     // Start is called before the first frame update
     void Start()
@@ -22,17 +22,17 @@ public class EndlessEnemySpawner : MonoBehaviour, IEnemySpawner
 
     public void SetDifficulty(string difficultyLevel)
     {
-        forcedSpawn = EnemyType.Soldier;
+        forcedSpawn.Enqueue(EnemyType.Bloat);
         level = 1;
-        if (difficultyLevel == "Hard")
+        if (difficultyLevel == "Expert")
         {
             _currentSpawnList = new List<EnemyType>()
             {
-                EnemyType.Soldier
+                EnemyType.Brute
             };
             spawnCount = 3;
         }
-        else if (difficultyLevel == "Medium")
+        else if (difficultyLevel == "Advanced")
         {
             _currentSpawnList = new List<EnemyType>()
             {
@@ -59,10 +59,9 @@ public class EndlessEnemySpawner : MonoBehaviour, IEnemySpawner
         for (int i = 0; i < enemyCount; i++)
         {
             EnemyType enemyIndex;
-            if (forcedSpawn != EnemyType.None)
+            if (forcedSpawn.Count > 0)
             {
-                enemyIndex = forcedSpawn;
-                forcedSpawn = EnemyType.None;
+                enemyIndex = forcedSpawn.Dequeue();
             }
             else
             {
@@ -105,48 +104,48 @@ public class EndlessEnemySpawner : MonoBehaviour, IEnemySpawner
         {
             case 2:
                 _currentSpawnList.Add(EnemyType.Skater);
-                forcedSpawn = EnemyType.Skater;
+                forcedSpawn.Enqueue(EnemyType.Skater);
                 break;
             case 3:
                 _currentSpawnList.Add(EnemyType.Sprinter);
-                forcedSpawn = EnemyType.Sprinter;
+                forcedSpawn.Enqueue(EnemyType.Sprinter);
                 break;
             case 4:
                 _currentSpawnList.Add(EnemyType.Charger);
-                forcedSpawn = EnemyType.Charger;
+                forcedSpawn.Enqueue(EnemyType.Charger);
                 break;
             case 5:
                 _currentSpawnList.Add(EnemyType.Brute);
-                forcedSpawn = EnemyType.Brute;
+                forcedSpawn.Enqueue(EnemyType.Brute);
                 break;
             case 6:
                 _currentSpawnList.Add(EnemyType.Vaulter);
-                forcedSpawn = EnemyType.Vaulter;
+                forcedSpawn.Enqueue(EnemyType.Vaulter);
                 break;
             case 7:
                 _currentSpawnList.Add(EnemyType.Bloat);
-                forcedSpawn = EnemyType.Bloat;
+                forcedSpawn.Enqueue(EnemyType.Bloat);
                 break;
             case 8:
                 _currentSpawnList.Add(EnemyType.Jumper);
-                forcedSpawn = EnemyType.Jumper;
+                forcedSpawn.Enqueue(EnemyType.Jumper);
                 break;
             case 9:
                 _currentSpawnList.Add(EnemyType.Flatten);
-                forcedSpawn = EnemyType.Flatten;
+                forcedSpawn.Enqueue(EnemyType.Flatten);
                 break;
             case 10:
                 _currentSpawnList.Add(EnemyType.BabyForesight);
                 _currentSpawnList.Add(EnemyType.Brute);
-                forcedSpawn = EnemyType.BabyForesight;
+                forcedSpawn.Enqueue(EnemyType.BabyForesight);
                 break;
             case 11:
                 _currentSpawnList.Add(EnemyType.LShield);
-                forcedSpawn = EnemyType.LShield;
+                forcedSpawn.Enqueue(EnemyType.LShield);
                 break;
             case 12:
                 _currentSpawnList.Add(EnemyType.RShield);
-                forcedSpawn = EnemyType.RShield;
+                forcedSpawn.Enqueue(EnemyType.RShield);
                 break;
             case 13:
                 _currentSpawnList.Add(EnemyType.Jumper);
@@ -159,7 +158,7 @@ public class EndlessEnemySpawner : MonoBehaviour, IEnemySpawner
             case 15:
                 _currentSpawnList.Add(EnemyType.LShield);
                 _currentSpawnList.Add(EnemyType.RShield);
-                forcedSpawn = EnemyType.Brute;
+                forcedSpawn.Enqueue(EnemyType.Brute);
                 break;
             case 16:
                 _currentSpawnList.Add(EnemyType.Jumper);
@@ -174,18 +173,28 @@ public class EndlessEnemySpawner : MonoBehaviour, IEnemySpawner
                 _currentSpawnList.Add(EnemyType.RShield);
                 break;
             case 19:
-                _currentSpawnList.Add(EnemyType.Brute);
-                _currentSpawnList.Add(EnemyType.Brute);
+                _currentSpawnList.Add(EnemyType.Jumper);
+                _currentSpawnList.Add(EnemyType.Jumper);
+                _currentSpawnList.Add(EnemyType.Jumper);
+                forcedSpawn.Enqueue(EnemyType.Jumper);
+                forcedSpawn.Enqueue(EnemyType.Jumper);
                 break;
             case 20:
-                _currentSpawnList.Add(EnemyType.Jumper);
-                _currentSpawnList.Add(EnemyType.Jumper);
-                _currentSpawnList.Add(EnemyType.Jumper);
-                forcedSpawn = EnemyType.Brute;
+                _currentSpawnList.Add(EnemyType.Brute);
+                _currentSpawnList.Add(EnemyType.Brute);
+                forcedSpawn.Enqueue(EnemyType.Brute);
+                spawnCount += 1;
                 break;
             case 25:
+                _currentSpawnList.Add(EnemyType.BabyForesight);
+                _currentSpawnList.Add(EnemyType.BabyForesight);
+                _currentSpawnList.Add(EnemyType.BabyForesight);
+                forcedSpawn.Enqueue(EnemyType.BabyForesight);
+                forcedSpawn.Enqueue(EnemyType.BabyForesight);
+                forcedSpawn.Enqueue(EnemyType.Brute);
                 break;
             case 30:
+                spawnCount += 1;
                 break;
             default:
                 break;

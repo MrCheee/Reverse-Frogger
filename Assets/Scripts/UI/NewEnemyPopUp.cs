@@ -11,6 +11,14 @@ public class NewEnemyPopUp : MonoBehaviour
     public Image EnemyImage;
     public Button CloseButton;
     Queue<EnemyInfo> newEnemies = new Queue<EnemyInfo>();
+    AudioSource audioSource;
+    [SerializeField] AudioClip openSound;
+    [SerializeField] AudioClip closeSound;
+
+    private void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+    }
 
     public void DisplayNewEnemy(Enemy enemyUnit)
     {
@@ -29,6 +37,10 @@ public class NewEnemyPopUp : MonoBehaviour
         else
         {
             gameObject.SetActive(true);
+
+            audioSource.clip = openSound;
+            audioSource.Play();
+
             Name.text = enemyUnit.GetName();
             Description.text = enemyUnit.GetDescription();
 
@@ -44,6 +56,9 @@ public class NewEnemyPopUp : MonoBehaviour
     {
         if (newEnemies.Count > 0)
         {
+            audioSource.clip = openSound;
+            audioSource.Play();
+
             EnemyInfo newEnemy = newEnemies.Dequeue();
             Name.text = newEnemy.name;
             Description.text = newEnemy.description;
@@ -54,6 +69,8 @@ public class NewEnemyPopUp : MonoBehaviour
         }
         else
         {
+            audioSource.clip = closeSound;
+            audioSource.Play();
             gameObject.SetActive(false);
         }
     }

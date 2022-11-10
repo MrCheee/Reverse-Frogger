@@ -79,6 +79,7 @@ public class Brute : Enemy
                 if (!knockbackBlocked && !vehicleBlockingDestination && !bruteBlockingDestination)
                 {
                     veh.IssueCommand(new MoveToTargetGridCommand(destinationGrid));
+                    veh.gameObject.GetComponent<Vehicle>().MoveUnitsOnTopOfVehicle(new GridCoord(0, direction));
                 }
                 else
                 {

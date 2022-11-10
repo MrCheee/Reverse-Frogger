@@ -122,7 +122,7 @@ public class Vaulter : Enemy
     {
         if (yAdjustment == 0)  // If not on another vehicle, then give "knocked" movement and skip turn
         {
-            skipTurn = 1;
+            DisableUnit(1);
             ExecuteConcussedMovement();
         }
     }
@@ -177,7 +177,7 @@ public class Vaulter : Enemy
 
     public void VaultHit()
     {
-        skipTurn = 1;
+        DisableUnit(1);
         vaultAvailable = false;
     }
 

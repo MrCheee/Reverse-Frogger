@@ -8,9 +8,11 @@ public class BoostUnitSkillManager : ISkillManager
     public bool m_LockedIn { get; set; }
 
     SkillMarker m_SkillMarker;
+    private SkillSoundManager skillSoundManager;
 
     public BoostUnitSkillManager()
     {
+        skillSoundManager = GameObject.Find("SkillSoundManager").GetComponent<SkillSoundManager>();
         m_SkillType = SkillType.BoostUnit;
         m_Skill = null;
         m_SkillCost = 3;
@@ -44,6 +46,7 @@ public class BoostUnitSkillManager : ISkillManager
     {
         if (selectedUnit != null)
         {
+            skillSoundManager.PlaySkillConfirm();
             m_LockedIn = true;
             selectedUnit.AddTargetedSkill(m_SkillType);
             UpdateSkillUnit(selectedUnit);

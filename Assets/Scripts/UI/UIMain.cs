@@ -17,11 +17,13 @@ public class UIMain : MonoBehaviour
 
     public StartMenu StartMenu;
     public InfoPopup InfoPopup;
+    public GameObject InstructionPopUp;
     public NewEnemyPopUp NewEnemyPopUp;
-    public RectTransform GameOverPopUp;
+    public GameObject GameOverPopUp;
     public HealthBar HealthBar;
     public SkillOrbBar SkillOrbBar;
     public RectTransform VehicleSelectionUI;
+    public TextMeshProUGUI LevelLabel;
     public TextMeshProUGUI LevelText;
     public TextMeshProUGUI KillsText;
     public TextMeshProUGUI BestScoreText;
@@ -38,9 +40,21 @@ public class UIMain : MonoBehaviour
     GameStateIndicators gameStateIndicators;
 
     [SerializeField] Camera GameCamera;
+    [SerializeField] AudioSource BGMSource;
+    [SerializeField] AudioListener PlayerAudio;
+    bool soundOn = true;
+    bool bgmOn = true;
+    [SerializeField] Image BGMButtonImg;
+    [SerializeField] Image AudioButtonImg;
+    [SerializeField] Sprite BGMOn;
+    [SerializeField] Sprite BGMOff;
+    [SerializeField] Sprite AudioOn;
+    [SerializeField] Sprite AudioOff;
 
     protected IUIInfoContent m_CurrentContent;
     protected List<Status> m_ContentBuffer = new List<Status>();
+
+    Coroutine m_Coroutine;
 
     private void Awake()
     {
@@ -48,6 +62,7 @@ public class UIMain : MonoBehaviour
         InfoPopup.gameObject.SetActive(false);
         GameLogWindow = GameObject.Find("GameLogWindow").GetComponent<GameLogWindow>();
         gameStateIndicators = GameObject.Find("GameStateIndicatorYellow").GetComponent<GameStateIndicators>();
+        m_Coroutine = null;
     }
 
     private void OnDestroy()
@@ -57,7 +72,6 @@ public class UIMain : MonoBehaviour
 
     public void CloseStartMenu()
     {
-        //StartMenu.gameObject.SetActive(false);
         StartMenu.CloseMenu();
     }
 
@@ -94,7 +108,36 @@ public class UIMain : MonoBehaviour
 
     public void UpdateLevel(int level)
     {
-        LevelText.text = level.ToString();
+        if (level < 30)
+        {
+            m_Coroutine = StartCoroutine(LevelUpFlashing());
+            LevelText.text = level.ToString();
+        }
+        else
+        {
+            LevelText.text = "MAX";
+        }
+    }
+
+    private IEnumerator LevelUpFlashing()
+    {
+        bool flashed = false;
+        while (true)
+        {
+            if (flashed)
+            {
+                LevelLabel.color = Color.white;
+                LevelText.color = Color.white;
+                flashed = false;
+            }
+            else
+            {
+                LevelLabel.color = Color.yellow;
+                LevelText.color = Color.yellow;
+                flashed = true;
+            }
+            yield return new WaitForSeconds(0.25f);
+        }
     }
 
     public void UpdateKills(int kills)
@@ -105,15 +148,15 @@ public class UIMain : MonoBehaviour
     public void UpdateBestScore(string difficulty, int bestScore)
     {
         BestScoreDifficulty.text = difficulty;
-        if (difficulty == "Easy")
+        if (difficulty == "Normal")
         {
             BestScoreDifficulty.color = Color.green;
         }
-        else if (difficulty == "Medium")
+        else if (difficulty == "Advanced")
         {
             BestScoreDifficulty.color = Color.yellow;
         }
-        else if (difficulty == "Hard")
+        else if (difficulty == "Expert")
         {
             BestScoreDifficulty.color = Color.red;
         }
@@ -122,7 +165,7 @@ public class UIMain : MonoBehaviour
 
     public void DisplayGameOver()
     {
-        GameOverPopUp.gameObject.SetActive(true);
+        GameOverPopUp.SetActive(true);
     }
 
     public void DisplayNewEnemy(Enemy enemyUnit)
@@ -217,6 +260,12 @@ public class UIMain : MonoBehaviour
 
     public void ResetHealthAndSkillGainInfo()
     {
+        if (m_Coroutine != null)
+        {
+            StopCoroutine(m_Coroutine);
+            LevelLabel.color = Color.white;
+            LevelText.color = Color.white;
+        }
         DamageTakenInfo.SetActive(false);
         SkillGainInfo.SetActive(false);
     }
@@ -240,6 +289,50 @@ public class UIMain : MonoBehaviour
         else
         {
             ReferenceGrid.SetActive(true);
+        }
+    }
+
+    public void ToggleBGM()
+    {
+        if (bgmOn)
+        {
+            bgmOn = false;
+            BGMSource.volume = 0;
+            BGMButtonImg.sprite = BGMOn;
+        }
+        else
+        {
+            bgmOn = true;
+            BGMSource.volume = .25f;
+            BGMButtonImg.sprite = BGMOff;
+        }
+    }
+
+    public void ToggleAudio()
+    {
+        if (soundOn)
+        {
+            soundOn = false;
+            PlayerAudio.enabled = false;
+            AudioButtonImg.sprite = AudioOn;
+        }
+        else
+        {
+            soundOn = true;
+            PlayerAudio.enabled = true;
+            AudioButtonImg.sprite = AudioOff;
+        }
+    }
+
+    public void ToggleInstructions()
+    {
+        if (InstructionPopUp.activeInHierarchy)
+        {
+            InstructionPopUp.SetActive(false);
+        }
+        else
+        {
+            InstructionPopUp.SetActive(true);
         }
     }
 }

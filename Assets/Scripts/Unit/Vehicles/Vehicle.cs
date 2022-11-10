@@ -13,8 +13,13 @@ public abstract class Vehicle : Unit
     protected int dividerY = FieldGrid.GetFieldBuffer() + 1 + FieldGrid.GetNumberOfLanes();
     protected GridCoord[] _currentGridPosition;
 
+    protected AudioSource _audioSource;
+    [SerializeField] protected AudioClip hitSound;
+
     protected override void Awake()
     {
+        _audioSource = GetComponent<AudioSource>();
+
         SetUpSize();
         _currentGridPosition = new GridCoord[size];
         _currentGridPosition[0] = new GridCoord(dividerY, dividerY);
@@ -193,7 +198,7 @@ public abstract class Vehicle : Unit
     protected void SimulateHitObstacle()
     {
         GridCoord currentGrid = GetCurrentHeadGridPosition();
-        int right = currentGrid.y < dividerY ? -1 : 1;
+        float right = currentGrid.y < dividerY ? -0.75f : 0.75f;
         commandStack.Enqueue(new MoveWithinCurrentGridCommand(right, 0));
         commandStack.Enqueue(new MoveWithinCurrentGridCommand(0, 0));
     }
@@ -209,11 +214,12 @@ public abstract class Vehicle : Unit
     public override void DestroySelf()
     {
         RemoveFromFieldGridPosition();
-        if (health == 0)
+        if (health <= 0)
         {
             animator.SetTrigger("Explode");
-            deathTimer = 1.5f;
+            deathTimer = 1f;
         }
+        health = 0;
         Destroy(gameObject, deathTimer);
     }
 
@@ -325,10 +331,16 @@ public abstract class Vehicle : Unit
     {
         Vector3 targetPos = FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetGridCentrePoint();
         Vector3 moveDirection = (targetPos - transform.position).normalized;
-        while (Vector3.Distance(targetPos, transform.position) > 0.5f)
+        while (Vector3.Distance(targetPos, transform.position) > 0.1f)
         {
             transform.Translate(moveDirection * 50 * Time.deltaTime, Space.World);
             yield return null;
         }
+        animator.SetTrigger("Airdropped");
+    }
+
+    public void Collided()
+    {
+        audioSource.PlayOneShot(hitSound, 0.35f);
     }
 }

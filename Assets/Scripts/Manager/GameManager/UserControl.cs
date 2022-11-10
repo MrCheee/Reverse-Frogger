@@ -31,11 +31,14 @@ public class UserControl : MonoBehaviour
     private int consumedSkillOrbCount = 0;
     private int maxSkillOrbCount = 10;
 
+    SkillSoundManager skillSoundManager;
+
     private void Awake()
     {
         uiMain = UIMain.Instance;
         playerSkillVehicleManager = gameObject.GetComponent<PlayerSkillVehicleManager>();
         graphicRaycasterManager = GameObject.Find("Canvas").GetComponent<GraphicRaycasterManager>();
+        skillSoundManager = GameObject.Find("SkillSoundManager").GetComponent<SkillSoundManager>();
         skillSelected = SkillType.None;
         Marker.SetActive(false);
 
@@ -43,9 +46,9 @@ public class UserControl : MonoBehaviour
             { SkillType.Assassinate, new SnipeSkillManager() },
             { SkillType.CallInVeh, new CallInVehSkillManager() },
             { SkillType.AirDropVeh, new AirDropVehSkillManager() },
-            { SkillType.LaneChange, new LaneChangeSkillManager() },
             { SkillType.BoostUnit, new BoostUnitSkillManager() },
-            { SkillType.DisableUnit, new DisableUnitSkillManager() }
+            { SkillType.DisableUnit, new DisableUnitSkillManager() },
+            { SkillType.LaneChange, new LaneChangeSkillManager() }
         };
 
         skillLockedInStatus = new bool[6];
@@ -172,6 +175,8 @@ public class UserControl : MonoBehaviour
         if (skillToggles[skillNum].isOn)
         {
             Debug.Log($"Skill {skillType} has been selected!");
+            skillSoundManager.PlaySkillSelect();
+
             // Remove previously selected skill from active state and set this as current active skill
             ResetPreviousSelectedButton(skillType);
             SetActiveSkill(skillType);
@@ -192,6 +197,8 @@ public class UserControl : MonoBehaviour
         else  // If button is deselected, either manually, or auto trigger when a skill target is locked in
         {
             Debug.Log($"Skill {skillType} has been deselected!");
+            skillSoundManager.PlaySkillDeselect();
+
             // If skill is not locked in, refund skill orbs
             if (IsSkillLockedIn(skillNum) == false)
             {
@@ -292,7 +299,6 @@ public class UserControl : MonoBehaviour
 
     private IEnumerator ExecuteSkills()
     {
-        //int skillOrbsConsumed = 0;
         foreach (KeyValuePair<SkillType, ISkillManager> entry in skillManagers)
         {
             if (entry.Value.m_LockedIn)
@@ -300,12 +306,10 @@ public class UserControl : MonoBehaviour
                 uiMain.RemoveSkillOrb(entry.Value.m_SkillCost);
                 uiMain.UpdateGameLog(entry.Value.GetExecuteLog());
                 entry.Value.ExecuteSkill();
-                //skillOrbsConsumed += entry.Value.m_SkillCost;
                 currentSkillOrbCount -= entry.Value.m_SkillCost;
                 yield return new WaitForSeconds(2f);
             }
         }
-        //uiMain.RemoveSkillOrb(skillOrbsConsumed);
         ResetAllSkillTargets();
         skillExecutionInProgress = false;
     }

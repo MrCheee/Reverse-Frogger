@@ -9,6 +9,7 @@ public class LaneChangeSkillManager : ISkillManager
     public int m_SkillCost { get; set; }
     public bool m_LockedIn { get; set; }
 
+    private SkillSoundManager skillSoundManager;
     private Camera GameCamera;
     private Canvas canvas;
     private GraphicRaycasterManager graphicRaycasterManager;
@@ -29,6 +30,7 @@ public class LaneChangeSkillManager : ISkillManager
         m_SkillCost = 2;
         m_LockedIn = false;
 
+        skillSoundManager = GameObject.Find("SkillSoundManager").GetComponent<SkillSoundManager>();
         GameCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
         canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
         graphicRaycasterManager = GameObject.Find("Canvas").GetComponent<GraphicRaycasterManager>();
@@ -71,10 +73,17 @@ public class LaneChangeSkillManager : ISkillManager
         if (m_Skill != null)
         {
             GameObject selectedLaneChangeUI = graphicRaycasterManager.GetSelectedLaneChangeUI();
-            if (selectedLaneChangeUI != null && selectedLaneChangeUI.GetComponent<Button>().enabled)
+            if (selectedLaneChangeUI != null)
             {
-                m_LockedIn = true;
-                completedSkillSelection = true;
+                if (selectedLaneChangeUI.GetComponent<Button>().enabled)
+                {
+                    m_LockedIn = true;
+                    completedSkillSelection = true;
+                }
+                else
+                {
+                    skillSoundManager.PlayInvalidSelection();
+                }
             }
         }
         return completedSkillSelection;
@@ -106,7 +115,6 @@ public class LaneChangeSkillManager : ISkillManager
         {
             UpdateSkillUnit(selectedUnit);
             Vector3 selectedScreenPos = GameCamera.WorldToScreenPoint(selectedUnit.gameObject.transform.position);
-            //Vector3 selectedScreenPos = CalculateScreenPosFromUnitHeadPosition();
             RepositionLaneChangeUI(selectedScreenPos);
             CheckLaneChangeFeasibility();
         }
@@ -126,6 +134,7 @@ public class LaneChangeSkillManager : ISkillManager
     {
         if (m_Skill != null)
         {
+            skillSoundManager.PlaySkillConfirm();
             m_Skill.UpdateGridCoordAction(new GridCoord(0, 1));
         }
         TurnOnLaneChangeButton(laneChangeUpButtonImg);
@@ -139,6 +148,7 @@ public class LaneChangeSkillManager : ISkillManager
     {
         if (m_Skill != null)
         {
+            skillSoundManager.PlaySkillConfirm();
             m_Skill.UpdateGridCoordAction(new GridCoord(0, -1));
         }
         TurnOnLaneChangeButton(laneChangeDownButtonImg);
@@ -210,6 +220,7 @@ public class LaneChangeSkillManager : ISkillManager
     {
         if (m_LockedIn)
         {
+            skillSoundManager.PlayLaneChange();
             m_Skill.Execute();
             RemoveSkillTarget();
         }
