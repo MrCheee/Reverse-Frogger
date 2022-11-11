@@ -42,7 +42,7 @@ public class BabyForesight : Enemy
             yield break;
         }
 
-        bool isInLeftLane = _currentGridPosition.y < FieldGrid.GetDividerLaneNum();
+        bool isInLeftLane = _currentGridPosition.y <= FieldGrid.GetDividerLaneNum();
         int maxLeft = FieldGrid.GetFieldBuffer();
         int maxRight = FieldGrid.GetMaxLength() - FieldGrid.GetFieldBuffer() - 1;
         GridCoord nextMove = new GridCoord(0, 0);

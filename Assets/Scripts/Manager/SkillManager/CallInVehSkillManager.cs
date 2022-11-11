@@ -34,8 +34,8 @@ public class CallInVehSkillManager : ISkillManager
         GameCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
         graphicRaycasterManager = GameObject.Find("Canvas").GetComponent<GraphicRaycasterManager>();
         uiMain = UIMain.Instance;
-        invalidVehicleLaneSelectionImg = GameObject.Find("InvalidLaneSelection").GetComponent<RectTransform>();
-        validVehicleLaneSelectionImg = GameObject.Find("ValidLaneSelection").GetComponent<RectTransform>();
+        invalidVehicleLaneSelectionImg = GameObject.Find("InvalidCallinLaneSelection").GetComponent<RectTransform>();
+        validVehicleLaneSelectionImg = GameObject.Find("ValidCallinLaneSelection").GetComponent<RectTransform>();
     }
 
     public void InitialiseSkill(Unit unit)

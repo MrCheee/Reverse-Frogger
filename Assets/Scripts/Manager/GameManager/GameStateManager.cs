@@ -21,23 +21,24 @@ public class GameStateManager : MonoBehaviour
     GameStateSoundManager gameStateSoundManager;
     [SerializeField] AudioSource BGMAudioSource;
     [SerializeField] AudioClip BGMMusic;
+    [SerializeField] AudioClip GameOverMusic;
     [SerializeField] AudioSource LevelUpAudioSource;
 
     [SerializeField] GameObject EnemyKilledPrefab;
 
-    bool gameStart = true;
+    bool gameStart = false;
     GameState gameStateIndex = GameState.Initialisation;
     bool playerTurnInProgress = false;
     HashSet<string> newEnemies;
 
     int playerHealth = 10;
-    int playerSkillOrb = 10;
+    int playerSkillOrb = 0;
     int damageReceived = 0;
     int orbReceived = 0;
     int enemyKilledCount = 0;
     int totalKills = 0;
     int level = 1;
-    string difficulty = "Normal";
+    string difficulty = "Advanced";
     bool altWave = false;
 
     float waitTime = .5f;
@@ -444,7 +445,7 @@ public class GameStateManager : MonoBehaviour
         AddPlayerSkillOrb(1);
         orbReceived += 1;
         uiMain.UpdateKills(totalKills);
-        uiMain.UpdateGameLog(killedInfo);
+        //uiMain.UpdateGameLog(killedInfo);
         DisplayKilledEnemy(killedPos);
     }
 
@@ -517,9 +518,11 @@ public class GameStateManager : MonoBehaviour
     {
         if (playerHealth <= 0)
         {
+            BGMAudioSource.clip = GameOverMusic;
+            BGMAudioSource.Play();
             SaveBestScore();
             uiMain.DisplayGameOver();
-            uiMain.UpdateGameLog("GAME OVER! The frogs have conquered humanity!");
+            //uiMain.UpdateGameLog("GAME OVER! The frogs have conquered humanity!");
             return true;
         }
         else
@@ -549,55 +552,57 @@ public class GameStateManager : MonoBehaviour
     public void SaveBestScore()
     {
         string path = Application.persistentDataPath + "/highscore.json";
-        Dictionary<string, int> killsByDifficulty;
+        SaveData killsByDifficulty;
+        int difficultyIndex = 0;
+        if (difficulty == "Advanced") difficultyIndex = 1;
+        if (difficulty == "Expert") difficultyIndex = 2;
 
         if (File.Exists(path))
         {
             string jsonIn = File.ReadAllText(path);
-            killsByDifficulty = JsonUtility.FromJson<Dictionary<string, int>>(jsonIn);
+            killsByDifficulty = JsonUtility.FromJson<SaveData>(jsonIn);
 
-            if (killsByDifficulty.ContainsKey(difficulty))
+            if (totalKills > killsByDifficulty.kills[difficultyIndex])
             {
-                if (totalKills > killsByDifficulty[difficulty])
-                {
-                    killsByDifficulty[difficulty] = totalKills;
-                }
-            }
-            else
-            {
-                killsByDifficulty[difficulty] = totalKills;
+                killsByDifficulty.kills[difficultyIndex] = totalKills;
             }
         }
         else
         {
-            killsByDifficulty = new Dictionary<string, int>();
-            killsByDifficulty.Add(difficulty, totalKills);
+            Debug.Log("Creating new dict...");
+            killsByDifficulty.kills = new int[3] { 0, 0, 0 };
+            killsByDifficulty.kills[difficultyIndex] = totalKills;
         }
 
+        Debug.Log(killsByDifficulty.kills);
         string jsonOut = JsonUtility.ToJson(killsByDifficulty);
+        Debug.Log(jsonOut);
         File.WriteAllText(Application.persistentDataPath + "/highscore.json", jsonOut);
     }
 
     public void LoadBestScore()
     {
         string path = Application.persistentDataPath + "/highscore.json";
+        int difficultyIndex = 0;
+        if (difficulty == "Advanced") difficultyIndex = 1;
+        if (difficulty == "Expert") difficultyIndex = 2;
+
         if (File.Exists(path))
         {
             string json = File.ReadAllText(path);
-            Dictionary<string, int> killsByDifficulty = JsonUtility.FromJson<Dictionary<string, int>>(json);
+            SaveData killsByDifficulty = JsonUtility.FromJson<SaveData>(json);
 
-            if (killsByDifficulty.ContainsKey(difficulty))
-            {
-                uiMain.UpdateBestScore(difficulty, killsByDifficulty[difficulty]);
-            }
-            else
-            {
-                uiMain.UpdateBestScore(difficulty, 0);
-            }
+            uiMain.UpdateBestScore(difficulty, killsByDifficulty.kills[difficultyIndex]);
         }
         else
         {
             uiMain.UpdateBestScore(difficulty, 0);
         }
+    }
+
+    [System.Serializable]
+    struct SaveData
+    {
+        public int[] kills;
     }
 }

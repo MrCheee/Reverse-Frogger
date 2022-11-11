@@ -148,7 +148,10 @@ public abstract class Enemy : Unit
 
     public override void CheckConditionsToDestroy()
     {
-        return;
+        if (!FieldGrid.IsWithinPlayableField(GetCurrentHeadGridPosition()))
+        {
+            DestroySelf();
+        }
     }
 
     protected void MarkedAsCrossed()

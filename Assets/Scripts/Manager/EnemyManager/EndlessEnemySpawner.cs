@@ -4,7 +4,6 @@ using UnityEngine;
 public class EndlessEnemySpawner : MonoBehaviour, IEnemySpawner
 {
     [SerializeField] private GameObject[] enemyPrefabs;
-    private GameLogWindow gameLogWindow;
 
     List<EnemyType> _currentSpawnList;
     int spawnY = FieldGrid.GetMaxHeight() - FieldGrid.GetFieldBuffer() - 1;
@@ -14,15 +13,9 @@ public class EndlessEnemySpawner : MonoBehaviour, IEnemySpawner
     int spawnCount;
     Queue<EnemyType> forcedSpawn = new Queue<EnemyType>();
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        gameLogWindow = GameObject.Find("GameLogWindow").GetComponent<GameLogWindow>();
-    }
-
     public void SetDifficulty(string difficultyLevel)
     {
-        forcedSpawn.Enqueue(EnemyType.Bloat);
+        forcedSpawn.Enqueue(EnemyType.Soldier);
         level = 1;
         if (difficultyLevel == "Expert")
         {
@@ -73,7 +66,6 @@ public class EndlessEnemySpawner : MonoBehaviour, IEnemySpawner
             Vector3 spawnPos = FieldGrid.GetSingleGrid(spawnGrid).GetGridCentrePoint();
             GameObject enemy = Instantiate(enemyPrefabs[(int)enemyIndex], spawnPos, enemyPrefabs[(int)enemyIndex].transform.rotation);
             enemy.GetComponent<Enemy>().AddToFieldGridPosition(spawnGrid);
-            gameLogWindow.AddToGameLog($"{enemy.GetComponent<Unit>().GetName()} has spawned at Grid [{spawnGrid.x}, {spawnGrid.y}]!");
         }
     }
 

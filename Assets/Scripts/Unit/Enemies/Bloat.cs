@@ -30,6 +30,7 @@ public class Bloat : Enemy
     public override void DestroySelf()
     {
         health = 0;
+        deathTimer = 2f;
         animator.SetTrigger("Killed");
         DisableVehiclesWithinRadius();
         string killedInfo = $"{gameObject.GetComponent<Unit>().GetName()} has been killed at Grid [{_currentGridPosition.x}, {_currentGridPosition.y}]!";

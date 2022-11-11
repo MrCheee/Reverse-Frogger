@@ -17,7 +17,7 @@ public class LeftShield : Soldier
         int currentY = _currentGridPosition.y;
         if (currentY > FieldGrid.GetDividerLaneNum() && currentY != FieldGrid.GetTopSidewalkLaneNum())
         {
-            animator.SetTrigger("Block");
+            animator.SetTrigger("ToBlock");
         }
         TurnInProgress = false;
         yield break;

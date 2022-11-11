@@ -330,13 +330,14 @@ public abstract class Vehicle : Unit
     public IEnumerator AirdropMotion()
     {
         Vector3 targetPos = FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetGridCentrePoint();
-        Vector3 moveDirection = (targetPos - transform.position).normalized;
-        while (Vector3.Distance(targetPos, transform.position) > 0.1f)
+        Vector3 moveDirection;
+        while (Vector3.Distance(targetPos, transform.position) > 0.2f)
         {
+            moveDirection = (targetPos - transform.position).normalized;
             transform.Translate(moveDirection * 50 * Time.deltaTime, Space.World);
             yield return null;
         }
-        animator.SetTrigger("Airdropped");
+        GameObject.Find("AirdropTarget").GetComponent<AirdropTarget>().Trigger(GetName(), transform.position, -movementPattern[0].x);
     }
 
     public void Collided()

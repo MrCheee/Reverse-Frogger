@@ -36,7 +36,7 @@ public class GraphicRaycasterManager : MonoBehaviour
 
     public bool HasSelectedValidLocatorUI()
     {
-        bool invalidLocatorSelected = m_TargetResults.Where(x => x.gameObject.CompareTag("Locator")).Any(x => x.gameObject.name == "InvalidGridSelection");
+        bool invalidLocatorSelected = m_TargetResults.Where(x => x.gameObject.CompareTag("Locator")).Any(x => x.gameObject.name == "InvalidGridSelection" || x.gameObject.name == "InvalidAirdropGridSelection");
         return !invalidLocatorSelected;
     }
 

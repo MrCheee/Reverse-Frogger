@@ -99,11 +99,12 @@ public class UserControl : MonoBehaviour
             var unit = hit.collider.GetComponentInParent<Unit>();
             m_Selected = unit;
 
-            if (graphicRaycasterManager.IsSelectingUI())
-            {
-                Debug.Log("Selected UI Element, ignoring update on InfoPopup...");
-            }
-            else
+            //if (graphicRaycasterManager.IsSelectingUI())
+            //{
+            //    Debug.Log("Selected UI Element, ignoring update on InfoPopup...");
+            //}
+            //else
+            if (!graphicRaycasterManager.IsSelectingUI())
             {
                 MarkerHandling();
                 var uiInfo = hit.collider.GetComponentInParent<UIMain.IUIInfoContent>();
@@ -204,6 +205,7 @@ public class UserControl : MonoBehaviour
             {
                 uiMain.ReactivateSkillOrb(skillCost);
                 consumedSkillOrbCount -= skillCost;
+                RemoveSkillTarget(skillType);
             }
             ClearActiveSkill();
         }
@@ -211,7 +213,7 @@ public class UserControl : MonoBehaviour
 
     private void HandleSelectCar(int carNum)
     {
-        Debug.Log("[HandleSelectCar]");
+        skillSoundManager.PlaySkillSelect();
         Unit selectedVehicle = playerSkillVehicleManager.GetPlayerSkillVehicle(carNum).GetComponent<Unit>();
         skillManagers[skillSelected].UpdateSkillUnit(selectedVehicle);
         skillManagers[skillSelected].DeactivateSkillUI();
@@ -304,7 +306,7 @@ public class UserControl : MonoBehaviour
             if (entry.Value.m_LockedIn)
             {
                 uiMain.RemoveSkillOrb(entry.Value.m_SkillCost);
-                uiMain.UpdateGameLog(entry.Value.GetExecuteLog());
+                //uiMain.UpdateGameLog(entry.Value.GetExecuteLog());
                 entry.Value.ExecuteSkill();
                 currentSkillOrbCount -= entry.Value.m_SkillCost;
                 yield return new WaitForSeconds(2f);

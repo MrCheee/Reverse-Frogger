@@ -16,13 +16,13 @@ public class Flatten : Enemy
 
     public override void TakeVehicleInTheWayAction()
     {
-        yAdjustment = -0.25f;
+        yAdjustment = -2f;
         commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction)));
     }
 
     public override void TakeNoVehicleInTheWayAction()
     {
-        if (yAdjustment == -0.25f)
+        if (yAdjustment == -2f)
         {
             animator.SetBool("Flatten", false);
             commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction), yAdjustment));

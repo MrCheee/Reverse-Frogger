@@ -18,6 +18,7 @@ public class UIMain : MonoBehaviour
     public StartMenu StartMenu;
     public InfoPopup InfoPopup;
     public GameObject InstructionPopUp;
+    public GameObject SkillsInfoPopUp;
     public NewEnemyPopUp NewEnemyPopUp;
     public GameObject GameOverPopUp;
     public HealthBar HealthBar;
@@ -36,7 +37,6 @@ public class UIMain : MonoBehaviour
     public GameObject SkillGainInfo;
     public TextMeshProUGUI SkillGainText;
 
-    GameLogWindow GameLogWindow;
     GameStateIndicators gameStateIndicators;
 
     [SerializeField] Camera GameCamera;
@@ -60,7 +60,6 @@ public class UIMain : MonoBehaviour
     {
         Instance = this;
         InfoPopup.gameObject.SetActive(false);
-        GameLogWindow = GameObject.Find("GameLogWindow").GetComponent<GameLogWindow>();
         gameStateIndicators = GameObject.Find("GameStateIndicatorYellow").GetComponent<GameStateIndicators>();
         m_Coroutine = null;
     }
@@ -270,11 +269,6 @@ public class UIMain : MonoBehaviour
         SkillGainInfo.SetActive(false);
     }
 
-    public void UpdateGameLog(string newLog)
-    {
-        GameLogWindow.AddToGameLog(newLog);
-    }
-
     public void UpdateGameState(GameState currentGameState)
     {
         gameStateIndicators.UpdateGameState(currentGameState);
@@ -333,6 +327,18 @@ public class UIMain : MonoBehaviour
         else
         {
             InstructionPopUp.SetActive(true);
+        }
+    }
+
+    public void ToggleSkillsInfo()
+    {
+        if (SkillsInfoPopUp.activeInHierarchy)
+        {
+            SkillsInfoPopUp.SetActive(false);
+        }
+        else
+        {
+            SkillsInfoPopUp.SetActive(true);
         }
     }
 }

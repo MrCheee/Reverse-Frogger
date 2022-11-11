@@ -32,8 +32,8 @@ public class AirDropVehSkillManager : ISkillManager
         GameCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
         graphicRaycasterManager = GameObject.Find("Canvas").GetComponent<GraphicRaycasterManager>();
         uiMain = UIMain.Instance;
-        invalidVehicleDropSelectionImg = GameObject.Find("InvalidGridSelection").GetComponent<Image>();
-        validVehicleDropSelectionImg = GameObject.Find("ValidGridSelection").GetComponent<Image>();
+        invalidVehicleDropSelectionImg = GameObject.Find("InvalidAirdropGridSelection").GetComponent<Image>();
+        validVehicleDropSelectionImg = GameObject.Find("ValidAirdropGridSelection").GetComponent<Image>();
     }
 
     public void InitialiseSkill(Unit unit)
