@@ -4,7 +4,7 @@ using UnityEngine;
 
 public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
 {
-    [SerializeField] private float moveSpeed = 1f;
+    protected float moveSpeed = 7.5f;
 
     protected int size = 1;
     protected int health = 0;
@@ -13,23 +13,31 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     protected int chargePerTurn = 0;
     protected int charging = 0;
     protected int boosted = 0;
+    protected float deathTimer = 0f;
+    protected List<SkillType> targeted = new List<SkillType>();
+
+    protected bool actionTaken = false;
 
     protected string unitTag;
     protected Queue<Command> commandStack = new Queue<Command>();
     protected Command _currentCommand;
     protected List<GridCoord> movementPattern = new List<GridCoord>();
     protected GameStateManager gameStateManager;
+    protected Animator animator;
     public float yAdjustment { get; protected set; }
     public bool TurnInProgress { get; protected set; }
+
+    protected AudioSource audioSource;
 
     protected virtual void Awake()
     {
         gameStateManager = GameObject.Find("MainManager").GetComponent<GameStateManager>();
+        audioSource = GetComponentInChildren<AudioSource>();
+        animator = GetComponentInChildren<Animator>();
 
         // Each enemy will define its own movement pattern and it will be assigned to the private variable on startup
-        SetHealthAndDamage();
+        SetUnitAttributes();
         SetAdditionalTag();
-        SetChargePerTurn();
         SetMovementPattern();
     }
 
@@ -51,9 +59,8 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         StartCoroutine("PostTurnActions");
     }
 
-    protected abstract void SetHealthAndDamage();
+    protected abstract void SetUnitAttributes();
     protected abstract void SetAdditionalTag();
-    protected abstract void SetChargePerTurn();
     public abstract void SetMovementPattern();
     public abstract GridCoord GetCurrentHeadGridPosition();
     public abstract GridCoord[] GetAllCurrentGridPosition();
@@ -78,6 +85,10 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         if (skipTurn > 0)
         {
             skipTurn -= 1;
+            if (skipTurn <= 0)
+            {
+                animator.SetBool("Stunned", false);
+            }
             TurnInProgress = false;
             return true;
         }
@@ -89,6 +100,7 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         if (charging > 0)
         {
             charging -= 1;
+            animator.SetTrigger("Charging");
             TurnInProgress = false;
             return true;
         }
@@ -120,11 +132,11 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         return Helper.vectorDistanceIgnoringYAxis(transform.position, target) <= 0.1f;
     }
 
-    public void DestroySelf()
+    public virtual void DestroySelf()
     {
-        Debug.Log($"[{gameObject.name}] Destroying self...");
+        health = 0;
         RemoveFromFieldGridPosition();
-        Destroy(gameObject);
+        Destroy(gameObject, deathTimer);
     }
 
     // [To Be Added] Update  will only run these command execution when in its correct game state
@@ -132,29 +144,37 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     // Update will constantly check for commands to execute
     public void Update()
     {
-        if (_currentCommand != null)
+        if (health > 0)
         {
-            // Continue execution of current command if it is still uncompleted
-            if (!_currentCommand.IsFinished)
+            if (_currentCommand != null)
             {
-                _currentCommand.Execute(this);
+                // Continue execution of current command if it is still uncompleted
+                if (!_currentCommand.IsFinished)
+                {
+                    _currentCommand.Execute(this);
+                }
+                else // Remove command from stack and set current command to null
+                {
+                    commandStack.Dequeue();
+                    _currentCommand = null;
+                }
             }
-            else // Remove command from stack and set current command to null
+            else
             {
-                //Debug.Log("Pop Command");
-                commandStack.Dequeue();
-                _currentCommand = null;
-            }
-        }
-        else
-        {
-            CheckConditionsToDestroy();
+                CheckConditionsToDestroy();
 
-            // If no current command, check if any in stack, grab the top command if there is
-            if (commandStack.Count > 0)
-            {
-                //Debug.Log("Executing Command");
-                _currentCommand = commandStack.Peek();
+                // If no current command, check if any in stack, grab the top command if there is
+                if (commandStack.Count > 0)
+                {
+                    _currentCommand = commandStack.Peek();
+                }
+                else
+                {
+                    if (!TurnInProgress)
+                    {
+                        animator.SetBool("Moving", false);
+                    }
+                }
             }
         }
     }
@@ -164,6 +184,7 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         health -= damageReceived;
         if (health <= 0)
         {
+            deathTimer = 1.5f;
             DestroySelf();
         }
     }
@@ -202,6 +223,7 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     public void DisableUnit(int disableTime)
     {
         skipTurn += disableTime;
+        animator.SetBool("Stunned", true);
     }
 
     public void BoostUnit(int boostCount)
@@ -222,6 +244,29 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     public bool isStunned()
     {
         return skipTurn > 0;
+    }
+
+    public void FlipUnitSprite(bool flip)
+    {
+        if (tag == "Enemy")
+        {
+            GetComponentInChildren<SpriteRenderer>().flipX = flip;
+        }
+    }
+
+    public void AddTargetedSkill(SkillType skill)
+    {
+        targeted.Add(skill);
+    }
+
+    public void RemoveTargetedSkill(SkillType skill)
+    {
+        targeted.Remove(skill);
+    }
+
+    public int GetTargetedCount()
+    {
+        return targeted.Count;
     }
 
     public virtual string GetName()

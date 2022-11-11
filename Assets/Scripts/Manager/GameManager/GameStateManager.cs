@@ -18,23 +18,32 @@ public class GameStateManager : MonoBehaviour
     UserControl userControl;
     UIMain uiMain;
 
-    bool gameStart = true;
+    GameStateSoundManager gameStateSoundManager;
+    [SerializeField] AudioSource BGMAudioSource;
+    [SerializeField] AudioClip BGMMusic;
+    [SerializeField] AudioClip GameOverMusic;
+    [SerializeField] AudioSource LevelUpAudioSource;
+
+    [SerializeField] GameObject EnemyKilledPrefab;
+
+    bool gameStart = false;
     GameState gameStateIndex = GameState.Initialisation;
     bool playerTurnInProgress = false;
-    [SerializeField] string[] enemyNames;
-    [SerializeField] Sprite[] enemyImgs;
-    Dictionary<string, Sprite> newEnemies;
+    HashSet<string> newEnemies;
 
     int playerHealth = 10;
-    int playerSkillOrb = 10;
+    int playerSkillOrb = 0;
     int damageReceived = 0;
+    int orbReceived = 0;
     int enemyKilledCount = 0;
     int totalKills = 0;
     int level = 1;
-    string difficulty = "Easy";
+    string difficulty = "Advanced";
+    bool altWave = false;
 
-    float waitTime = 0.5f;
+    float waitTime = .5f;
     float shortWaitTime = 0.25f;
+    float gameStartWaitTime = 1f;
 
     // Start is called before the first frame update
     void Start()
@@ -42,6 +51,7 @@ public class GameStateManager : MonoBehaviour
         enemySpawner = gameObject.GetComponent<EndlessEnemySpawner>();
         vehicleSpawner = gameObject.GetComponent<EndlessVehicleSpawner>();
         playerSkillVehicleManager = gameObject.GetComponent<PlayerSkillVehicleManager>();
+        gameStateSoundManager = GameObject.Find("GameStateSoundManager").GetComponent<GameStateSoundManager>();
         laneManager = gameObject.GetComponent<LaneManager>();
         userControl = gameObject.GetComponent<UserControl>();
 
@@ -53,13 +63,19 @@ public class GameStateManager : MonoBehaviour
         startGame.onClick.AddListener(StartGame);
         StartCoroutine(CheckAndUpdateGameState());
 
-        LoadBestScore();
-
-        newEnemies = new Dictionary<string, Sprite>();
-        for (int i = 0; i < enemyNames.Length; i++)
-        {
-            newEnemies.Add(enemyNames[i], enemyImgs[i]);
-        }
+        newEnemies = new HashSet<string>() { 
+            "Blob", 
+            "Ghoul", 
+            "Killer Crab", 
+            "Charger",  
+            "Imp", 
+            "Mutated Vaulter",
+            "Minotaur",
+            "Shield Warrior", 
+            "Mutated Brain", 
+            "Bloat", 
+            "Mutated Blood" 
+        };
     }
 
     IEnumerator CheckAndUpdateGameState()
@@ -74,20 +90,25 @@ public class GameStateManager : MonoBehaviour
                     if (gameStart)
                     {
                         InitialiseDifficulty();
+                        LoadBestScore();
                         vehicleSpawner.PopulateInitialVehicles();
+                        BGMAudioSource.clip = BGMMusic;
+                        BGMAudioSource.pitch = 0.75f;
+                        BGMAudioSource.Play();
 
                         Debug.Log("Init --> EnemySpawn");
                         gameStateIndex = GameState.EnemySpawn;
                         uiMain.UpdateGameState(gameStateIndex);
+                        yield return new WaitForSeconds(gameStartWaitTime);
                     }
                     break;
 
                 case GameState.EnemySpawn:
                     uiMain.UpdateContent();
+                    gameStateSoundManager.PlayEnemySpawnGameState();
                     enemySpawner.SpawnEnemies();
                     FieldGrid.TriggerGridsRepositioning();
-                    CheckAndDisplayNewEnemies();
-
+                    
                     Debug.Log("EnemySpawn --> VehicleSpawn");
                     gameStateIndex = GameState.VehicleSpawn;
                     break;
@@ -98,6 +119,8 @@ public class GameStateManager : MonoBehaviour
 
                     Debug.Log("VehicleSpawn --> Player");
                     gameStateIndex = GameState.Player;
+                    userControl.RefreshSkillsUI();
+                    CheckAndDisplayNewEnemies();
                     playerTurnInProgress = true;
                     playerFinishButton.gameObject.SetActive(true);
                     EnableLaneSpeedToggles();
@@ -111,6 +134,8 @@ public class GameStateManager : MonoBehaviour
 
                     if (playerTurnInProgress == false)
                     {
+                        uiMain.ResetHealthAndSkillGainInfo();
+                        userControl.DisableSkillBar();
                         DisableLaneSpeedToggles();
                         FinaliseLaneSpeed();
                         RemoveEnemyKilledIndicators();
@@ -123,13 +148,16 @@ public class GameStateManager : MonoBehaviour
 
                 case GameState.PlayerSkill:
                     uiMain.UpdateContent();
-                    userControl.RefreshSkillsUI();
-                    playerSkillVehicleManager.ReplacePlayerSkillVehicles();
 
-                    Debug.Log("Player --> PreEnemy");
-                    TriggerAllEnemiesPreTurn();
-                    gameStateIndex = GameState.PreEnemy;
-                    uiMain.UpdateGameState(gameStateIndex);
+                    if (userControl.DispatchSkillCompleted())
+                    {
+                        playerSkillVehicleManager.ReplacePlayerSkillVehicles();
+
+                        Debug.Log("PlayerSkill --> PreEnemy");
+                        TriggerAllEnemiesPreTurn();
+                        gameStateIndex = GameState.PreEnemy;
+                        uiMain.UpdateGameState(gameStateIndex);
+                    }
                     break;
 
                 case GameState.PreEnemy:
@@ -181,6 +209,7 @@ public class GameStateManager : MonoBehaviour
                                 TriggerAllVehiclesTurn();
                                 gameStateIndex = GameState.Vehicle;
                                 uiMain.UpdateGameState(gameStateIndex);
+                                gameStateSoundManager.PlayVehicleGameState();
                             }
                         }
                     }
@@ -221,6 +250,7 @@ public class GameStateManager : MonoBehaviour
                         if (HaveBoostedUnitsOfType("Vehicle"))
                         {
                             Debug.Log("Vehicle --> Vehicle (Boosted)");
+                            gameStateSoundManager.PlayVehicleGameState();
                             TriggerBoostedUnitsOfTypeTurn("Vehicle");
                             ReduceBoostOnUnitsOfType("Vehicle");
                             gameStateIndex = GameState.Vehicle;
@@ -229,6 +259,8 @@ public class GameStateManager : MonoBehaviour
                         {
                             Debug.Log("Vehicle --> EnemySpawn");
                             UpdateGameLevel();  // Check for update to game level after tabulating enemy killed in the last vehicle round
+                            uiMain.DisplaySkillGain(orbReceived);
+                            orbReceived = 0;
                             gameStateIndex = GameState.EnemySpawn;
                             uiMain.UpdateGameState(gameStateIndex);
                         }
@@ -291,9 +323,9 @@ public class GameStateManager : MonoBehaviour
         {
             Enemy enemyUnit = enemy.GetComponent<Enemy>();
             string enemyName = enemyUnit.GetName();
-            if (newEnemies.ContainsKey(enemyName))
+            if (newEnemies.Contains(enemyName))
             {
-                uiMain.DisplayNewEnemy(enemyUnit, newEnemies[enemyName]);
+                uiMain.DisplayNewEnemy(enemyUnit);
                 newEnemies.Remove(enemyName);
             }
         }
@@ -411,10 +443,23 @@ public class GameStateManager : MonoBehaviour
         totalKills += 1;
         enemyKilledCount += 1;
         AddPlayerSkillOrb(1);
+        orbReceived += 1;
         uiMain.UpdateKills(totalKills);
-        uiMain.UpdateGameLog(killedInfo);
+        //uiMain.UpdateGameLog(killedInfo);
+        DisplayKilledEnemy(killedPos);
+    }
 
-        uiMain.DisplayKilledEnemy(killedPos);
+    private void DisplayKilledEnemy(Vector3 pos)
+    {
+        Instantiate(EnemyKilledPrefab, pos, EnemyKilledPrefab.transform.rotation);
+    }
+
+    public void VehicleHit(Unit vehicle, int damageDealt = 1)
+    {
+        if (difficulty == "Expert")
+        {
+            vehicle.TakeDamage(damageDealt);
+        }
     }
 
     public void AddPlayerSkillOrb(int count)
@@ -433,24 +478,51 @@ public class GameStateManager : MonoBehaviour
 
     public void UpdateGameLevel()
     {
+        if (difficulty == "Expert" || difficulty == "Advanced")
+        {
+            if (level < 5)
+            {
+                LevelUp();
+            }
+            else if (level >= 5 && level < 10)
+            {
+                if (altWave)
+                {
+                    LevelUp();
+                    altWave = false;
+                }
+                else
+                {
+                    altWave = true;
+                }
+            }
+        }
+
         while (enemyKilledCount >= 5)
         {
             enemyKilledCount -= 5;
-            level += 1;
-            uiMain.UpdateLevel(level);
-            enemySpawner.IncrementLevel();
-            vehicleSpawner.IncrementLevel();
+            LevelUp();
         }
+    }
+
+    private void LevelUp()
+    {
+        level += 1;
+        uiMain.UpdateLevel(level);
+        enemySpawner.IncrementLevel();
+        vehicleSpawner.IncrementLevel();
+        LevelUpAudioSource.Play(); ;
     }
 
     private bool CheckIfGameOver()
     {
         if (playerHealth <= 0)
         {
+            BGMAudioSource.clip = GameOverMusic;
+            BGMAudioSource.Play();
             SaveBestScore();
             uiMain.DisplayGameOver();
-            uiMain.UpdateGameLog("GAME OVER! The frogs have conquered humanity!");
-            //Debug.Log("GAME OVER! YOU LOSE!");
+            //uiMain.UpdateGameLog("GAME OVER! The frogs have conquered humanity!");
             return true;
         }
         else
@@ -480,46 +552,57 @@ public class GameStateManager : MonoBehaviour
     public void SaveBestScore()
     {
         string path = Application.persistentDataPath + "/highscore.json";
-        SaveData data;
+        SaveData killsByDifficulty;
+        int difficultyIndex = 0;
+        if (difficulty == "Advanced") difficultyIndex = 1;
+        if (difficulty == "Expert") difficultyIndex = 2;
+
         if (File.Exists(path))
         {
             string jsonIn = File.ReadAllText(path);
-            data = JsonUtility.FromJson<SaveData>(jsonIn);
+            killsByDifficulty = JsonUtility.FromJson<SaveData>(jsonIn);
 
-            if (totalKills > data.kills)
+            if (totalKills > killsByDifficulty.kills[difficultyIndex])
             {
-                data.kills = totalKills;
+                killsByDifficulty.kills[difficultyIndex] = totalKills;
             }
         }
         else
         {
-            data = new SaveData();
-            data.kills = totalKills;
+            Debug.Log("Creating new dict...");
+            killsByDifficulty.kills = new int[3] { 0, 0, 0 };
+            killsByDifficulty.kills[difficultyIndex] = totalKills;
         }
-        
-        string jsonOut = JsonUtility.ToJson(data);
+
+        Debug.Log(killsByDifficulty.kills);
+        string jsonOut = JsonUtility.ToJson(killsByDifficulty);
+        Debug.Log(jsonOut);
         File.WriteAllText(Application.persistentDataPath + "/highscore.json", jsonOut);
     }
 
     public void LoadBestScore()
     {
         string path = Application.persistentDataPath + "/highscore.json";
+        int difficultyIndex = 0;
+        if (difficulty == "Advanced") difficultyIndex = 1;
+        if (difficulty == "Expert") difficultyIndex = 2;
+
         if (File.Exists(path))
         {
             string json = File.ReadAllText(path);
-            SaveData data = JsonUtility.FromJson<SaveData>(json);
+            SaveData killsByDifficulty = JsonUtility.FromJson<SaveData>(json);
 
-            uiMain.UpdateBestScore(data.kills);
+            uiMain.UpdateBestScore(difficulty, killsByDifficulty.kills[difficultyIndex]);
         }
         else
         {
-            uiMain.UpdateBestScore(0);
+            uiMain.UpdateBestScore(difficulty, 0);
         }
     }
 
     [System.Serializable]
-    class SaveData
+    struct SaveData
     {
-        public int kills;
+        public int[] kills;
     }
 }

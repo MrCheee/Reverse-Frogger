@@ -15,32 +15,53 @@ public class UIMain : MonoBehaviour
         void GetContent(ref List<Status> content);
     }
 
-    public RectTransform StartMenu;
+    public StartMenu StartMenu;
     public InfoPopup InfoPopup;
+    public GameObject InstructionPopUp;
+    public GameObject SkillsInfoPopUp;
     public NewEnemyPopUp NewEnemyPopUp;
-    public RectTransform GameOverPopUp;
+    public GameObject GameOverPopUp;
     public HealthBar HealthBar;
     public SkillOrbBar SkillOrbBar;
     public RectTransform VehicleSelectionUI;
+    public TextMeshProUGUI LevelLabel;
     public TextMeshProUGUI LevelText;
     public TextMeshProUGUI KillsText;
     public TextMeshProUGUI BestScoreText;
+    public TextMeshProUGUI BestScoreDifficulty;
+    public GameObject ReferenceGrid;
+    public GameObject DamageTakenPanel;
 
-    GameLogWindow GameLogWindow;
-    GameStateToggles gameStateToggles;
+    public GameObject DamageTakenInfo;
+    public TextMeshProUGUI DamageTakenText;
+    public GameObject SkillGainInfo;
+    public TextMeshProUGUI SkillGainText;
+
+    GameStateIndicators gameStateIndicators;
 
     [SerializeField] Camera GameCamera;
-    public GameObject EnemyKilledPrefab;
+    [SerializeField] AudioSource BGMSource;
+    [SerializeField] AudioListener PlayerAudio;
+    bool soundOn = true;
+    bool bgmOn = true;
+    [SerializeField] Image BGMButtonImg;
+    [SerializeField] Image AudioButtonImg;
+    [SerializeField] Sprite BGMOn;
+    [SerializeField] Sprite BGMOff;
+    [SerializeField] Sprite AudioOn;
+    [SerializeField] Sprite AudioOff;
 
     protected IUIInfoContent m_CurrentContent;
     protected List<Status> m_ContentBuffer = new List<Status>();
+
+    Coroutine m_Coroutine;
 
     private void Awake()
     {
         Instance = this;
         InfoPopup.gameObject.SetActive(false);
-        GameLogWindow = GameObject.Find("GameLogWindow").GetComponent<GameLogWindow>();
-        gameStateToggles = GameObject.Find("GameStateIndicator").GetComponent<GameStateToggles>();
+        gameStateIndicators = GameObject.Find("GameStateIndicatorYellow").GetComponent<GameStateIndicators>();
+        m_Coroutine = null;
     }
 
     private void OnDestroy()
@@ -50,7 +71,7 @@ public class UIMain : MonoBehaviour
 
     public void CloseStartMenu()
     {
-        StartMenu.gameObject.SetActive(false);
+        StartMenu.CloseMenu();
     }
 
     public void SetNewInfoContent(IUIInfoContent content)
@@ -79,31 +100,43 @@ public class UIMain : MonoBehaviour
         m_CurrentContent.GetContent(ref m_ContentBuffer);
         foreach (var entry in m_ContentBuffer)
         {
-            //Sprite icon = null;
-            //if (ResourceDB != null)
-            //    icon = ResourceDB.GetItem(entry.ResourceId)?.Icone;
-            if (entry.statusType == "Health")
-            {
-                if (entry.count == 0)
-                {
-                    InfoPopup.UpdateHealthContent("DEAD", entry.count);
-                }
-                else
-                {
-                    InfoPopup.UpdateHealthContent("HP", entry.count);
-                }
-            }
-            else
-            {
-                if (entry.count == 0) continue;
-                InfoPopup.AddToStatusContent(entry.statusType, entry.count);
-            }
+            if (entry.count == 0) continue;
+            InfoPopup.AddToStatusContent(entry.statusType, entry.count);
         }
     }
 
     public void UpdateLevel(int level)
     {
-        LevelText.text = level.ToString();
+        if (level < 30)
+        {
+            m_Coroutine = StartCoroutine(LevelUpFlashing());
+            LevelText.text = level.ToString();
+        }
+        else
+        {
+            LevelText.text = "MAX";
+        }
+    }
+
+    private IEnumerator LevelUpFlashing()
+    {
+        bool flashed = false;
+        while (true)
+        {
+            if (flashed)
+            {
+                LevelLabel.color = Color.white;
+                LevelText.color = Color.white;
+                flashed = false;
+            }
+            else
+            {
+                LevelLabel.color = Color.yellow;
+                LevelText.color = Color.yellow;
+                flashed = true;
+            }
+            yield return new WaitForSeconds(0.25f);
+        }
     }
 
     public void UpdateKills(int kills)
@@ -111,19 +144,32 @@ public class UIMain : MonoBehaviour
         KillsText.text = kills.ToString();
     }
 
-    public void UpdateBestScore(int bestScore)
+    public void UpdateBestScore(string difficulty, int bestScore)
     {
+        BestScoreDifficulty.text = difficulty;
+        if (difficulty == "Normal")
+        {
+            BestScoreDifficulty.color = Color.green;
+        }
+        else if (difficulty == "Advanced")
+        {
+            BestScoreDifficulty.color = Color.yellow;
+        }
+        else if (difficulty == "Expert")
+        {
+            BestScoreDifficulty.color = Color.red;
+        }
         BestScoreText.text = bestScore.ToString();
     }
 
     public void DisplayGameOver()
     {
-        GameOverPopUp.gameObject.SetActive(true);
+        GameOverPopUp.SetActive(true);
     }
 
-    public void DisplayNewEnemy(Enemy enemyUnit, Sprite enemyImage)
+    public void DisplayNewEnemy(Enemy enemyUnit)
     {
-        NewEnemyPopUp.DisplayNewEnemy(enemyUnit, enemyImage);
+        NewEnemyPopUp.DisplayNewEnemy(enemyUnit);
     }
 
     public void ActivateVehicleSelectionUI()
@@ -143,7 +189,38 @@ public class UIMain : MonoBehaviour
 
     public void RemoveHealth(int damage)
     {
+        if (damage > 0)
+        {
+            StartCoroutine("DisplayDamageTakenFlash");
+            DamageTakenText.text = damage.ToString();
+            DamageTakenInfo.SetActive(true);
+        }
         HealthBar.RemoveHealth(damage);
+    }
+
+    private IEnumerator DisplayDamageTakenFlash()
+    {
+        DamageTakenPanel.SetActive(true);
+        Image panelImage = DamageTakenPanel.GetComponent<Image>();
+        Color red = panelImage.color;
+        float currentAlpha = 0f;
+        float targetAlpha = .25f;
+        float incrementAlpha = Time.deltaTime;
+        while (currentAlpha < targetAlpha)
+        {
+            currentAlpha += incrementAlpha;
+            red.a = currentAlpha;
+            panelImage.color = red;
+            yield return null;
+        }
+        while (currentAlpha > 0f)
+        {
+            currentAlpha -= incrementAlpha;
+            red.a = currentAlpha;
+            panelImage.color = red;
+            yield return null;
+        }
+        DamageTakenPanel.SetActive(false);
     }
 
     public void AddSkillOrb(int count)
@@ -171,20 +248,97 @@ public class UIMain : MonoBehaviour
         SkillOrbBar.FullRefreshSkillbar();
     }
 
-    public void UpdateGameLog(string newLog)
+    public void DisplaySkillGain(int gainedOrbCount)
     {
-        GameLogWindow.AddToGameLog(newLog);
+        if (gainedOrbCount > 0)
+        {
+            SkillGainText.text = gainedOrbCount.ToString();
+            SkillGainInfo.SetActive(true);
+        }
+    }
+
+    public void ResetHealthAndSkillGainInfo()
+    {
+        if (m_Coroutine != null)
+        {
+            StopCoroutine(m_Coroutine);
+            LevelLabel.color = Color.white;
+            LevelText.color = Color.white;
+        }
+        DamageTakenInfo.SetActive(false);
+        SkillGainInfo.SetActive(false);
     }
 
     public void UpdateGameState(GameState currentGameState)
     {
-        gameStateToggles.UpdateGameState(currentGameState);
+        gameStateIndicators.UpdateGameState(currentGameState);
     }
 
-    public void DisplayKilledEnemy(Vector3 killedPos)
+    public void ToggleReferenceGrid()
     {
-        var killedUI = Instantiate(EnemyKilledPrefab, GameCamera.WorldToScreenPoint(killedPos), EnemyKilledPrefab.transform.rotation, transform);
-        killedUI.transform.localScale -= new Vector3(0.4f, 0.4f, 0.4f);
-        killedUI.transform.SetSiblingIndex(0);
+        if (ReferenceGrid.activeInHierarchy)
+        {
+            ReferenceGrid.SetActive(false);
+        }
+        else
+        {
+            ReferenceGrid.SetActive(true);
+        }
+    }
+
+    public void ToggleBGM()
+    {
+        if (bgmOn)
+        {
+            bgmOn = false;
+            BGMSource.volume = 0;
+            BGMButtonImg.sprite = BGMOn;
+        }
+        else
+        {
+            bgmOn = true;
+            BGMSource.volume = .25f;
+            BGMButtonImg.sprite = BGMOff;
+        }
+    }
+
+    public void ToggleAudio()
+    {
+        if (soundOn)
+        {
+            soundOn = false;
+            PlayerAudio.enabled = false;
+            AudioButtonImg.sprite = AudioOn;
+        }
+        else
+        {
+            soundOn = true;
+            PlayerAudio.enabled = true;
+            AudioButtonImg.sprite = AudioOff;
+        }
+    }
+
+    public void ToggleInstructions()
+    {
+        if (InstructionPopUp.activeInHierarchy)
+        {
+            InstructionPopUp.SetActive(false);
+        }
+        else
+        {
+            InstructionPopUp.SetActive(true);
+        }
+    }
+
+    public void ToggleSkillsInfo()
+    {
+        if (SkillsInfoPopUp.activeInHierarchy)
+        {
+            SkillsInfoPopUp.SetActive(false);
+        }
+        else
+        {
+            SkillsInfoPopUp.SetActive(true);
+        }
     }
 }

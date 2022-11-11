@@ -10,6 +10,7 @@ public class AirDropVehSkillManager : ISkillManager
     public int m_SkillCost { get; set; }
     public bool m_LockedIn { get; set; }
 
+    private SkillSoundManager skillSoundManager;
     private Camera GameCamera;
     private GraphicRaycasterManager graphicRaycasterManager;
     private UIMain uiMain;
@@ -17,8 +18,6 @@ public class AirDropVehSkillManager : ISkillManager
     private Image validVehicleDropSelectionImg;
 
     GridCoord currentVehicleSkillHoverGrid;
-
-    GameObject SkillMarker;
 
     public AirDropVehSkillManager()
     {
@@ -29,13 +28,12 @@ public class AirDropVehSkillManager : ISkillManager
 
         currentVehicleSkillHoverGrid = new GridCoord(0, 0);
 
+        skillSoundManager = GameObject.Find("SkillSoundManager").GetComponent<SkillSoundManager>();
         GameCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
         graphicRaycasterManager = GameObject.Find("Canvas").GetComponent<GraphicRaycasterManager>();
         uiMain = UIMain.Instance;
-        invalidVehicleDropSelectionImg = GameObject.Find("InvalidGridSelection").GetComponent<Image>();
-        validVehicleDropSelectionImg = GameObject.Find("ValidGridSelection").GetComponent<Image>();
-
-        SkillMarker = GameObject.Find("AirdropSkillMarker");
+        invalidVehicleDropSelectionImg = GameObject.Find("InvalidAirdropGridSelection").GetComponent<Image>();
+        validVehicleDropSelectionImg = GameObject.Find("ValidAirdropGridSelection").GetComponent<Image>();
     }
 
     public void InitialiseSkill(Unit unit)
@@ -82,22 +80,25 @@ public class AirDropVehSkillManager : ISkillManager
         bool completedSkill = false;
         if (m_Skill != null)
         {
-            Debug.Log("[AirDropVeh] In locator mode...");
-            if (graphicRaycasterManager.HasSelectedValidLocatorUI())
+            if (graphicRaycasterManager.HasSelectedLocatorUI())
             {
-                Debug.Log("[AirDropVeh] Has selected valid grid...");
-                GridCoord currentTargetedGrid = FieldGrid.GetGridCoordFromWorldPosition(GameCamera.ScreenToWorldPoint(Input.mousePosition));
-                m_Skill.UpdateGridCoordAction(currentTargetedGrid);
-                Debug.Log($"[AirDropVeh] Ready for execution, target at ({currentTargetedGrid.x}, {currentTargetedGrid.y})");
-                m_LockedIn = true;
-                completedSkill = true;
-                SkillMarker.transform.position = FieldGrid.GetSingleGrid(currentTargetedGrid).GetGridCentrePoint();
-                SkillMarker.SetActive(true);
-            }
-            else
-            {
-                Debug.Log("[AirDropVeh] Has selected invalid grid...");
-                completedSkill = false;
+                Debug.Log("[AirDropVeh] In locator mode...");
+                if (graphicRaycasterManager.HasSelectedValidLocatorUI())
+                {
+                    Debug.Log("[AirDropVeh] Has selected valid grid...");
+                    skillSoundManager.PlaySkillConfirm();
+                    GridCoord currentTargetedGrid = FieldGrid.GetGridCoordFromWorldPosition(GameCamera.ScreenToWorldPoint(Input.mousePosition));
+                    m_Skill.UpdateGridCoordAction(currentTargetedGrid);
+                    Debug.Log($"[AirDropVeh] Ready for execution, target at ({currentTargetedGrid.x}, {currentTargetedGrid.y})");
+                    m_LockedIn = true;
+                    completedSkill = true;
+                }
+                else
+                {
+                    Debug.Log("[AirDropVeh] Has selected invalid grid...");
+                    skillSoundManager.PlayInvalidSelection();
+                    completedSkill = false;
+                }
             }
         }
         return completedSkill;
@@ -156,7 +157,6 @@ public class AirDropVehSkillManager : ISkillManager
         m_Skill = null;
         m_LockedIn = false;
         validVehicleDropSelectionImg.gameObject.SetActive(false);
-        SkillMarker.SetActive(false);
     }
 
     public void ActivateSkillUI()
@@ -173,9 +173,9 @@ public class AirDropVehSkillManager : ISkillManager
     {
         if (m_LockedIn)
         {
+            skillSoundManager.PlayAirdrop();
             m_Skill.Execute();
             RemoveSkillTarget();
-            SkillMarker.SetActive(false);
         }
     }
 
@@ -183,5 +183,10 @@ public class AirDropVehSkillManager : ISkillManager
     {
         Unit targetUnit = m_Skill.unit.GetComponent<Unit>();
         return $"Air Drop Vehicle Skill used to drop a {targetUnit.GetName()} at Grid [{m_Skill.targetGrid.x}, {m_Skill.targetGrid.y}]";
+    }
+
+    public void RepositionSkillMarkerUI()
+    {
+        return;
     }
 }

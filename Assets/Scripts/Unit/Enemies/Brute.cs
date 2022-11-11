@@ -4,10 +4,13 @@ using System.Linq;
 
 public class Brute : Enemy
 {
-    int[] noKnockbackYPos = new int[4] {
+    int[] noKnockbackYPos = new int[2] {
         FieldGrid.GetDividerLaneNum() + 1,   // Right Lane 1 - no vehicle to hit
+        FieldGrid.GetDividerLaneNum() - FieldGrid.GetNumberOfLanes()  // Left Lane 4 - no vehicle to hit
+    };
+    int[] KnockbackBlockYPos = new int[2]
+    {
         FieldGrid.GetDividerLaneNum() + 2,   // Right Lane 2 - cannot hit vehicle to next lane (next lane is divider)
-        FieldGrid.GetDividerLaneNum() - FieldGrid.GetNumberOfLanes(),  // Left Lane 4 - no vehicle to hit
         FieldGrid.GetDividerLaneNum() - FieldGrid.GetNumberOfLanes() + 1    // Left Lane 3 - cannot hit vehicle to next lane (next lane is sidewalk)
     };
     bool movementBlocked = true;
@@ -17,10 +20,11 @@ public class Brute : Enemy
         unitTag = "Brute";
     }
 
-    protected override void SetHealthAndDamage()
+    protected override void SetUnitAttributes()
     {
         health = 2;
         damage = 4;
+        chargePerTurn = 0;
     }
     
     public override void SetMovementPattern()
@@ -57,6 +61,7 @@ public class Brute : Enemy
             // If vehicle in front is knockback-able, and there is no vehicle blocking its knockback, then knockback and move forward
             if (FieldGrid.GetSingleGrid(targetGrid).IsUnitTagInGrid("Knockback-able Vehicle"))
             {
+                bool knockbackBlocked = KnockbackBlockYPos.Contains(_currentGridPosition.y);
                 bool vehicleBlockingDestination = Helper.IsVehicleInTheWay(destinationGrid);
                 bool bruteBlockingDestination = false;
 
@@ -67,10 +72,19 @@ public class Brute : Enemy
                     bruteBlockingDestination = allBrutes.Any(x => x.GetHealth() == 2);
                 }
 
-                if (!vehicleBlockingDestination && !bruteBlockingDestination)
+                animator.SetTrigger("Knockback");
+                Unit veh = FieldGrid.GetSingleGrid(targetGrid).GetUnitWithTag("Knockback-able Vehicle");
+                gameStateManager.VehicleHit(veh, 2);
+
+                if (!knockbackBlocked && !vehicleBlockingDestination && !bruteBlockingDestination)
                 {
-                    Unit veh = FieldGrid.GetSingleGrid(targetGrid).GetUnitWithTag("Knockback-able Vehicle");
                     veh.IssueCommand(new MoveToTargetGridCommand(destinationGrid));
+                    veh.gameObject.GetComponent<Vehicle>().MoveUnitsOnTopOfVehicle(new GridCoord(0, direction));
+                }
+                else
+                {
+                    veh.IssueCommand(new MoveWithinCurrentGridCommand(0, direction));
+                    veh.IssueCommand(new MoveWithinCurrentGridCommand(0, 0));
                 }
             }
         }
@@ -78,27 +92,6 @@ public class Brute : Enemy
 
     public override void TakeVehicleInTheWayAction()
     {
-        //movementBlocked = true;
-        //if (!noKnockbackYPos.Contains(_currentGridPosition.y))   // Brute is in a lane that can knockback vehicles
-        //{
-        //    GridCoord targetGrid = new GridCoord(_currentGridPosition.x, _currentGridPosition.y + direction);
-        //    GridCoord destinationGrid = new GridCoord(_currentGridPosition.x, _currentGridPosition.y + direction * 2);
-        //
-        //    // If vehicle in front is knockback-able, and there is no vehicle blocking its knockback, then knockback and move forward
-        //    if (FieldGrid.GetSingleGrid(targetGrid).IsUnitTagInGrid("Knockback-able Vehicle"))
-        //    {
-        //        if (!Helper.IsVehicleInTheWay(destinationGrid))
-        //        {
-        //            Unit veh = FieldGrid.GetSingleGrid(targetGrid).GetUnitWithTag("Knockback-able Vehicle");
-        //            veh.IssueCommand(new MoveToGridCommand(new GridCoord(0, direction)));
-        //            movementBlocked = false;
-        //        }
-        //    }
-        //}
-        //if (movementBlocked)
-        //{
-        //    ExecuteConcussedMovement();
-        //}
         ExecuteConcussedMovement();
     }
 
@@ -109,7 +102,7 @@ public class Brute : Enemy
 
     public override string GetName()
     {
-        return "Brute";
+        return "Minotaur";
     }
 
     public override string GetDescription()

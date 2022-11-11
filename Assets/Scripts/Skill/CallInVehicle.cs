@@ -37,8 +37,8 @@ public class CallInVehicle : ISkill
                 targetGrid = new GridCoord(targetGrid.x - 1, targetGrid.y);
             }
         }
-
-            unit.gameObject.transform.position = FieldGrid.GetSingleGrid(targetGrid).GetGridCentrePoint();
+        
+        unit.gameObject.transform.position = FieldGrid.GetSingleGrid(targetGrid).GetGridCentrePoint();
         unit.GetComponent<Vehicle>().AddToFieldGridPosition(targetGrid);
 
         if (isLeftMovingLane)
@@ -47,6 +47,10 @@ public class CallInVehicle : ISkill
         }
         else
         {
+            foreach (SpriteRenderer vehSprite in unit.GetComponentsInChildren<SpriteRenderer>())
+            {
+                vehSprite.flipY = true;
+            }
             unit.transform.Rotate(Vector3.up, 180f);
         }
 

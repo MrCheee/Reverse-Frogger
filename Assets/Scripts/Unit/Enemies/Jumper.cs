@@ -1,9 +1,12 @@
-﻿public class Jumper : Enemy
+﻿using System.Collections;
+
+public class Jumper : Enemy
 {
-    protected override void SetHealthAndDamage()
+    protected override void SetUnitAttributes()
     {
         health = 1;
         damage = 1;
+        chargePerTurn = 0;
     }
 
     protected override void SetAdditionalTag()
@@ -19,6 +22,8 @@
     public override void TakeVehicleInTheWayAction()
     {
         yAdjustment = 3;
+        animator.SetTrigger("Jump");
+        animator.SetBool("Moving", false);
         commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction)));
     }
 
@@ -26,7 +31,13 @@
     {
         if (yAdjustment == 3)
         {
+            animator.SetTrigger("Jump");
+            animator.SetBool("Moving", false);
             commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction), yAdjustment));
+        }
+        else
+        {
+            animator.SetBool("Moving", true);
         }
         yAdjustment = 0;
     }
@@ -38,7 +49,7 @@
 
     public override string GetName()
     {
-        return "Jumper";
+        return "Imp";
     }
 
     public override string GetDescription()

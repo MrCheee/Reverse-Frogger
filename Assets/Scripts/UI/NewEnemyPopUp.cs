@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
+using System;
 
 public class NewEnemyPopUp : MonoBehaviour
 {
@@ -10,23 +11,44 @@ public class NewEnemyPopUp : MonoBehaviour
     public Image EnemyImage;
     public Button CloseButton;
     Queue<EnemyInfo> newEnemies = new Queue<EnemyInfo>();
+    AudioSource audioSource;
+    [SerializeField] AudioClip openSound;
+    [SerializeField] AudioClip closeSound;
 
-    public void DisplayNewEnemy(Enemy enemyUnit, Sprite enemySprite)
+    private void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+    }
+
+    public void DisplayNewEnemy(Enemy enemyUnit)
     {
         if (gameObject.activeInHierarchy)
         {
             EnemyInfo newEnemy = new EnemyInfo();
             newEnemy.name = enemyUnit.GetName();
             newEnemy.description = enemyUnit.GetDescription();
-            newEnemy.sprite = enemySprite;
+
+            SpriteRenderer enemySpriteRenderer = enemyUnit.GetComponentInChildren<SpriteRenderer>();
+            newEnemy.sprite = enemySpriteRenderer.sprite;
+            newEnemy.spriteColor = enemySpriteRenderer.color;
+
             newEnemies.Enqueue(newEnemy);
         }
         else
         {
             gameObject.SetActive(true);
+
+            audioSource.clip = openSound;
+            audioSource.Play();
+
             Name.text = enemyUnit.GetName();
             Description.text = enemyUnit.GetDescription();
-            EnemyImage.sprite = enemySprite;
+
+            SpriteRenderer enemySpriteRenderer = enemyUnit.GetComponentInChildren<SpriteRenderer>();
+            EnemyImage.sprite = enemySpriteRenderer.sprite;
+            Color tempColor = enemySpriteRenderer.color;
+            tempColor.a = 1f;
+            EnemyImage.color = tempColor;
         }
     }
 
@@ -34,13 +56,21 @@ public class NewEnemyPopUp : MonoBehaviour
     {
         if (newEnemies.Count > 0)
         {
+            audioSource.clip = openSound;
+            audioSource.Play();
+
             EnemyInfo newEnemy = newEnemies.Dequeue();
             Name.text = newEnemy.name;
             Description.text = newEnemy.description;
             EnemyImage.sprite = newEnemy.sprite;
+            Color tempColor = newEnemy.spriteColor;
+            tempColor.a = 1f;
+            EnemyImage.color = tempColor;
         }
         else
         {
+            audioSource.clip = closeSound;
+            audioSource.Play();
             gameObject.SetActive(false);
         }
     }
@@ -50,5 +80,6 @@ public class NewEnemyPopUp : MonoBehaviour
         public string name;
         public string description;
         public Sprite sprite;
+        public Color spriteColor;
     }
 }

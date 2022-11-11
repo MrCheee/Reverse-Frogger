@@ -2,10 +2,11 @@
 
 public class Soldier : Enemy
 {
-    protected override void SetHealthAndDamage()
+    protected override void SetUnitAttributes()
     {
         health = 1;
         damage = 1;
+        chargePerTurn = 0;
     }
 
     public override void SetMovementPattern()
@@ -15,13 +16,13 @@ public class Soldier : Enemy
 
     public override void TakeVehicleInTheWayAction()
     {
-        skipTurn = 1;
+        DisableUnit(1);
         ExecuteConcussedMovement();
     }
 
     public override string GetName()
     {
-        return "Soldier";
+        return "Blob";
     }
 
     public override string GetDescription()

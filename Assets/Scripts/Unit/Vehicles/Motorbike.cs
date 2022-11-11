@@ -4,6 +4,12 @@ using UnityEngine;
 
 public class Motorbike : Vehicle
 {
+    protected override void SetUnitAttributes()
+    {
+        health = 2;
+        damage = 1;
+    }
+
     protected override void SetUpSize()
     {
         size = 1;

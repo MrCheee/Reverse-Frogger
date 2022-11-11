@@ -1,9 +1,12 @@
-﻿public class Flatten : Enemy
+﻿using System.Collections;
+
+public class Flatten : Enemy
 {
-    protected override void SetHealthAndDamage()
+    protected override void SetUnitAttributes()
     {
         health = 1;
         damage = 1;
+        chargePerTurn = 0;
     }
 
     public override void SetMovementPattern()
@@ -13,17 +16,40 @@
 
     public override void TakeVehicleInTheWayAction()
     {
-        yAdjustment = -0.25f;
+        yAdjustment = -2f;
         commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction)));
     }
 
     public override void TakeNoVehicleInTheWayAction()
     {
-        if (yAdjustment == -0.25f)
+        if (yAdjustment == -2f)
         {
+            animator.SetBool("Flatten", false);
             commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction), yAdjustment));
         }
         yAdjustment = 0;
+    }
+
+    public override IEnumerator PreTurnActions()
+    {
+        if (Crossed || skipTurn > 0 || charging > 0)
+        {
+            TurnInProgress = false;
+            yield break;
+        }
+
+        GridCoord nextMove = movementPattern[0];
+        GridCoord nextGrid = Helper.AddGridCoords(_currentGridPosition, nextMove);
+        if (Helper.IsVehicleInTheWay(nextGrid))
+        {
+            if (!animator.GetBool("Flatten"))
+            {
+                animator.SetTrigger("ToFlatten");
+                animator.SetBool("Flatten", true);
+            }
+        }
+        TurnInProgress = false;
+        yield break;
     }
 
     public override bool HaltMovementByVehicleInTheWay()
@@ -33,7 +59,7 @@
 
     public override string GetName()
     {
-        return "Flatten";
+        return "Mutated Blood";
     }
 
     public override string GetDescription()

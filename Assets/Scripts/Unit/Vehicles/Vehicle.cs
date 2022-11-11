@@ -13,23 +13,26 @@ public abstract class Vehicle : Unit
     protected int dividerY = FieldGrid.GetFieldBuffer() + 1 + FieldGrid.GetNumberOfLanes();
     protected GridCoord[] _currentGridPosition;
 
+    protected AudioSource _audioSource;
+    [SerializeField] protected AudioClip hitSound;
+
     protected override void Awake()
     {
+        _audioSource = GetComponent<AudioSource>();
+
         SetUpSize();
         _currentGridPosition = new GridCoord[size];
         _currentGridPosition[0] = new GridCoord(dividerY, dividerY);
+        moveSpeed = 7.5f;
+        chargePerTurn = 0;
+        deathTimer = 1f;
         base.Awake();
     }
 
-    protected override void SetHealthAndDamage()
+    protected override void SetUnitAttributes()
     {
         health = 1;
         damage = 1;
-    }
-
-    protected override void SetChargePerTurn()
-    {
-        chargePerTurn = 0;
     }
 
     protected abstract void SetUpSize();
@@ -95,6 +98,7 @@ public abstract class Vehicle : Unit
     {
         return true;
     }
+
     public override IEnumerator TakeTurn()
     {
         int retries = 0;
@@ -104,8 +108,10 @@ public abstract class Vehicle : Unit
 
         if (ToSkipTurn()) yield break;
 
+        animator.SetBool("Moving", true);
+
+        actionTaken = true;
         TurnInProgress = true;
-        PreTurnActions();
 
         PrepareMovement(out Queue<GridCoord> moveQueue, out GridCoord nextMove, out GridCoord nextGrid);
 
@@ -116,7 +122,12 @@ public abstract class Vehicle : Unit
 
             // Wait until all commands have been completed by the unit before issuing next move command
             if (!CheckIfCompletedPreviousMovement()) yield return new WaitForSeconds(retryInterval);
-            
+
+            if (skipTurn > 0)
+            {
+                break;
+            }
+
             // If vehicle is in the way, check again in 0.5s and move accordingly
             if (Helper.IsVehicleInTheWay(nextGrid))
             {
@@ -138,15 +149,17 @@ public abstract class Vehicle : Unit
                         break;
                     }
                 }
-                if (IsEnemyTypeInTheWay(nextGrid, "Bloat")) quickExit = true;
-                //MoveUnitsOnTopOfVehicle(nextMove);
+                if (IsEnemyTypeInTheWay(nextGrid, "Bloat"))
+                {
+                    quickExit = true;
+                }
                 (nextMove, nextGrid) = TakeMovementAction(moveQueue, nextMove, nextGrid);
             }
             if (quickExit) break;
             yield return new WaitForSeconds(0.2f);
         }
         TurnInProgress = false;
-        PostTurnActions();
+        animator.SetBool("Moving", false);
     }
 
     void PrepareMovement(out Queue<GridCoord> moveQueue, out GridCoord nextMove, out GridCoord nextGrid)
@@ -178,15 +191,16 @@ public abstract class Vehicle : Unit
     public virtual void HandleBruteInTheWay(Unit brute)
     {
         brute.TakeDamage(damage);
+        TakeDamage(1);
         SimulateHitObstacle();
     }
 
     protected void SimulateHitObstacle()
     {
         GridCoord currentGrid = GetCurrentHeadGridPosition();
-        int right = currentGrid.y < dividerY ? -1 : 1;
-        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(right, 0)));
-        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, 0)));
+        float right = currentGrid.y < dividerY ? -0.75f : 0.75f;
+        commandStack.Enqueue(new MoveWithinCurrentGridCommand(right, 0));
+        commandStack.Enqueue(new MoveWithinCurrentGridCommand(0, 0));
     }
 
     public override void CheckConditionsToDestroy()
@@ -195,6 +209,18 @@ public abstract class Vehicle : Unit
         {
             DestroySelf();
         }
+    }
+
+    public override void DestroySelf()
+    {
+        RemoveFromFieldGridPosition();
+        if (health <= 0)
+        {
+            animator.SetTrigger("Explode");
+            deathTimer = 1f;
+        }
+        health = 0;
+        Destroy(gameObject, deathTimer);
     }
 
     public bool HasReachedEndOfRoad()
@@ -294,5 +320,28 @@ public abstract class Vehicle : Unit
             position.x -= 1;
         }
         return position;
+    }
+
+    public void SimulateAirdrop()
+    {
+        StartCoroutine("AirdropMotion");
+    }
+
+    public IEnumerator AirdropMotion()
+    {
+        Vector3 targetPos = FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetGridCentrePoint();
+        Vector3 moveDirection;
+        while (Vector3.Distance(targetPos, transform.position) > 0.2f)
+        {
+            moveDirection = (targetPos - transform.position).normalized;
+            transform.Translate(moveDirection * 50 * Time.deltaTime, Space.World);
+            yield return null;
+        }
+        GameObject.Find("AirdropTarget").GetComponent<AirdropTarget>().Trigger(GetName(), transform.position, -movementPattern[0].x);
+    }
+
+    public void Collided()
+    {
+        audioSource.PlayOneShot(hitSound, 0.35f);
     }
 }

@@ -2,14 +2,10 @@
 
 public class Charger : Enemy
 {
-    protected override void SetHealthAndDamage()
+    protected override void SetUnitAttributes()
     {
         health = 1;
         damage = 2;
-    }
-
-    protected override void SetChargePerTurn()
-    {
         chargePerTurn = 3;
         charging = chargePerTurn;
     }
@@ -23,16 +19,9 @@ public class Charger : Enemy
         }
     }
 
-    public override IEnumerator PostTurnActions()
-    {
-        charging = chargePerTurn;
-        TurnInProgress = false;
-        yield break;
-    }
-
     public override void TakeVehicleInTheWayAction()
     {
-        skipTurn = 1;
+        DisableUnit(1);
         ExecuteConcussedMovement();
     }
 

@@ -12,11 +12,16 @@ public class UserControl : MonoBehaviour
     public GameObject MarkerPrefab;
     private GraphicRaycasterManager graphicRaycasterManager;
     private UIMain uiMain;
-    private DevVehicleSpawner vehicleSpawner;
     private PlayerSkillVehicleManager playerSkillVehicleManager;
 
     [SerializeField] private Toggle[] skillToggles;
+    [SerializeField] private Sprite[] skillDefaultSprites;
+    [SerializeField] private Sprite[] skillSelectedSprites;
     [SerializeField] private Button[] carChoosingButtons;
+    private Color skillLockedInColor;
+    private Color skillDefaultColor;
+    private bool[] skillLockedInStatus;
+    private bool skillExecutionInProgress = false;
 
     private Unit m_Selected = null;
     private SkillType skillSelected;
@@ -24,14 +29,16 @@ public class UserControl : MonoBehaviour
 
     private int currentSkillOrbCount = 0;
     private int consumedSkillOrbCount = 0;
-    private int maxOrbCount = 10;
+    private int maxSkillOrbCount = 10;
+
+    SkillSoundManager skillSoundManager;
 
     private void Awake()
     {
         uiMain = UIMain.Instance;
-        vehicleSpawner = gameObject.GetComponent<DevVehicleSpawner>();
         playerSkillVehicleManager = gameObject.GetComponent<PlayerSkillVehicleManager>();
         graphicRaycasterManager = GameObject.Find("Canvas").GetComponent<GraphicRaycasterManager>();
+        skillSoundManager = GameObject.Find("SkillSoundManager").GetComponent<SkillSoundManager>();
         skillSelected = SkillType.None;
         Marker.SetActive(false);
 
@@ -39,16 +46,20 @@ public class UserControl : MonoBehaviour
             { SkillType.Assassinate, new SnipeSkillManager() },
             { SkillType.CallInVeh, new CallInVehSkillManager() },
             { SkillType.AirDropVeh, new AirDropVehSkillManager() },
-            { SkillType.LaneChange, new LaneChangeSkillManager() },
             { SkillType.BoostUnit, new BoostUnitSkillManager() },
-            { SkillType.DisableUnit, new DisableUnitSkillManager() }
+            { SkillType.DisableUnit, new DisableUnitSkillManager() },
+            { SkillType.LaneChange, new LaneChangeSkillManager() }
         };
 
+        skillLockedInStatus = new bool[6];
         for (int i = 0; i < skillToggles.Length; i++)
         {
             int tmp = i;
             skillToggles[i].onValueChanged.AddListener(delegate { HandleSelectSkill(tmp); });
+            skillLockedInStatus[i] = false;
         }
+        skillLockedInColor = new Color(255, 255, 0, 1f);
+        skillDefaultColor = new Color(255, 255, 255, 1f);
 
         for (int i = 0; i < carChoosingButtons.Length; i++)
         {
@@ -88,17 +99,19 @@ public class UserControl : MonoBehaviour
             var unit = hit.collider.GetComponentInParent<Unit>();
             m_Selected = unit;
 
-            if (graphicRaycasterManager.IsSelectingUI())
-            {
-                Debug.Log("Selected UI Element, ignoring update on InfoPopup...");
-            }
-            else
+            //if (graphicRaycasterManager.IsSelectingUI())
+            //{
+            //    Debug.Log("Selected UI Element, ignoring update on InfoPopup...");
+            //}
+            //else
+            if (!graphicRaycasterManager.IsSelectingUI())
             {
                 MarkerHandling();
                 var uiInfo = hit.collider.GetComponentInParent<UIMain.IUIInfoContent>();
                 UIMain.Instance.SetNewInfoContent(uiInfo);
                 if (skillSelected != SkillType.None && skillManagers[skillSelected].CancelSelection(m_Selected))
                 {
+                    skillToggles[(int)skillSelected].GetComponentInChildren<Image>().sprite = skillDefaultSprites[(int)skillSelected];
                     skillToggles[(int)skillSelected].isOn = false;
                 }
             }
@@ -163,6 +176,8 @@ public class UserControl : MonoBehaviour
         if (skillToggles[skillNum].isOn)
         {
             Debug.Log($"Skill {skillType} has been selected!");
+            skillSoundManager.PlaySkillSelect();
+
             // Remove previously selected skill from active state and set this as current active skill
             ResetPreviousSelectedButton(skillType);
             SetActiveSkill(skillType);
@@ -183,11 +198,14 @@ public class UserControl : MonoBehaviour
         else  // If button is deselected, either manually, or auto trigger when a skill target is locked in
         {
             Debug.Log($"Skill {skillType} has been deselected!");
+            skillSoundManager.PlaySkillDeselect();
+
             // If skill is not locked in, refund skill orbs
             if (IsSkillLockedIn(skillNum) == false)
             {
                 uiMain.ReactivateSkillOrb(skillCost);
                 consumedSkillOrbCount -= skillCost;
+                RemoveSkillTarget(skillType);
             }
             ClearActiveSkill();
         }
@@ -195,7 +213,7 @@ public class UserControl : MonoBehaviour
 
     private void HandleSelectCar(int carNum)
     {
-        Debug.Log("[HandleSelectCar]");
+        skillSoundManager.PlaySkillSelect();
         Unit selectedVehicle = playerSkillVehicleManager.GetPlayerSkillVehicle(carNum).GetComponent<Unit>();
         skillManagers[skillSelected].UpdateSkillUnit(selectedVehicle);
         skillManagers[skillSelected].DeactivateSkillUI();
@@ -203,11 +221,12 @@ public class UserControl : MonoBehaviour
 
     private bool IsSkillLockedIn(int skillNum)
     {
-        return skillToggles[skillNum].GetComponentInChildren<Outline>().enabled;
+        return skillLockedInStatus[(int)skillSelected];
     }
 
     public void RefreshSkillsUI()
     {
+        currentSkillOrbCount = Mathf.Min(maxSkillOrbCount, currentSkillOrbCount);
         uiMain.RefreshSkillOrbBar();
         ResetSkillBar();
         consumedSkillOrbCount = 0;
@@ -216,6 +235,7 @@ public class UserControl : MonoBehaviour
     private void SetActiveSkill(SkillType skill)
     {
         skillSelected = skill;
+        skillToggles[(int)skillSelected].GetComponentInChildren<Image>().sprite = skillSelectedSprites[(int)skillSelected];
         skillManagers[skillSelected].ActivateSkillUI();
     }
 
@@ -225,6 +245,7 @@ public class UserControl : MonoBehaviour
         {
             skillManagers[skillSelected].DeactivateSkillUI();
         }
+        skillToggles[(int)skillSelected].GetComponentInChildren<Image>().sprite = skillDefaultSprites[(int)skillSelected];
         skillSelected = SkillType.None;
     }
 
@@ -232,6 +253,7 @@ public class UserControl : MonoBehaviour
     {
         if (skillSelected != SkillType.None)
         {
+            skillToggles[(int)skillSelected].GetComponentInChildren<Image>().sprite = skillDefaultSprites[(int)skillSelected];
             skillToggles[(int)skillSelected].isOn = false;
         }
     }
@@ -245,6 +267,7 @@ public class UserControl : MonoBehaviour
     {
         if (skillSelected != SkillType.None && skillSelected != skill)
         {
+            skillToggles[(int)skillSelected].GetComponentInChildren<Image>().sprite = skillDefaultSprites[(int)skillSelected];
             skillToggles[(int)skillSelected].isOn = false;
         }
     }
@@ -253,7 +276,9 @@ public class UserControl : MonoBehaviour
     {
         if (skillSelected != SkillType.None)
         {
-            skillToggles[(int)skillSelected].GetComponentInChildren<Outline>().enabled = true;
+            skillToggles[(int)skillSelected].GetComponentInChildren<Image>().sprite = skillDefaultSprites[(int)skillSelected];
+            skillToggles[(int)skillSelected].GetComponentInChildren<Image>().color = skillLockedInColor;
+            skillLockedInStatus[(int)skillSelected] = true;
         }
         UpdateSkillTogglesFunctionality();
     }
@@ -262,33 +287,46 @@ public class UserControl : MonoBehaviour
     {
         if (skillSelected != SkillType.None)
         {
-            skillToggles[(int)skillSelected].GetComponentInChildren<Outline>().enabled = false;
+            skillToggles[(int)skillSelected].GetComponentInChildren<Image>().color = skillDefaultColor;
+            skillLockedInStatus[(int)skillSelected] = false;
             UpdateSkillTogglesFunctionality();
         }
     }
 
     public void DispatchSkillCommands()
     {
-        int skillOrbsConsumed = 0;
+        skillExecutionInProgress = true;
+        StartCoroutine("ExecuteSkills");
+    }
+
+    private IEnumerator ExecuteSkills()
+    {
         foreach (KeyValuePair<SkillType, ISkillManager> entry in skillManagers)
         {
             if (entry.Value.m_LockedIn)
             {
-                uiMain.UpdateGameLog(entry.Value.GetExecuteLog());
+                uiMain.RemoveSkillOrb(entry.Value.m_SkillCost);
+                //uiMain.UpdateGameLog(entry.Value.GetExecuteLog());
                 entry.Value.ExecuteSkill();
-                skillOrbsConsumed += entry.Value.m_SkillCost;
                 currentSkillOrbCount -= entry.Value.m_SkillCost;
+                yield return new WaitForSeconds(2f);
             }
         }
-        uiMain.RemoveSkillOrb(skillOrbsConsumed);
         ResetAllSkillTargets();
+        skillExecutionInProgress = false;
+    }
+
+    public bool DispatchSkillCompleted()
+    {
+        return !skillExecutionInProgress;
     }
 
     private void RemoveSkillTarget(SkillType skill)
     {
-        if (skillManagers.ContainsKey(skill))
+        skillManagers[skill].RemoveSkillTarget();
+        foreach (ISkillManager mgr in skillManagers.Values)
         {
-            skillManagers[skill].RemoveSkillTarget();
+            mgr.RepositionSkillMarkerUI();
         }
     }
 
@@ -302,7 +340,7 @@ public class UserControl : MonoBehaviour
 
     public void AddSkillOrb(int count)
     {
-        currentSkillOrbCount = Mathf.Min(maxOrbCount, currentSkillOrbCount + count);
+        currentSkillOrbCount += count;
         uiMain.AddSkillOrb(count);
     }
 
@@ -310,11 +348,25 @@ public class UserControl : MonoBehaviour
     {
         for (int i = 0; i < skillToggles.Length; i++)
         {
+            EnableSkillButton(skillToggles[i]);
+            skillToggles[i].GetComponentInChildren<Image>().sprite = skillDefaultSprites[i];
+            skillToggles[i].GetComponentInChildren<Image>().color = skillDefaultColor;
             skillToggles[i].isOn = false;
-            skillToggles[i].GetComponentInChildren<Outline>().enabled = false;
+            skillLockedInStatus[i] = false;
         }
     }
 
+    public void DisableSkillBar()
+    {
+        for (int i = 0; i < skillToggles.Length; i++)
+        {
+            if (skillToggles[i].isOn)
+            {
+                skillToggles[i].isOn = false;
+            }
+            DisableSkillButton(skillToggles[i]);
+        }
+    }
 
     public void UpdateSkillTogglesFunctionality()
     {
@@ -324,7 +376,7 @@ public class UserControl : MonoBehaviour
         {
             if (skillManagers[(SkillType)i].m_SkillCost > skillOrbCount)
             {
-                if (skillToggles[i].isOn == false && skillToggles[i].GetComponentInChildren<Outline>().enabled != true)
+                if (skillToggles[i].isOn == false && !skillLockedInStatus[i])
                 {
                     DisableSkillButton(skillToggles[i]);
                 }

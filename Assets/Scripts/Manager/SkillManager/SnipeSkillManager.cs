@@ -7,15 +7,17 @@ public class SnipeSkillManager : ISkillManager
     public int m_SkillCost { get; set; }
     public bool m_LockedIn { get; set; }
 
-    GameObject SkillMarker;
+    SkillMarker m_SkillMarker;
+    private SkillSoundManager skillSoundManager;
 
     public SnipeSkillManager()
     {
+        skillSoundManager = GameObject.Find("SkillSoundManager").GetComponent<SkillSoundManager>();
         m_SkillType = SkillType.Assassinate;
         m_Skill = null;
         m_SkillCost = 8;
         m_LockedIn = false;
-        SkillMarker = GameObject.Find("SnipeSkillMarker");
+        m_SkillMarker = GameObject.Find("SnipeTarget").GetComponent<SkillMarker>();
     }
 
     public void InitialiseSkill(Unit unit)
@@ -48,10 +50,11 @@ public class SnipeSkillManager : ISkillManager
             // Snipe cannot be used on enemies on top of vehicles (dangerous thematically)
             if (selectedUnit.GetComponent<Unit>().yAdjustment != 3)
             {
-                UpdateSkillUnit(selectedUnit);
+                skillSoundManager.PlaySkillConfirm();
                 m_LockedIn = true;
-                SkillMarker.transform.position = selectedUnit.transform.position;
-                SkillMarker.SetActive(true);
+                selectedUnit.AddTargetedSkill(m_SkillType);
+                UpdateSkillUnit(selectedUnit);
+                m_SkillMarker.PositionSkillMarkerUI(selectedUnit.transform.position, selectedUnit.GetTargetedCount());
                 return true;
             }
             else
@@ -82,9 +85,13 @@ public class SnipeSkillManager : ISkillManager
 
     public void RemoveSkillTarget()
     {
+        if (m_Skill != null && m_Skill.unit != null)
+        {
+            m_Skill.unit.RemoveTargetedSkill(m_SkillType);
+        }
         m_Skill = null;
         m_LockedIn = false;
-        SkillMarker.SetActive(false);
+        m_SkillMarker.RemoveSkillTarget();
     }
 
     public void ProcessSelection(Unit selectedUnit)
@@ -97,7 +104,7 @@ public class SnipeSkillManager : ISkillManager
         if (m_LockedIn)
         {
             m_Skill.Execute();
-            SkillMarker.SetActive(false);
+            m_SkillMarker.ExecuteSkill();
         }
     }
 
@@ -105,5 +112,13 @@ public class SnipeSkillManager : ISkillManager
     {
         Unit targetUnit = m_Skill.unit.GetComponent<Unit>();
         return $"Snipe Skill used on {targetUnit.GetName()} at Grid [{targetUnit.GetCurrentHeadGridPosition().x}, {targetUnit.GetCurrentHeadGridPosition().y}].";
+    }
+
+    public void RepositionSkillMarkerUI()
+    {
+        if (m_Skill != null && m_Skill.unit != null)
+        {
+            m_SkillMarker.PositionSkillMarkerUI(m_Skill.unit.transform.position, m_Skill.unit.GetTargetedCount());
+        }
     }
 }

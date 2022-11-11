@@ -1,12 +1,14 @@
 ﻿using System.Collections;
 using System.Linq;
+using UnityEngine;
 
 public class Skater : Enemy
 {
-    protected override void SetHealthAndDamage()
+    protected override void SetUnitAttributes()
     {
         health = 1;
         damage = 1;
+        chargePerTurn = 0;
     }
 
     public override void SetMovementPattern()
@@ -16,7 +18,7 @@ public class Skater : Enemy
 
     public override void TakeVehicleInTheWayAction()
     {
-        skipTurn = 1;
+        DisableUnit(1);
         ExecuteConcussedMovement();
     }
 
@@ -25,15 +27,30 @@ public class Skater : Enemy
         GridCoord currentGrid = GetCurrentHeadGridPosition();
         GridCoord moveGrid = new GridCoord(movementPattern.Last().x, 0);
         GridCoord _targetGrid = new GridCoord(currentGrid.x + moveGrid.x, currentGrid.y + moveGrid.y);
-        int right = moveGrid.x > 0 ? -1 : 1;
-        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(_targetGrid).GetCornerPoint(right, direction)));
-        commandStack.Enqueue(new MoveToGridCommand(moveGrid));
-        FieldGrid.AddGridToReposition(Helper.AddGridCoords(currentGrid, moveGrid));
+
+        // If there is a vehicle horizontally, remain in same grid concussed. Simulate corner move and back to middle
+        if (Helper.IsVehicleInTheWay(_targetGrid))
+        {
+            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(moveGrid.x, direction)));
+            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetGridCentrePoint()));
+            FieldGrid.AddGridToReposition(currentGrid);
+        }
+        else  // If there is no vehicle horizontally, move to horizontal grid concussed. Simulate corner move and then to horizontal grid
+        {
+            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(moveGrid.x, direction)));
+            commandStack.Enqueue(new MoveToGridCommand(moveGrid));
+            FieldGrid.AddGridToReposition(Helper.AddGridCoords(currentGrid, moveGrid));
+        }
     }
 
     public override IEnumerator PostTurnActions()
     {
-        ReverseMotion();
+        if (actionTaken)
+        {
+            ReverseMotion();
+            actionTaken = false;
+        }
+        animator.SetBool("Moving", false);
         TurnInProgress = false;
         yield break;
     }
@@ -45,12 +62,13 @@ public class Skater : Enemy
 
     public override string GetName()
     {
-        return "Skater";
+        return "Killer Crab";
     }
 
     public override string GetDescription()
     {
-        return "Movement Pattern: <br>-Moves 1 step forward and left or forward and right, alternating between them. <br> <br>" +
-            "Vehicle in the way: <br>-Runs into the vehicle, becomes stunned for 1 turn, and is displaced horizontally.";
+        return "Movement Pattern: <br>-Moves 1 step diagonally forward (left or right), alternating between left and right. <br> <br>" +
+            "Vehicle in the way: <br>-Runs into the vehicle, becomes stunned for 1 turn, and is displaced horizontally. If there is a vehicle " +
+            "horizontally as well, then it won't be displaced.";
     }
 }

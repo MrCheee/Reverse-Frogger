@@ -9,20 +9,19 @@ public class LaneChangeSkillManager : ISkillManager
     public int m_SkillCost { get; set; }
     public bool m_LockedIn { get; set; }
 
+    private SkillSoundManager skillSoundManager;
     private Camera GameCamera;
     private Canvas canvas;
     private GraphicRaycasterManager graphicRaycasterManager;
     private RectTransform laneChangeUI;
     private Button laneChangeUpButton;
     private Button laneChangeDownButton;
-    private RectTransform laneChangeUpButtonImg;
-    private RectTransform laneChangeDownButtonImg;
+    private Image laneChangeUpButtonImg;
+    private Image laneChangeDownButtonImg;
 
-    private Color laneChangeOnColor;
-    private Color laneChangeOffColor;
-    private Color laneChangeBlockColor;
-
-    GameObject SkillMarker;
+    private Color laneChangeOnColor = new Color(0.07f, 1, 0, .5f);
+    private Color laneChangeOffColor = new Color(0.35f, 0.35f, 0.35f, .5f);
+    private Color laneChangeBlockColor = new Color(1, 0, 0, .5f);
 
     public LaneChangeSkillManager()
     {
@@ -31,6 +30,7 @@ public class LaneChangeSkillManager : ISkillManager
         m_SkillCost = 2;
         m_LockedIn = false;
 
+        skillSoundManager = GameObject.Find("SkillSoundManager").GetComponent<SkillSoundManager>();
         GameCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
         canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
         graphicRaycasterManager = GameObject.Find("Canvas").GetComponent<GraphicRaycasterManager>();
@@ -38,17 +38,11 @@ public class LaneChangeSkillManager : ISkillManager
         laneChangeUI = GameObject.Find("LaneChangeDirections").GetComponent<RectTransform>();
         laneChangeUpButton = GameObject.Find("LaneChangeUp").GetComponent<Button>();
         laneChangeDownButton = GameObject.Find("LaneChangeDown").GetComponent<Button>();
-        laneChangeUpButtonImg = GameObject.Find("LaneChangeUpImage").GetComponent<RectTransform>();
-        laneChangeDownButtonImg = GameObject.Find("LaneChangeDownImage").GetComponent<RectTransform>();
+        laneChangeUpButtonImg = GameObject.Find("LaneChangeUpColor").GetComponent<Image>();
+        laneChangeDownButtonImg = GameObject.Find("LaneChangeDownColor").GetComponent<Image>();
 
         laneChangeUpButton.onClick.AddListener(delegate { AssignLaneChangeUp(); });
         laneChangeDownButton.onClick.AddListener(delegate { AssignLaneChangeDown(); });
-
-        laneChangeOnColor = new Color(255, 182, 0, 0.5f);
-        laneChangeOffColor = new Color(161, 161, 161, 0.5f);
-        laneChangeBlockColor = new Color(255, 0, 0, 0.5f);
-
-        SkillMarker = GameObject.Find("LaneChangeSkillMarker");
     }
 
     public void InitialiseSkill(Unit unit)
@@ -79,12 +73,17 @@ public class LaneChangeSkillManager : ISkillManager
         if (m_Skill != null)
         {
             GameObject selectedLaneChangeUI = graphicRaycasterManager.GetSelectedLaneChangeUI();
-            if (selectedLaneChangeUI != null && selectedLaneChangeUI.GetComponent<Button>().enabled)
+            if (selectedLaneChangeUI != null)
             {
-                m_LockedIn = true;
-                completedSkillSelection = true;
-                SkillMarker.transform.position = m_Skill.unit.transform.position;
-                SkillMarker.SetActive(true);
+                if (selectedLaneChangeUI.GetComponent<Button>().enabled)
+                {
+                    m_LockedIn = true;
+                    completedSkillSelection = true;
+                }
+                else
+                {
+                    skillSoundManager.PlayInvalidSelection();
+                }
             }
         }
         return completedSkillSelection;
@@ -107,7 +106,6 @@ public class LaneChangeSkillManager : ISkillManager
         laneChangeUI.gameObject.SetActive(false);
         TurnOffLaneChangeButton(laneChangeUpButtonImg);
         TurnOffLaneChangeButton(laneChangeDownButtonImg);
-        SkillMarker.SetActive(false);
     }
 
     public void ProcessSelection(Unit selectedUnit)
@@ -117,7 +115,6 @@ public class LaneChangeSkillManager : ISkillManager
         {
             UpdateSkillUnit(selectedUnit);
             Vector3 selectedScreenPos = GameCamera.WorldToScreenPoint(selectedUnit.gameObject.transform.position);
-            //Vector3 selectedScreenPos = CalculateScreenPosFromUnitHeadPosition();
             RepositionLaneChangeUI(selectedScreenPos);
             CheckLaneChangeFeasibility();
         }
@@ -137,6 +134,7 @@ public class LaneChangeSkillManager : ISkillManager
     {
         if (m_Skill != null)
         {
+            skillSoundManager.PlaySkillConfirm();
             m_Skill.UpdateGridCoordAction(new GridCoord(0, 1));
         }
         TurnOnLaneChangeButton(laneChangeUpButtonImg);
@@ -150,6 +148,7 @@ public class LaneChangeSkillManager : ISkillManager
     {
         if (m_Skill != null)
         {
+            skillSoundManager.PlaySkillConfirm();
             m_Skill.UpdateGridCoordAction(new GridCoord(0, -1));
         }
         TurnOnLaneChangeButton(laneChangeDownButtonImg);
@@ -192,121 +191,38 @@ public class LaneChangeSkillManager : ISkillManager
         bool isSidewalk = FieldGrid.GetBottomSidewalkLaneNum() == nextGrid.y || FieldGrid.GetTopSidewalkLaneNum() == nextGrid.y;
         bool vehicleInGrid = Helper.IsVehicleInTheWay(nextGrid);
         bool enemyInGrid = Helper.IsEnemyInTheWay(nextGrid);
-        bool blockedBecauseOfMotorbike = false;
-        if (m_Skill.unit.GetName() != "Motorbike")
-        {
-            blockedBecauseOfMotorbike = CheckIfMotorbikeIsInbetweenLane(currentGrid, moveGrid);
-        }
-        else
-        {
-            blockedBecauseOfMotorbike = CheckIfMotorbikeIsBlockedByVehicleInItsLane(currentGrid, moveGrid);
-        }
 
         if (isDivider) Debug.Log("Lane Change Blocked by divider!");
         if (isSidewalk) Debug.Log("Lane Change Blocked by sidewalk!");
         if (vehicleInGrid) Debug.Log("Lane Change Blocked by vehicle in the way!");
         if (enemyInGrid) Debug.Log("Lane Change Blocked by enemy in the way!");
-        if (blockedBecauseOfMotorbike) Debug.Log("Lane Change Blocked by motorbike in the way!");
 
-        return isDivider || isSidewalk || vehicleInGrid || enemyInGrid || blockedBecauseOfMotorbike;
+        return isDivider || isSidewalk || vehicleInGrid || enemyInGrid;
     }
 
-    private bool CheckIfMotorbikeIsInbetweenLane(GridCoord currentGrid, GridCoord moveGrid)
+    private void TurnOnLaneChangeButton(Image buttonImg)
     {
-        GridCoord nextGrid = Helper.AddGridCoords(currentGrid, moveGrid);
-        int currentY = currentGrid.y;
-        bool motorbikeInTheWay = false;
-
-        // If moving upwards
-        if (moveGrid.y == 1)
-        {
-            // Check its current grid for motorbike in its position, if there is, it should be blocking
-            motorbikeInTheWay = FieldGrid.GetSingleGrid(currentGrid).GetListOfUnitsName().Contains("Motorbike");
-
-            // If it is moving into the topmost lane (within each set of lanes), check if motorbike is in the next grid
-            if (currentY == FieldGrid.GetDividerLaneNum() - 2 || currentY == FieldGrid.GetTopSidewalkLaneNum() - 2)
-            {
-                bool motorbikeInNextGrid = FieldGrid.GetSingleGrid(nextGrid).GetListOfUnitsName().Contains("Motorbike");
-                motorbikeInTheWay = motorbikeInTheWay && motorbikeInNextGrid;
-            }
-        }
-        else  // If moving downwards
-        {
-            // Check its next grid downwards for motorbike in its position, if there is, it should be blocking
-            motorbikeInTheWay = FieldGrid.GetSingleGrid(nextGrid).GetListOfUnitsName().Contains("Motorbike");
-
-            // If it is moving out from the topmost lane (within each set of lanes), check if motorbike is in the current grid
-            if (currentY == FieldGrid.GetDividerLaneNum() - 1 || currentY == FieldGrid.GetTopSidewalkLaneNum() - 1)
-            {
-                bool motorbikeInNextGrid = FieldGrid.GetSingleGrid(currentGrid).GetListOfUnitsName().Contains("Motorbike");
-                motorbikeInTheWay = motorbikeInTheWay && motorbikeInNextGrid;
-            }
-        }
-
-        return motorbikeInTheWay;
+        buttonImg.color = laneChangeOnColor;
     }
 
-    private bool CheckIfMotorbikeIsBlockedByVehicleInItsLane(GridCoord currentGrid, GridCoord moveGrid)
+    private void TurnOffLaneChangeButton(Image buttonImg)
     {
-        // When moving up, it can only be blocked by a motorbike that is inbetween lane
-        if (moveGrid.y == 1)
-        {
-            // TO BE IMPLEMENTED
-            return false;
-        }
-        else  // Motorbike will be blocked from moving down if another vehicle is in its same grid 
-        {
-            var vehiclesInCurrentGrid = FieldGrid.GetSingleGrid(currentGrid).GetListOfUnitsWithGameObjectTag("Vehicle");
-            var vehicleTags = vehiclesInCurrentGrid.Select(x => x.GetName());
-            int numberOfMotorbikes = vehicleTags.Count(x => x == "Motorbike");
-            int numberOfNonMotorbikes = vehicleTags.Count() - numberOfMotorbikes;
-
-            // If there is another vehicle in the grid, then blocked
-            if (numberOfNonMotorbikes > 0)
-            {
-                return true;
-            }
-            else if (numberOfMotorbikes >= 2) // If there is another motorbike in the grid, and no other vehicle, then blocked
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        buttonImg.color = laneChangeOffColor;
     }
 
-    private void TurnOnLaneChangeButton(RectTransform buttonImg)
-    {
-        buttonImg.GetComponent<Image>().color = laneChangeOnColor;
-    }
-
-    private void TurnOffLaneChangeButton(RectTransform buttonImg)
-    {
-        buttonImg.GetComponent<Image>().color = laneChangeOffColor;
-    }
-
-    private void BlockLaneChangeButton(Button button, RectTransform buttonImg)
+    private void BlockLaneChangeButton(Button button, Image buttonImg)
     {
         button.enabled = false;
-        buttonImg.GetComponent<Image>().color = laneChangeBlockColor;
-    }
-
-    private Vector3 CalculateScreenPosFromUnitHeadPosition()
-    {
-        GridCoord selectedGrid = m_Skill.unit.GetCurrentHeadGridPosition();
-        Vector3 selectedGridPos = FieldGrid.GetSingleGrid(selectedGrid).GetGridCentrePoint();
-        return GameCamera.WorldToScreenPoint(selectedGridPos);
+        buttonImg.color = laneChangeBlockColor;
     }
 
     public void ExecuteSkill()
     {
         if (m_LockedIn)
         {
+            skillSoundManager.PlayLaneChange();
             m_Skill.Execute();
             RemoveSkillTarget();
-            SkillMarker.SetActive(false);
         }
     }
 
@@ -319,5 +235,10 @@ public class LaneChangeSkillManager : ISkillManager
     {
         Unit targetUnit = m_Skill.unit.GetComponent<Unit>();
         return $"Lane Change Skill used on {targetUnit.GetName()} at Grid [{targetUnit.GetCurrentHeadGridPosition().x}, {targetUnit.GetCurrentHeadGridPosition().y}].";
+    }
+
+    public void RepositionSkillMarkerUI()
+    {
+        return;
     }
 }

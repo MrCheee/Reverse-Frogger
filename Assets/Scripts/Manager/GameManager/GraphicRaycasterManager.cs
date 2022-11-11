@@ -29,9 +29,15 @@ public class GraphicRaycasterManager : MonoBehaviour
         return m_TargetResults.Count > 0 && !m_TargetResults.All(x => x.gameObject.CompareTag("Locator"));
     }
 
+    public bool HasSelectedLocatorUI()
+    {
+        return m_TargetResults.Any(x => x.gameObject.CompareTag("Locator"));
+    }
+
     public bool HasSelectedValidLocatorUI()
     {
-        return !m_TargetResults.Where(x => x.gameObject.CompareTag("Locator")).Any(x => x.gameObject.name == "InvalidGridSelection");
+        bool invalidLocatorSelected = m_TargetResults.Where(x => x.gameObject.CompareTag("Locator")).Any(x => x.gameObject.name == "InvalidGridSelection" || x.gameObject.name == "InvalidAirdropGridSelection");
+        return !invalidLocatorSelected;
     }
 
     public GameObject GetSelectedLaneChangeUI()

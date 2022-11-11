@@ -8,15 +8,9 @@ public abstract class Enemy : Unit
     public bool Crossed { get; protected set; }
     protected int direction = -1;
 
-
     protected override void SetAdditionalTag()
     {
         unitTag = "Normal";
-    }
-
-    protected override void SetChargePerTurn()
-    {
-        chargePerTurn = 0;
     }
 
     public override GridCoord GetCurrentHeadGridPosition()
@@ -59,6 +53,9 @@ public abstract class Enemy : Unit
         if (ToSkipTurn()) yield break;
         if (StillChargingUp()) yield break;
 
+        animator.SetBool("Moving", true);
+        actionTaken = true;
+
         PrepareMovement(out Queue<GridCoord> moveQueue, out GridCoord nextMove, out GridCoord nextGrid);
 
         while (moveQueue.Count > 0)
@@ -78,7 +75,6 @@ public abstract class Enemy : Unit
             }
 
             // If not break away by vehicle in the way, issue the next movement command
-            //Debug.Log($"Issue Move command of ({nextMove.x}, {nextMove.y}) to ({nextGrid.x}, {nextGrid.y})");
             GiveMovementCommand(nextMove);
 
             // Halt further movement when enemy has crossed the road
@@ -93,6 +89,7 @@ public abstract class Enemy : Unit
 
             yield return new WaitForSeconds(0.2f);
         }
+        charging = chargePerTurn;
         TurnInProgress = false;
     }
 
@@ -117,10 +114,8 @@ public abstract class Enemy : Unit
 
     protected virtual void ExecuteConcussedMovement()
     {
-        GridCoord currentGrid = GetCurrentHeadGridPosition();
-        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, direction)));
-        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(0, 0)));
-        FieldGrid.AddGridToReposition(currentGrid);
+        commandStack.Enqueue(new MoveWithinCurrentGridCommand(0, direction));
+        commandStack.Enqueue(new MoveWithinCurrentGridCommand(0, 0));
     }
 
     public override IEnumerator PreTurnActions()
@@ -131,6 +126,7 @@ public abstract class Enemy : Unit
 
     public override IEnumerator PostTurnActions()
     {
+        animator.SetBool("Moving", false);
         TurnInProgress = false;
         yield break;
     }
@@ -152,7 +148,10 @@ public abstract class Enemy : Unit
 
     public override void CheckConditionsToDestroy()
     {
-        return;
+        if (!FieldGrid.IsWithinPlayableField(GetCurrentHeadGridPosition()))
+        {
+            DestroySelf();
+        }
     }
 
     protected void MarkedAsCrossed()
@@ -174,10 +173,18 @@ public abstract class Enemy : Unit
 
     protected virtual void OnTriggerEnter(Collider other)
     {
-        //Debug.Log($"{gameObject.name}: Hit by a car! @({_currentGridPosition.x}, {_currentGridPosition.y})...");
-        string killedInfo = $"{gameObject.GetComponent<Unit>().GetName()} has been run over at Grid [{_currentGridPosition.x}, {_currentGridPosition.y}]!";
-        gameStateManager.EnemyKilled(transform.position, killedInfo);
+        other.gameObject.GetComponentInParent<Vehicle>().Collided();
+        gameStateManager.VehicleHit(other.gameObject.GetComponentInParent<Unit>());
         DestroySelf();
+    }
+
+    public override void DestroySelf()
+    {
+        health = 0;
+        string killedInfo = $"{gameObject.GetComponent<Unit>().GetName()} has been killed at Grid [{_currentGridPosition.x}, {_currentGridPosition.y}]!";
+        gameStateManager.EnemyKilled(transform.position, killedInfo); 
+        RemoveFromFieldGridPosition();
+        Destroy(gameObject, deathTimer);
     }
 
     public void ChildTriggeredEnter(Collider other)

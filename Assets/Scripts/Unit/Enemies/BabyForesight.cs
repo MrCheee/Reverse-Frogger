@@ -1,12 +1,14 @@
 ﻿using System.Collections;
 using System.Linq;
+using UnityEngine;
 
 public class BabyForesight : Enemy
 {
-    protected override void SetHealthAndDamage()
+    protected override void SetUnitAttributes()
     {
         health = 1;
         damage = 1;
+        chargePerTurn = 0;
     }
 
     public override void SetMovementPattern()
@@ -24,7 +26,9 @@ public class BabyForesight : Enemy
             yield break;
         }
         if (ToSkipTurn()) yield break;
-        
+
+        actionTaken = true;
+
         bool[] vehiclesInTheWay = new bool[3];
         for (int i = 0; i < movementPattern.Count; i++)
         {
@@ -38,7 +42,7 @@ public class BabyForesight : Enemy
             yield break;
         }
 
-        bool isInLeftLane = _currentGridPosition.y < FieldGrid.GetDividerLaneNum();
+        bool isInLeftLane = _currentGridPosition.y <= FieldGrid.GetDividerLaneNum();
         int maxLeft = FieldGrid.GetFieldBuffer();
         int maxRight = FieldGrid.GetMaxLength() - FieldGrid.GetFieldBuffer() - 1;
         GridCoord nextMove = new GridCoord(0, 0);
@@ -96,11 +100,24 @@ public class BabyForesight : Enemy
             }
         }
 
+        if (nextMove.y == direction)
+        {
+            animator.SetBool("Moving", true);
+            if (nextMove.y == -1)
+            {
+                GetComponentInChildren<SpriteRenderer>().flipX = true;
+            }
+            else
+            {
+                GetComponentInChildren<SpriteRenderer>().flipX = false;
+            }
+        }
+
         GridCoord nextGrid = Helper.AddGridCoords(_currentGridPosition, nextMove);
         GiveMovementCommand(nextMove);
 
         // If it has moved forward
-        if (nextMove.y > 0)
+        if (nextMove.y == direction)
         {
             // Check if crossed the road
             if (HasCrossedTheRoad(nextGrid))
@@ -113,21 +130,27 @@ public class BabyForesight : Enemy
             {
                 int gridCentre = (FieldGrid.GetMaxLength() - 1) / 2;
                 GridCoord repositionToCentreMove = new GridCoord(gridCentre - nextGrid.x, 0);
+                if (repositionToCentreMove.y == -1)
+                {
+                    GetComponentInChildren<SpriteRenderer>().flipX = true;
+                } else
+                {
+                    GetComponentInChildren<SpriteRenderer>().flipX = false;
+                }
                 GiveMovementCommand(repositionToCentreMove);
             }
         }
-
         TurnInProgress = false;
     }
 
     public override string GetName()
     {
-        return "Foresight";
+        return "Mutated Brain";
     }
 
     public override string GetDescription()
     {
-        return "Movement Pattern: <br>-Moves 1 step per turn, either diagonal left or straight forward or diagonal right. <br> <br>" +
+        return "Movement Pattern: <br>-Moves 1 step per turn, either forward, diagonal left or diagonal right. <br> <br>" +
             "Vehicle in the way: <br>-It will not move. <br> <br>" +
             "Additional Effects: <br>-It determines its movement based on vehicle spots in front of it and will try to not intentionally move into a vehicle's path within its line of sight." +
             "<br>-Always repositon back to the middle when it reaches the divider.";

@@ -5,10 +5,12 @@ public abstract class MoveCommand : Command
     protected Vector3 _moveDirection;
     protected Vector3 _target;
     protected bool moveReady = false;
+    protected bool executed = false;
 
     public void MoveToTarget(Unit unit)
     {
-        unit.Move(_moveDirection);
+        unit.Move(calculateMoveDirection(_target, unit.transform.position));
+        //unit.Move(_moveDirection);
         if (unit.ReachedPosition(_target))
         {
             IsFinished = true;

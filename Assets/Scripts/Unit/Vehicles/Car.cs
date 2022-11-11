@@ -2,6 +2,12 @@
 
 public class Car : Vehicle
 {
+    protected override void SetUnitAttributes()
+    {
+        health = 3;
+        damage = 1;
+    }
+
     protected override void SetUpSize()
     {
         size = 1;

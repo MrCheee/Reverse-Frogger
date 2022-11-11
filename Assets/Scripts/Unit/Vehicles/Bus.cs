@@ -1,5 +1,11 @@
 ﻿public class Bus : Vehicle
 {
+    protected override void SetUnitAttributes()
+    {
+        health = 5;
+        damage = 1;
+    }
+
     protected override void SetUpSize()
     {
         size = 3;
