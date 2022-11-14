@@ -31,6 +31,7 @@ public class UIMain : MonoBehaviour
     public TextMeshProUGUI BestScoreDifficulty;
     public GameObject ReferenceGrid;
     public GameObject DamageTakenPanel;
+    public GameObject CreditsPopUp;
 
     public GameObject DamageTakenInfo;
     public TextMeshProUGUI DamageTakenText;
@@ -340,5 +341,22 @@ public class UIMain : MonoBehaviour
         {
             SkillsInfoPopUp.SetActive(true);
         }
+    }
+
+    public void ToggleCredits()
+    {
+        if (CreditsPopUp.activeInHierarchy)
+        {
+            CreditsPopUp.SetActive(false);
+        }
+        else
+        {
+            CreditsPopUp.SetActive(true);
+        }
+    }
+
+    public void CloseCredits()
+    {
+        CreditsPopUp.SetActive(false);
     }
 }

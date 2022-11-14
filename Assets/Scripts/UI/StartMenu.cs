@@ -7,6 +7,7 @@ public class StartMenu : MonoBehaviour
     [SerializeField] GameObject Background;
     [SerializeField] GameObject Logo;
     [SerializeField] GameObject Window;
+
     float backgroundAlpha = 1f;
     Image BackgroundImg;
     Color BackgroundColor;
