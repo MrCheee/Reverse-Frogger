@@ -14,15 +14,15 @@ public class MoveToGridCommand : MoveCommand
 
     public override void Execute(Unit unit)
     {
-        if (isFinished) return;
+        if (IsFinished) return;
         if (!moveReady)
         {
             GridCoord currentGrid = unit.GetCurrentHeadGridPosition();
             _targetGrid = new GridCoord(currentGrid.x + _toMove.x, currentGrid.y + _toMove.y);
-            Vector3 gridCentrePoint = FieldGrid.GetSingleGrid(_targetGrid).GetGridCentrePoint();
+            Vector3 gridCentrePoint = FieldGrid.GetGrid(_targetGrid).GetGridCentrePoint();
             
-            gridCentrePoint.y = unit.yAdjustment;
-            if (unit.yAdjustment > 0)
+            gridCentrePoint.y = unit.VerticalDisplacement;
+            if (unit.VerticalDisplacement > 0)
             {
                 gridCentrePoint.z -= direction * 1.25f;
             }
@@ -34,10 +34,10 @@ public class MoveToGridCommand : MoveCommand
         }
         if (!executed)
         {
-            if (unit.GetName() != "Shield" && _moveDirection.x != 0)
+            if (unit is Enemy && unit.GetName() != "Shield" && _moveDirection.x != 0)
             {
                 bool toFlip = _moveDirection.x < 0;
-                unit.FlipUnitSprite(toFlip);
+                unit.GetComponentInChildren<SpriteRenderer>().flipX = toFlip;
             }
             executed = true;
         }
@@ -46,7 +46,6 @@ public class MoveToGridCommand : MoveCommand
 
     public void UpdateGridOnMovement(Unit unit)
     {
-        unit.RemoveFromFieldGridPosition();
-        unit.AddToFieldGridPosition(_targetGrid);
+        unit.UpdateGridMovement(_targetGrid);
     }
 }

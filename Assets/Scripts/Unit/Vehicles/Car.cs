@@ -1,27 +1,20 @@
 ﻿using System.Linq;
+using UnityEngine;
 
 public class Car : Vehicle
 {
     protected override void SetUnitAttributes()
     {
-        health = 3;
-        damage = 1;
-    }
-
-    protected override void SetUpSize()
-    {
-        size = 1;
+        Health = 3;
+        Damage = 1;
+        Size = 1;
         maxSpeed = 3;
+        SpecialTag = "Knockback-able Vehicle";
     }
 
-    public override void SetMovementPattern()
+    protected override void SetMovementPattern()
     {
-        movementPattern.Add(new GridCoord(1, 0));
-    }
-
-    protected override void SetAdditionalTag()
-    {
-        unitTag = "Knockback-able Vehicle";
+        movementPattern.Add(new GridCoord(moveDirection, 0));
     }
 
     public override string GetName()

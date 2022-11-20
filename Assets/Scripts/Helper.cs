@@ -19,21 +19,6 @@ public class Helper
         return first.x == second.x && first.y == second.y;
     }
 
-    public static bool IsVehicleInTheWay(GridCoord targetGrid)
-    {
-        return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetSingleGrid(targetGrid).GetListOfUnitsGameObjectTag().Contains("Vehicle");
-    }
-
-    public static bool IsEnemyInTheWay(GridCoord targetGrid)
-    {
-        return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetSingleGrid(targetGrid).GetListOfUnitsGameObjectTag().Contains("Enemy");
-    }
-
-    public static bool IsUnitOfTypeInTheWay(GridCoord targetGrid, string unitTag)
-    {
-        return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetSingleGrid(targetGrid).GetListOfUnitsTag().Contains(unitTag);
-    }
-
     public static Vector2 ScreenPointToWorldPosition(Vector3 screenPos, float scaleFactor = 1)
     {
         float h = Screen.height;
@@ -42,15 +27,5 @@ public class Helper
         float y = screenPos.y - (h / 2);
         float s = scaleFactor;
         return new Vector2(x, y) / s;
-    }
-
-    public static bool IsTargetedGridInALane(int gridY)
-    {
-        return gridY != FieldGrid.GetDividerLaneNum() && gridY < FieldGrid.GetTopSidewalkLaneNum() && gridY > FieldGrid.GetBottomSidewalkLaneNum();
-    }
-
-    public static bool IsWithinPlayableX(int gridX)
-    {
-        return gridX >= FieldGrid.GetFieldBuffer() && gridX < (FieldGrid.GetMaxLength() - FieldGrid.GetFieldBuffer());
     }
 }

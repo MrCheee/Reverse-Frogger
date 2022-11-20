@@ -16,7 +16,7 @@ public class RotateCommand : Command
 
     public override void Execute(Unit unit)
     {
-        if (isFinished) return;
+        if (IsFinished) return;
         if (_currentRotated < _rotateAmount)
         {
             float delta = Mathf.Min(_speed * Time.deltaTime, _rotateAmount - _currentRotated);
@@ -26,7 +26,7 @@ public class RotateCommand : Command
         } 
         else
         {
-            isFinished = true;
+            IsFinished = true;
         }
     }
 }

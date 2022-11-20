@@ -35,8 +35,8 @@ public class SingleGrid : ISingleGrid
 
         if (_objectsID.Values.Select(x => x.tag).Contains("Vehicle"))
         {
-            enemiesOnTop = allEnemies.Where(x => x.yAdjustment > 0).ToList();
-            allEnemies = allEnemies.Where(x => x.yAdjustment <= 0).ToList();
+            enemiesOnTop = allEnemies.Where(x => x.VerticalDisplacement > 0).ToList();
+            allEnemies = allEnemies.Where(x => x.VerticalDisplacement <= 0).ToList();
         }
 
         // For bottom enemies
@@ -90,12 +90,12 @@ public class SingleGrid : ISingleGrid
 
     private List<Unit> RearrangeEnemies(List<Unit> enemies)
     {
-        bool leftLane = _gridCoord.y < FieldGrid.GetDividerLaneNum() ? true : false;
+        bool leftLane = _gridCoord.y < FieldGrid.DividerY ? true : false;
         List<Tuple<int, Unit>> rearrangedEnemies = new List<Tuple<int, Unit>>();
         for (int i = 0; i < enemies.Count; i++)
         {
             int sortIndex = 2;
-            string enemyName = enemies[i].GetTag();
+            string enemyName = enemies[i].SpecialTag;
             if (enemyName == "LShield")
             {
                 sortIndex = 0;
@@ -134,11 +134,6 @@ public class SingleGrid : ISingleGrid
         FieldGrid.AddGridToReposition(_gridCoord);
     }
 
-    public Vector3 GetGridCentrePoint()
-    {
-        return _centrePoint;
-    }
-
     public Vector3 GetCornerPoint(float right, float top)
     {
         return new Vector3((float)(_centrePoint.x + right * 1.25), 0, (float)(_centrePoint.z + top * 1.5));
@@ -166,7 +161,7 @@ public class SingleGrid : ISingleGrid
 
     public List<string> GetListOfUnitsTag()
     {
-        return _objectsID.Values.Select(x => x.GetComponent<Unit>().GetTag()).ToList();
+        return _objectsID.Values.Select(x => x.GetComponent<Unit>().SpecialTag).ToList();
     }
 
     public List<Unit> GetListOfUnitsWithGameObjectTag(string tag)
@@ -181,17 +176,22 @@ public class SingleGrid : ISingleGrid
 
     public bool IsUnitTagInGrid(string tag)
     {
-        return _objectsID.Values.Select(x => x.GetComponent<Unit>().GetTag()).Contains(tag);
+        return _objectsID.Values.Select(x => x.GetComponent<Unit>().SpecialTag).Contains(tag);
     }
 
     public Unit GetUnitWithTag(string tag)
     {
-        return _objectsID.Values.Where(x => x.GetComponent<Unit>().GetTag() == tag).First().GetComponent<Unit>();
+        return _objectsID.Values.Where(x => x.GetComponent<Unit>().SpecialTag == tag).First().GetComponent<Unit>();
     }
 
     public List<Unit> GetListOfUnitsWithTag(string tag)
     {
-        return _objectsID.Values.Where(x => x.GetComponent<Unit>().GetTag() == tag).Select(x => x.GetComponent<Unit>()).ToList();
+        return _objectsID.Values.Where(x => x.GetComponent<Unit>().SpecialTag == tag).Select(x => x.GetComponent<Unit>()).ToList();
+    }
+
+    public Vector3 GetGridCentrePoint()
+    {
+        return _centrePoint;
     }
 
     public GridCoord GetGridCoord()

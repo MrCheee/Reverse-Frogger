@@ -45,20 +45,18 @@ public class LaneChangeSkillManager : ISkillManager
         laneChangeDownButton.onClick.AddListener(delegate { AssignLaneChangeDown(); });
     }
 
-    public void InitialiseSkill(Unit unit)
-    {
-        m_Skill = new LaneChange(unit);
-    }
-
     public void UpdateSkillUnit(Unit unit)
     {
-        if (m_Skill == null)
+        if (unit is Vehicle vehicle)
         {
-            InitialiseSkill(unit);
-        }
-        else
-        {
-            m_Skill.unit = unit;
+            if (m_Skill == null)
+            {
+                m_Skill = new LaneChange(vehicle);
+            }
+            else
+            {
+                m_Skill.TargetUnit = vehicle;
+            }
         }
     }
 
@@ -111,7 +109,7 @@ public class LaneChangeSkillManager : ISkillManager
     public void ProcessSelection(Unit selectedUnit)
     {
         // Lane Change only works on vehicles
-        if (selectedUnit != null && selectedUnit.gameObject.tag == "Vehicle")
+        if (selectedUnit != null && selectedUnit is Vehicle)
         {
             UpdateSkillUnit(selectedUnit);
             Vector3 selectedScreenPos = GameCamera.WorldToScreenPoint(selectedUnit.gameObject.transform.position);
@@ -160,13 +158,14 @@ public class LaneChangeSkillManager : ISkillManager
 
     private void CheckLaneChangeFeasibility()
     {
-        if (m_Skill.unit.isStunned())
+        if (m_Skill.TargetUnit.SkipTurn > 0)
         {
             BlockLaneChangeButton(laneChangeUpButton, laneChangeUpButtonImg);
             BlockLaneChangeButton(laneChangeDownButton, laneChangeDownButtonImg);
         }
 
-        GridCoord[] gridsToCheck = m_Skill.unit.GetAllCurrentGridPosition();
+        Vehicle targetVehicle = m_Skill.TargetUnit as Vehicle;
+        GridCoord[] gridsToCheck = targetVehicle.GetAllOccupiedGrids();
 
         // Check if lane changing upwards is possible
         if (gridsToCheck.Any(x => CheckIfLaneChangeIsBlocked(x, new GridCoord(0, 1))))
@@ -187,15 +186,10 @@ public class LaneChangeSkillManager : ISkillManager
     {
         GridCoord nextGrid = Helper.AddGridCoords(currentGrid, moveGrid);
 
-        bool isDivider = FieldGrid.GetDividerLaneNum() == nextGrid.y;
-        bool isSidewalk = FieldGrid.GetBottomSidewalkLaneNum() == nextGrid.y || FieldGrid.GetTopSidewalkLaneNum() == nextGrid.y;
-        bool vehicleInGrid = Helper.IsVehicleInTheWay(nextGrid);
-        bool enemyInGrid = Helper.IsEnemyInTheWay(nextGrid);
-
-        if (isDivider) Debug.Log("Lane Change Blocked by divider!");
-        if (isSidewalk) Debug.Log("Lane Change Blocked by sidewalk!");
-        if (vehicleInGrid) Debug.Log("Lane Change Blocked by vehicle in the way!");
-        if (enemyInGrid) Debug.Log("Lane Change Blocked by enemy in the way!");
+        bool isDivider = FieldGrid.DividerY == nextGrid.y;
+        bool isSidewalk = FieldGrid.SidewalkBottomY == nextGrid.y || FieldGrid.SidewalkTopY == nextGrid.y;
+        bool vehicleInGrid = FieldGrid.IsVehicleInTheWay(nextGrid);
+        bool enemyInGrid = FieldGrid.IsEnemyInTheWay(nextGrid);
 
         return isDivider || isSidewalk || vehicleInGrid || enemyInGrid;
     }
@@ -233,7 +227,7 @@ public class LaneChangeSkillManager : ISkillManager
 
     public string GetExecuteLog()
     {
-        Unit targetUnit = m_Skill.unit.GetComponent<Unit>();
+        Unit targetUnit = m_Skill.TargetUnit.GetComponent<Unit>();
         return $"Lane Change Skill used on {targetUnit.GetName()} at Grid [{targetUnit.GetCurrentHeadGridPosition().x}, {targetUnit.GetCurrentHeadGridPosition().y}].";
     }
 

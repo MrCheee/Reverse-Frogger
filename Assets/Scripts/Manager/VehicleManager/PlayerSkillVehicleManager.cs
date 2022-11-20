@@ -13,8 +13,8 @@ public class PlayerSkillVehicleManager : MonoBehaviour, IPlayerSkillVehicleManag
 
     public void GeneratePlayerSkillVehicles()
     {
-        GridCoord spawnGrid = new GridCoord(FieldGrid.GetMaxLength() / 2, FieldGrid.GetMaxHeight() / 2);
-        Vector3 spawnPos = FieldGrid.GetSingleGrid(spawnGrid).GetGridCentrePoint();
+        GridCoord spawnGrid = new GridCoord(FieldGrid.FieldLength / 2, FieldGrid.FieldHeight / 2);
+        Vector3 spawnPos = FieldGrid.GetGrid(spawnGrid).GetGridCentrePoint();
         spawnPos.y = -100;
 
         callInVehicles = new GameObject[vehPrefabs.Length];

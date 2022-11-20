@@ -45,6 +45,8 @@ public class GameStateManager : MonoBehaviour
     float shortWaitTime = 0.25f;
     float gameStartWaitTime = 1f;
 
+    Unit boostedUnit = null;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -56,11 +58,9 @@ public class GameStateManager : MonoBehaviour
         userControl = gameObject.GetComponent<UserControl>();
 
         uiMain = UIMain.Instance;
-        uiMain.AddHealth(playerHealth);
-        AddPlayerSkillOrb(playerSkillOrb);
 
-        playerFinishButton.onClick.AddListener(PlayerButtonOnClick);
         startGame.onClick.AddListener(StartGame);
+        playerFinishButton.onClick.AddListener(PlayerButtonOnClick);
         StartCoroutine(CheckAndUpdateGameState());
 
         newEnemies = new HashSet<string>() { 
@@ -76,6 +76,18 @@ public class GameStateManager : MonoBehaviour
             "Bloat", 
             "Mutated Blood" 
         };
+
+        // Events Subscribing
+        Enemy.OnEnemyKilled += EnemyKilled;
+        Enemy.DamagePlayer += DamagePlayer;
+        BoostUnit.BoostedUnit += RegisterBoostedUnit;
+    }
+
+    private void OnDisable()
+    {
+        // Events Unsubscribing
+        Enemy.OnEnemyKilled -= EnemyKilled;
+        Enemy.DamagePlayer -= DamagePlayer;
     }
 
     IEnumerator CheckAndUpdateGameState()
@@ -90,6 +102,7 @@ public class GameStateManager : MonoBehaviour
                     if (gameStart)
                     {
                         InitialiseDifficulty();
+                        uiMain.Initialise(playerHealth, playerSkillOrb);
                         LoadBestScore();
                         vehicleSpawner.PopulateInitialVehicles();
                         BGMAudioSource.clip = BGMMusic;
@@ -189,10 +202,10 @@ public class GameStateManager : MonoBehaviour
 
                     if (HaveUnitsOfTypeCompletedTurns("Enemy"))
                     {
-                        if (HaveBoostedUnitsOfType("Enemy"))
+                        if (boostedUnit != null && boostedUnit is Enemy)
                         {
                             Debug.Log("PostEnemy --> BoostedPreEnemy");
-                            TriggerBoostedUnitsOfTypePreTurn("Enemy");
+                            TriggerBoostedUnitPreTurn();
                             gameStateIndex = GameState.BoostedPreEnemy;
                         }
                         else
@@ -220,10 +233,10 @@ public class GameStateManager : MonoBehaviour
                     yield return new WaitForSeconds(shortWaitTime);
                     uiMain.UpdateContent();
 
-                    if (HaveUnitsOfTypeCompletedTurns("Enemy"))
+                    if (!boostedUnit.TurnInProgress)
                     {
                         Debug.Log("BoostedPreEnemy --> BoostedEnemy");
-                        TriggerBoostedUnitsOfTypeTurn("Enemy");
+                        TriggerBoostedUnitTurn();
                         gameStateIndex = GameState.BoostedEnemy;
                     }
                     break;
@@ -232,11 +245,11 @@ public class GameStateManager : MonoBehaviour
                     yield return new WaitForSeconds(waitTime);
                     uiMain.UpdateContent();
 
-                    if (HaveUnitsOfTypeCompletedTurns("Enemy"))
+                    if (!boostedUnit.TurnInProgress)
                     {
                         Debug.Log("BoostedEnemy --> PostEnemy");
-                        TriggerBoostedUnitsOfTypePostTurn("Enemy");
-                        ReduceBoostOnUnitsOfType("Enemy");
+                        TriggerBoostedUnitPostTurn();
+                        boostedUnit = null;
                         gameStateIndex = GameState.PostEnemy;
                     }
                     break;
@@ -247,12 +260,12 @@ public class GameStateManager : MonoBehaviour
 
                     if (HaveUnitsOfTypeCompletedTurns("Vehicle"))
                     {
-                        if (HaveBoostedUnitsOfType("Vehicle"))
+                        if (boostedUnit != null && boostedUnit is Vehicle)
                         {
                             Debug.Log("Vehicle --> Vehicle (Boosted)");
                             gameStateSoundManager.PlayVehicleGameState();
-                            TriggerBoostedUnitsOfTypeTurn("Vehicle");
-                            ReduceBoostOnUnitsOfType("Vehicle");
+                            TriggerBoostedUnitTurn();
+                            boostedUnit = null;
                             gameStateIndex = GameState.Vehicle;
                         }
                         else
@@ -311,7 +324,7 @@ public class GameStateManager : MonoBehaviour
         {
             Vehicle veh = vehObj.GetComponent<Vehicle>();
             int vehLaneSpeed = laneManager.GetLaneSpeed(veh.GetCurrentHeadGridPosition().y);
-            veh.UpdateLaneSpeed(vehLaneSpeed);
+            veh.UpdateLaneSpeedAddition(vehLaneSpeed);
             veh.BeginTurn();
         }
     }
@@ -334,55 +347,27 @@ public class GameStateManager : MonoBehaviour
     private bool HaveUnitsOfTypeCompletedTurns(string unitTag)
     {
         var units = GameObject.FindGameObjectsWithTag(unitTag);
-        bool issuedAllMovement = units.Any(x => x.GetComponent<Unit>().TurnInProgress) == false;
-        bool completedFinalMovement = units.All(x => x.GetComponent<Unit>().CheckIfCompletedPreviousMovement());
-        return issuedAllMovement && completedFinalMovement;
+        return units.Any(x => x.GetComponent<Unit>().TurnInProgress) == false;
     }
 
-    private bool HaveBoostedUnitsOfType(string unitTag)
+    private void RegisterBoostedUnit(Unit unit)
     {
-        return GetBoostedUnitsOfType(unitTag).Length > 0;
+        boostedUnit = unit;
     }
 
-    private void TriggerBoostedUnitsOfTypePreTurn(string unitTag)
+    private void TriggerBoostedUnitPreTurn()
     {
-        var boostedUnits = GetBoostedUnitsOfType(unitTag);
-        foreach (GameObject unit in boostedUnits)
-        {
-            unit.GetComponent<Unit>().BeginPreTurn();
-        }
+        boostedUnit?.GetComponent<Unit>().BeginPreTurn();
     }
 
-    private void TriggerBoostedUnitsOfTypeTurn(string unitTag)
+    private void TriggerBoostedUnitTurn()
     {
-        var boostedUnits = GetBoostedUnitsOfType(unitTag);
-        foreach (GameObject unit in boostedUnits)
-        {
-            unit.GetComponent<Unit>().BeginTurn();
-        }
+        boostedUnit?.GetComponent<Unit>().BeginTurn();
     }
 
-    private void TriggerBoostedUnitsOfTypePostTurn(string unitTag)
+    private void TriggerBoostedUnitPostTurn()
     {
-        var boostedUnits = GetBoostedUnitsOfType(unitTag);
-        foreach (GameObject unit in boostedUnits)
-        {
-            unit.GetComponent<Unit>().BeginPostTurn();
-        }
-    }
-
-    private void ReduceBoostOnUnitsOfType(string unitTag)
-    {
-        var boostedUnits = GetBoostedUnitsOfType(unitTag);
-        foreach (GameObject unit in boostedUnits)
-        {
-            unit.GetComponent<Unit>().ReduceBoostOnUnit();
-        }
-    }
-
-    private GameObject[] GetBoostedUnitsOfType(string unitTag)
-    {
-        return GameObject.FindGameObjectsWithTag(unitTag).Where(x => x.GetComponent<Unit>().isBoosted()).ToArray();
+        boostedUnit?.GetComponent<Unit>().BeginPostTurn();
     }
 
     private void EnableLaneSpeedToggles()
@@ -438,33 +423,16 @@ public class GameStateManager : MonoBehaviour
         damageReceived = 0;
     }
 
-    public void EnemyKilled(Vector3 killedPos, string killedInfo)
+    public void EnemyKilled(Enemy enemy)
     {
+        GridCoord killedPos = enemy.GetCurrentHeadGridPosition();
+        Debug.Log($"{enemy.GetName()} has been killed at Grid [{killedPos.x}, {killedPos.y}]!");
         totalKills += 1;
         enemyKilledCount += 1;
-        AddPlayerSkillOrb(1);
         orbReceived += 1;
-        uiMain.UpdateKills(totalKills);
-        //uiMain.UpdateGameLog(killedInfo);
-        DisplayKilledEnemy(killedPos);
-    }
 
-    private void DisplayKilledEnemy(Vector3 pos)
-    {
-        Instantiate(EnemyKilledPrefab, pos, EnemyKilledPrefab.transform.rotation);
-    }
-
-    public void VehicleHit(Unit vehicle, int damageDealt = 1)
-    {
-        if (difficulty == "Expert")
-        {
-            vehicle.TakeDamage(damageDealt);
-        }
-    }
-
-    public void AddPlayerSkillOrb(int count)
-    {
-        userControl.AddSkillOrb(count);
+        // ** Can shift out to somewhr else?
+        Instantiate(EnemyKilledPrefab, enemy.gameObject.transform.position, EnemyKilledPrefab.transform.rotation);
     }
 
     private void RemoveEnemyKilledIndicators()
@@ -478,7 +446,7 @@ public class GameStateManager : MonoBehaviour
 
     public void UpdateGameLevel()
     {
-        if (difficulty == "Expert" || difficulty == "Advanced")
+        if (difficulty == "Advanced")
         {
             if (level < 5)
             {
@@ -555,7 +523,6 @@ public class GameStateManager : MonoBehaviour
         SaveData killsByDifficulty;
         int difficultyIndex = 0;
         if (difficulty == "Advanced") difficultyIndex = 1;
-        if (difficulty == "Expert") difficultyIndex = 2;
 
         if (File.Exists(path))
         {
@@ -585,7 +552,6 @@ public class GameStateManager : MonoBehaviour
         string path = Application.persistentDataPath + "/highscore.json";
         int difficultyIndex = 0;
         if (difficulty == "Advanced") difficultyIndex = 1;
-        if (difficulty == "Expert") difficultyIndex = 2;
 
         if (File.Exists(path))
         {

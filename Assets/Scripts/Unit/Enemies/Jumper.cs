@@ -1,48 +1,46 @@
-﻿using System.Collections;
+﻿using UnityEngine;
 
 public class Jumper : Enemy
 {
+    protected static readonly int jumpAP = Animator.StringToHash("Jump");
+
     protected override void SetUnitAttributes()
     {
-        health = 1;
-        damage = 1;
+        Health = 1;
+        Damage = 1;
         chargePerTurn = 0;
+        SpecialTag = "Roof-Ready";
     }
 
-    protected override void SetAdditionalTag()
-    {
-        unitTag = "Roof-Ready";
-    }
-
-    public override void SetMovementPattern()
+    protected override void SetMovementPattern()
     {
         movementPattern.Add(new GridCoord(0, direction));
     }
 
-    public override void TakeVehicleInTheWayAction()
+    protected override void TakeVehicleInTheWayAction()
     {
-        yAdjustment = 3;
-        animator.SetTrigger("Jump");
-        animator.SetBool("Moving", false);
-        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction)));
+        VerticalDisplacement = 3;
+        animator.SetTrigger(jumpAP);
+        animator.SetBool(movingAP, false);
+        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction)));
     }
 
-    public override void TakeNoVehicleInTheWayAction()
+    protected override void TakeNoVehicleInTheWayAction()
     {
-        if (yAdjustment == 3)
+        if (VerticalDisplacement == 3)
         {
-            animator.SetTrigger("Jump");
-            animator.SetBool("Moving", false);
-            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction), yAdjustment));
+            animator.SetTrigger(jumpAP);
+            animator.SetBool(movingAP, false);
+            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction), VerticalDisplacement));
         }
         else
         {
-            animator.SetBool("Moving", true);
+            animator.SetBool(movingAP, true);
         }
-        yAdjustment = 0;
+        VerticalDisplacement = 0;
     }
 
-    public override bool HaltMovementByVehicleInTheWay()
+    protected override bool HaltMovementByVehicleInTheWay()
     {
         return false;
     }

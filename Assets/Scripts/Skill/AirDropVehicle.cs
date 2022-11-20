@@ -3,37 +3,37 @@ using UnityEngine;
 
 public class AirDropVehicle : ISkill
 {
-    public GridCoord targetGrid { get; set; }
-    public Unit unit { get; set; }
+    public Unit TargetUnit { get; set; }
+    public GridCoord TargetGrid { get; set; }
 
     public AirDropVehicle(Unit target)
     {
-        unit = target;
+        TargetUnit = target;
     }
 
     public void Execute()
     {
-        if (targetGrid.y < FieldGrid.GetDividerLaneNum())
+        if (TargetGrid.y < FieldGrid.DividerY)
         {
-            unit.GetComponent<Vehicle>().ReverseMotion();
+            TargetUnit.GetComponent<Vehicle>().ReverseMotion();
         }
         else
         {
-            foreach (SpriteRenderer vehSprite in unit.GetComponentsInChildren<SpriteRenderer>())
+            foreach (SpriteRenderer vehSprite in TargetUnit.GetComponentsInChildren<SpriteRenderer>())
             {
                 vehSprite.flipY = true;
             }
-            unit.transform.Rotate(Vector3.up, 180f);
+            TargetUnit.transform.Rotate(Vector3.up, 180f);
         }
 
-        unit.gameObject.SetActive(true);
-        unit.GetComponent<Vehicle>().AddToFieldGridPosition(targetGrid);
-        unit.gameObject.transform.position = FieldGrid.GetSingleGrid(targetGrid).GetGridCentrePoint() + new Vector3(0, 55, 55);
-        unit.GetComponent<Vehicle>().SimulateAirdrop();
+        TargetUnit.gameObject.SetActive(true);
+        TargetUnit.GetComponent<Vehicle>().AddToFieldGridPosition(TargetGrid);
+        TargetUnit.gameObject.transform.position = FieldGrid.GetGrid(TargetGrid).GetGridCentrePoint() + new Vector3(0, 55, 55);
+        TargetUnit.GetComponent<Vehicle>().SimulateAirdrop();
     }
 
     public void UpdateGridCoordAction(GridCoord coord)
     {
-        targetGrid = coord;
+        TargetGrid = coord;
     }
 }

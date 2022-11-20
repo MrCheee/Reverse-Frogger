@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class SnipeSkillManager : ISkillManager
 {
@@ -27,13 +28,16 @@ public class SnipeSkillManager : ISkillManager
 
     public void UpdateSkillUnit(Unit unit)
     {
-        if (m_Skill == null)
+        if (unit is Enemy enemy)
         {
-            InitialiseSkill(unit);
-        }
-        else
-        {
-            m_Skill.unit = unit;
+            if (m_Skill == null)
+            {
+                m_Skill = new Snipe(enemy);
+            }
+            else
+            {
+                m_Skill.TargetUnit = enemy;
+            }
         }
     }
 
@@ -48,7 +52,7 @@ public class SnipeSkillManager : ISkillManager
         if (selectedUnit != null && selectedUnit.gameObject.tag == "Enemy")
         {
             // Snipe cannot be used on enemies on top of vehicles (dangerous thematically)
-            if (selectedUnit.GetComponent<Unit>().yAdjustment != 3)
+            if (selectedUnit.GetComponent<Unit>().VerticalDisplacement != 3)
             {
                 skillSoundManager.PlaySkillConfirm();
                 m_LockedIn = true;
@@ -85,9 +89,9 @@ public class SnipeSkillManager : ISkillManager
 
     public void RemoveSkillTarget()
     {
-        if (m_Skill != null && m_Skill.unit != null)
+        if (m_Skill != null && m_Skill.TargetUnit != null)
         {
-            m_Skill.unit.RemoveTargetedSkill(m_SkillType);
+            m_Skill.TargetUnit.RemoveTargetedSkill(m_SkillType);
         }
         m_Skill = null;
         m_LockedIn = false;
@@ -110,15 +114,15 @@ public class SnipeSkillManager : ISkillManager
 
     public string GetExecuteLog()
     {
-        Unit targetUnit = m_Skill.unit.GetComponent<Unit>();
+        Unit targetUnit = m_Skill.TargetUnit.GetComponent<Unit>();
         return $"Snipe Skill used on {targetUnit.GetName()} at Grid [{targetUnit.GetCurrentHeadGridPosition().x}, {targetUnit.GetCurrentHeadGridPosition().y}].";
     }
 
     public void RepositionSkillMarkerUI()
     {
-        if (m_Skill != null && m_Skill.unit != null)
+        if (m_Skill != null && m_Skill.TargetUnit != null)
         {
-            m_SkillMarker.PositionSkillMarkerUI(m_Skill.unit.transform.position, m_Skill.unit.GetTargetedCount());
+            m_SkillMarker.PositionSkillMarkerUI(m_Skill.TargetUnit.transform.position, m_Skill.TargetUnit.GetTargetedCount());
         }
     }
 }

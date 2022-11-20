@@ -5,40 +5,43 @@ using UnityEngine;
 public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
 {
     protected float moveSpeed = 7.5f;
-
-    protected int size = 1;
-    protected int health = 0;
-    protected int damage = 0;
-    protected int skipTurn = 0;
-    protected int chargePerTurn = 0;
-    protected int charging = 0;
-    protected int boosted = 0;
     protected float deathTimer = 0f;
+
+    protected int chargePerTurn = 0;
     protected List<SkillType> targeted = new List<SkillType>();
+    protected GridCoord _currentGridPosition;
 
-    protected bool actionTaken = false;
-
-    protected string unitTag;
     protected Queue<Command> commandStack = new Queue<Command>();
     protected Command _currentCommand;
-    protected List<GridCoord> movementPattern = new List<GridCoord>();
-    protected GameStateManager gameStateManager;
-    protected Animator animator;
-    public float yAdjustment { get; protected set; }
-    public bool TurnInProgress { get; protected set; }
+    public List<GridCoord> movementPattern = new List<GridCoord>();
 
+    protected bool turnCoroutineInProgress = false;
+    protected bool actionTaken = false;
     protected AudioSource audioSource;
 
-    protected virtual void Awake()
-    {
-        gameStateManager = GameObject.Find("MainManager").GetComponent<GameStateManager>();
-        audioSource = GetComponentInChildren<AudioSource>();
-        animator = GetComponentInChildren<Animator>();
+    public int Health { get; protected set; }
+    public int Damage { get; protected set; }
+    public int SkipTurn { get; protected set; }
+    public int Charging { get; protected set; }
+    public float VerticalDisplacement { get; protected set; }
+    public bool TurnInProgress { get => turnCoroutineInProgress && HasCompletedAllCommands(); protected set => turnCoroutineInProgress = value; }
+    public string SpecialTag { get; protected set; }
 
-        // Each enemy will define its own movement pattern and it will be assigned to the private variable on startup
-        SetUnitAttributes();
-        SetAdditionalTag();
-        SetMovementPattern();
+    // Animation
+    protected Animator animator;
+    protected static readonly int movingAP = Animator.StringToHash("Moving");
+    protected static readonly int stunnedAP = Animator.StringToHash("Stunned");
+    protected static readonly int chargingAP = Animator.StringToHash("Charging");
+
+    // IUnit Interface
+    public abstract GridCoord GetCurrentHeadGridPosition();
+
+    public abstract void UpdateGridMovement(GridCoord position);
+
+    public void BeginPreTurn()
+    {
+        TurnInProgress = true;
+        StartCoroutine("PreTurnActions");
     }
 
     public void BeginTurn()
@@ -47,74 +50,10 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         StartCoroutine("TakeTurn");
     }
 
-    public void BeginPreTurn()
-    {
-        TurnInProgress = true;
-        StartCoroutine("PreTurnActions");
-    }
-
     public void BeginPostTurn()
     {
         TurnInProgress = true;
         StartCoroutine("PostTurnActions");
-    }
-
-    protected abstract void SetUnitAttributes();
-    protected abstract void SetAdditionalTag();
-    public abstract void SetMovementPattern();
-    public abstract GridCoord GetCurrentHeadGridPosition();
-    public abstract GridCoord[] GetAllCurrentGridPosition();
-    public abstract void AddToFieldGridPosition(GridCoord position);
-    public abstract void RemoveFromFieldGridPosition();
-    public abstract void SetCurrentGridPosition(GridCoord position);
-    public abstract IEnumerator PreTurnActions();
-    public abstract IEnumerator TakeTurn();
-    public abstract IEnumerator PostTurnActions();
-    public abstract void CheckConditionsToDestroy();
-    public abstract void TakeVehicleInTheWayAction();
-    public abstract void TakeNoVehicleInTheWayAction();
-    public abstract bool HaltMovementByVehicleInTheWay();
-
-    public bool CheckIfCompletedPreviousMovement()
-    {
-        return commandStack.Count == 0;
-    }
-
-    protected bool ToSkipTurn()
-    {
-        if (skipTurn > 0)
-        {
-            skipTurn -= 1;
-            if (skipTurn <= 0)
-            {
-                animator.SetBool("Stunned", false);
-            }
-            TurnInProgress = false;
-            return true;
-        }
-        return false;
-    }
-
-    protected bool StillChargingUp()
-    {
-        if (charging > 0)
-        {
-            charging -= 1;
-            animator.SetTrigger("Charging");
-            TurnInProgress = false;
-            return true;
-        }
-        return false;
-    }
-
-    public bool IsObjInTheWay(GridCoord targetGrid)
-    {
-        return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetSingleGrid(targetGrid).GetUnitCount() > 0;
-    }
-
-    public bool IsVehicleInTheWay(GridCoord targetGrid)
-    {
-        return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetSingleGrid(targetGrid).GetListOfUnitsGameObjectTag().Contains("Vehicle");
     }
 
     public void Move(Vector3 moveDirection)
@@ -127,131 +66,129 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
         transform.RotateAround(transform.position, rotateAxis, rotateAmt);
     }
 
-    public bool ReachedPosition(Vector3 target)
-    {
-        return Helper.vectorDistanceIgnoringYAxis(transform.position, target) <= 0.1f;
-    }
-
-    public virtual void DestroySelf()
-    {
-        health = 0;
-        RemoveFromFieldGridPosition();
-        Destroy(gameObject, deathTimer);
-    }
-
-    // [To Be Added] Update  will only run these command execution when in its correct game state
-    // [Or each specific commands can only be run in certain game state]
-    // Update will constantly check for commands to execute
-    public void Update()
-    {
-        if (health > 0)
-        {
-            if (_currentCommand != null)
-            {
-                // Continue execution of current command if it is still uncompleted
-                if (!_currentCommand.IsFinished)
-                {
-                    _currentCommand.Execute(this);
-                }
-                else // Remove command from stack and set current command to null
-                {
-                    commandStack.Dequeue();
-                    _currentCommand = null;
-                }
-            }
-            else
-            {
-                CheckConditionsToDestroy();
-
-                // If no current command, check if any in stack, grab the top command if there is
-                if (commandStack.Count > 0)
-                {
-                    _currentCommand = commandStack.Peek();
-                }
-                else
-                {
-                    if (!TurnInProgress)
-                    {
-                        animator.SetBool("Moving", false);
-                    }
-                }
-            }
-        }
-    }
-
     public void TakeDamage(int damageReceived)
     {
-        health -= damageReceived;
-        if (health <= 0)
+        Health -= damageReceived;
+        if (Health <= 0)
         {
             deathTimer = 1.5f;
             DestroySelf();
         }
     }
 
-    public void IssueCommand(Command cmd)
+    public virtual void IssueCommand(Command cmd)
     {
         commandStack.Enqueue(cmd);
     }
 
-    public virtual void GiveMovementCommand(GridCoord moveGrid)
-    {
-        commandStack.Enqueue(new MoveToGridCommand(moveGrid));
-    }
-
-    public string GetTag()
-    {
-        return unitTag;
-    }
-
-    public int GetHealth()
-    {
-        return health;
-    }
-
-    public int GetSize()
-    {
-        return size;
-    }
-
-    public void AddDamage(int damageAdd)
-    {
-        damage += damageAdd;
-        damage = Mathf.Max(damage, 0);
-    }
-
     public void DisableUnit(int disableTime)
     {
-        skipTurn += disableTime;
-        animator.SetBool("Stunned", true);
+        SkipTurn += disableTime;
+        animator.SetBool(stunnedAP, true);
     }
 
-    public void BoostUnit(int boostCount)
+    // UIMain.IUIInfoContent Interface
+    public abstract string GetName();
+    public abstract string GetDescription();
+    public virtual void GetContent(ref List<Status> content)
     {
-        boosted += boostCount;
+        content.Add(new Status("Health", Health));
+        content.Add(new Status("Damage", Damage));
+        content.Add(new Status("Stunned", SkipTurn));
+        content.Add(new Status("Charging", Charging));
     }
 
-    public void ReduceBoostOnUnit()
+    // Non-interface Abstract methods
+    protected abstract void SetUnitAttributes();
+    protected abstract void SetMovementPattern();
+    protected abstract IEnumerator PreTurnActions();
+    protected abstract IEnumerator TakeTurn();
+    protected abstract IEnumerator PostTurnActions();
+    protected abstract void CheckConditionsToDestroy();
+    protected abstract void DestroySelf();
+    
+
+    protected virtual void Start()
     {
-        boosted = Mathf.Max(0, boosted - 1);
+        audioSource = GetComponentInChildren<AudioSource>();
+        animator = GetComponentInChildren<Animator>();
+        SetUnitAttributes();
+        SetMovementPattern();
     }
 
-    public bool isBoosted()
+    // Update will constantly check for commands to execute
+    private void Update()
     {
-        return boosted > 0;
-    }
+        if (Health <= 0) return;
 
-    public bool isStunned()
-    {
-        return skipTurn > 0;
-    }
-
-    public void FlipUnitSprite(bool flip)
-    {
-        if (tag == "Enemy")
+        if (_currentCommand != null)
         {
-            GetComponentInChildren<SpriteRenderer>().flipX = flip;
+            // Continue execution of current command if it is still uncompleted
+            if (!_currentCommand.IsFinished)
+            {
+                _currentCommand.Execute(this);
+            }
+            else // Remove command from stack and set current command to null
+            {
+                commandStack.Dequeue();
+                _currentCommand = null;
+
+                // Only check after a command has been completed
+                CheckConditionsToDestroy();
+            }
         }
+        else
+        {
+            // If no current command, check if any in stack, grab the top command if there is
+            if (commandStack.Count > 0)
+            {
+                _currentCommand = commandStack.Peek();
+            }
+            else
+            {
+                if (!TurnInProgress)
+                {
+                    animator.SetBool(movingAP, false);
+                }
+            }
+        }
+    }
+
+    protected bool HasCompletedAllCommands()
+    {
+        return commandStack.Count == 0;
+    }
+
+    protected bool ToSkipTurn()
+    {
+        if (SkipTurn > 0)
+        {
+            SkipTurn -= 1;
+            if (SkipTurn <= 0)
+            {
+                animator.SetBool(stunnedAP, false);
+            }
+            TurnInProgress = false;
+            return true;
+        }
+        return false;
+    }
+
+    protected bool StillChargingUp()
+    {
+        if (Charging > 0)
+        {
+            Charging -= 1;
+            animator.SetTrigger(chargingAP);
+            TurnInProgress = false;
+            return true;
+        }
+        return false;
+    }
+
+    protected bool IsInLeftLane()
+    {
+        return _currentGridPosition.y < FieldGrid.DividerY;
     }
 
     public void AddTargetedSkill(SkillType skill)
@@ -267,23 +204,5 @@ public abstract class Unit : MonoBehaviour, IUnit, UIMain.IUIInfoContent
     public int GetTargetedCount()
     {
         return targeted.Count;
-    }
-
-    public virtual string GetName()
-    {
-        return "Default Name";
-    }
-
-    public virtual string GetDescription()
-    {
-        return "Default Description";
-    }
-
-    public virtual void GetContent(ref List<Status> content)
-    {
-        content.Add(new Status("Health", health));
-        content.Add(new Status("Damage", damage));
-        content.Add(new Status("Stunned", skipTurn));
-        content.Add(new Status("Charging", charging));
     }
 }

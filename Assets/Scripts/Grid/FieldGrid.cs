@@ -3,41 +3,47 @@ using UnityEngine;
 
 public class FieldGrid
 {
-    private static int fieldLength = 17;
-    private static int fieldHeight = 17;
-    private static int fieldBuffer = 3;
-    private static int numOfLanes = 4;
-
-    private static int dividerY;
-    private static int minPlayFieldX;
-    private static int maxPlayFieldX;
-    private static int minPlayFieldY;
-    private static int maxPlayFieldY;
-    private static int sidewalkBottomY;
-    private static int sidewalkTopY;
-
-    private static HashSet<GridCoord> gridsToReposition = new HashSet<GridCoord>();
-    private SingleGrid[,] field = new SingleGrid[fieldLength, fieldHeight];
+    public static int FieldLength { get; private set; }
+    public static int FieldHeight { get; private set; }
+    public static int FieldBuffer { get; private set; }
+    public static int NumOfLanes { get; private set; }
+    public static int DividerY { get; private set; }
+    public static int SidewalkBottomY { get; private set; }
+    public static int SidewalkTopY { get; private set; }
+    public static int MinPlayFieldX { get; private set; }
+    public static int MaxPlayFieldX { get; private set; }
+    public static int MinPlayFieldY { get; private set; }
+    public static int MaxPlayFieldY { get; private set; }
 
     private static readonly FieldGrid _instance = new FieldGrid();
+    private SingleGrid[,] field;
+    private static HashSet<GridCoord> gridsToReposition;
 
     private FieldGrid()
     {
-        for (int i = 0; i < fieldLength; i++)
+        FieldLength = 17;
+        FieldHeight = 17;
+        FieldBuffer = 3;
+        NumOfLanes = 4;
+
+        field = new SingleGrid[FieldLength, FieldHeight];
+        for (int i = 0; i < FieldLength; i++)
         {
-            for (int j = 0; j < fieldHeight; j++)
+            for (int j = 0; j < FieldHeight; j++)
             {
                 field[i, j] = new SingleGrid(i, j, new Vector3(i * 5, 0, j * 5));
             }
         }
-        dividerY = fieldBuffer + numOfLanes + 1;
-        sidewalkTopY = fieldHeight - 1 - fieldBuffer;
-        sidewalkBottomY = fieldBuffer;
+        DividerY = FieldBuffer + NumOfLanes + 1;
+        SidewalkTopY = FieldHeight - 1 - FieldBuffer;
+        SidewalkBottomY = FieldBuffer;
 
-        minPlayFieldX = fieldBuffer;
-        maxPlayFieldX = fieldLength - 1 - fieldBuffer;
-        minPlayFieldY = fieldBuffer;
-        maxPlayFieldY = fieldHeight - 1 - fieldBuffer;
+        MinPlayFieldX = FieldBuffer;
+        MaxPlayFieldX = FieldLength - 1 - FieldBuffer;
+        MinPlayFieldY = FieldBuffer;
+        MaxPlayFieldY = FieldHeight - 1 - FieldBuffer;
+
+        gridsToReposition = new HashSet<GridCoord>();
     }
 
     public static FieldGrid GetFieldGrid()
@@ -45,20 +51,19 @@ public class FieldGrid
         return _instance;
     }
 
-    public static SingleGrid GetSingleGrid(int x, int y)
+    public static SingleGrid GetGrid(int x, int y)
     {
-        if (x < 0 || x >= fieldLength || y < 0 || y >= fieldHeight)
+        if (!IsWithinField(x, y))
         {
             throw new AccessingFieldGridOutOfBoundsException();
         }
         return _instance.field[x, y];
     }
 
-    public static SingleGrid GetSingleGrid(GridCoord gridCoord)
+    public static SingleGrid GetGrid(GridCoord gridCoord)
     {
-        if (gridCoord.x < 0 || gridCoord.x >= fieldLength || gridCoord.y < 0 || gridCoord.y >= fieldHeight)
+        if (!IsWithinField(gridCoord))
         {
-            Debug.Log($"Error accessing ({gridCoord.x}, {gridCoord.y})");
             throw new AccessingFieldGridOutOfBoundsException();
         }
         return _instance.field[gridCoord.x, gridCoord.y];
@@ -66,47 +71,22 @@ public class FieldGrid
 
     public static bool IsWithinField(GridCoord gridCoord)
     {
-        return !(gridCoord.x < 0 || gridCoord.x >= fieldLength || gridCoord.y < 0 || gridCoord.y >= fieldHeight);
+        return IsWithinField(gridCoord.x, gridCoord.y);
+    }
+
+    public static bool IsWithinField(int x, int y)
+    {
+        return !(x < 0 || x >= FieldLength || y < 0 || y >= FieldHeight);
     }
 
     public static bool IsWithinPlayableField(GridCoord gridCoord)
     {
-        return !(gridCoord.x < fieldBuffer || gridCoord.x >= fieldLength - fieldBuffer || gridCoord.y < fieldBuffer || gridCoord.y >= fieldHeight - fieldBuffer);
+        return IsWithinPlayableField(gridCoord.x, gridCoord.y);
     }
 
-    public static int GetMaxHeight()
+    public static bool IsWithinPlayableField(int x, int y)
     {
-        return fieldHeight;
-    }
-
-    public static int GetMaxLength()
-    {
-        return fieldLength;
-    }
-
-    public static int GetFieldBuffer()
-    {
-        return fieldBuffer;
-    }
-
-    public static int GetNumberOfLanes()
-    {
-        return numOfLanes;
-    }
-
-    public static int GetDividerLaneNum()
-    {
-        return dividerY;
-    }
-
-    public static int GetTopSidewalkLaneNum()
-    {
-        return sidewalkTopY;
-    }
-
-    public static int GetBottomSidewalkLaneNum()
-    {
-        return sidewalkBottomY;
+        return !(x < MinPlayFieldX || x > MaxPlayFieldX || y < MinPlayFieldY || y >= MaxPlayFieldY);
     }
 
     public static void AddGridToReposition(GridCoord gridCoord)
@@ -116,7 +96,7 @@ public class FieldGrid
 
     public static void TriggerGridsRepositioning()
     {
-        foreach(GridCoord coord in gridsToReposition)
+        foreach (GridCoord coord in gridsToReposition)
         {
             _instance.field[coord.x, coord.y].RepositionObjects();
         }
@@ -126,7 +106,7 @@ public class FieldGrid
     public static GridCoord GetGridCoordFromWorldPosition(Vector3 worldPos)
     {
         // Return default value as 0, 0 grid if selection is out of valid zone
-        if (worldPos.x < -2.5 || worldPos.x >= (fieldLength * 5 - 2.5) || worldPos.z < -2.5 || worldPos.z >= (fieldHeight * 5 - 2.5))
+        if (worldPos.x < -2.5 || worldPos.x >= (FieldLength * 5 - 2.5) || worldPos.z < -2.5 || worldPos.z >= (FieldHeight * 5 - 2.5))
         {
             return new GridCoord(0, 0);
         }
@@ -134,5 +114,30 @@ public class FieldGrid
         int grid_x = (int)Mathf.Floor((worldPos.x + 2.5f) / 5);
         int grid_y = (int)Mathf.Floor((worldPos.z + 2.5f) / 5);
         return new GridCoord(grid_x, grid_y);
+    }
+
+    public static bool IsTargetedGridInALane(int gridY)
+    {
+        return gridY != DividerY && gridY < SidewalkTopY && gridY > SidewalkBottomY;
+    }
+
+    public static bool IsWithinPlayableX(int gridX)
+    {
+        return gridX >= MinPlayFieldX && gridX <= MaxPlayFieldX;
+    }
+
+    public static bool IsVehicleInTheWay(GridCoord targetGrid)
+    {
+        return IsWithinField(targetGrid) && GetGrid(targetGrid).GetListOfUnitsGameObjectTag().Contains("Vehicle");
+    }
+
+    public static bool IsEnemyInTheWay(GridCoord targetGrid)
+    {
+        return IsWithinField(targetGrid) && GetGrid(targetGrid).GetListOfUnitsGameObjectTag().Contains("Enemy");
+    }
+
+    public static bool IsUnitOfTypeInTheWay(GridCoord targetGrid, string unitTag)
+    {
+        return IsWithinField(targetGrid) && GetGrid(targetGrid).GetListOfUnitsTag().Contains(unitTag);
     }
 }

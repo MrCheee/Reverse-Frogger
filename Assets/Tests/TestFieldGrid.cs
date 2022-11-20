@@ -12,18 +12,18 @@ public class TestFieldGrid
     {
         try
         {
-            FieldGrid.GetSingleGrid(0, 0);
-            FieldGrid.GetSingleGrid(12, 10);
-            FieldGrid.GetSingleGrid(6, 5);
+            FieldGrid.GetGrid(0, 0);
+            FieldGrid.GetGrid(12, 10);
+            FieldGrid.GetGrid(6, 5);
         }
         catch (Exception e)
         {
             Assert.Fail($"Expected No OOB Exception, but got: {e.Message}");
         }
         
-        Assert.Throws<AccessingFieldGridOutOfBoundsException>(() => FieldGrid.GetSingleGrid(-1, 0));
-        Assert.Throws<AccessingFieldGridOutOfBoundsException>(() => FieldGrid.GetSingleGrid(13, 13));
-        Assert.Throws<AccessingFieldGridOutOfBoundsException>(() => FieldGrid.GetSingleGrid(0, 15));
+        Assert.Throws<AccessingFieldGridOutOfBoundsException>(() => FieldGrid.GetGrid(-1, 0));
+        Assert.Throws<AccessingFieldGridOutOfBoundsException>(() => FieldGrid.GetGrid(13, 13));
+        Assert.Throws<AccessingFieldGridOutOfBoundsException>(() => FieldGrid.GetGrid(0, 15));
     }
 
     [Test]
@@ -38,13 +38,13 @@ public class TestFieldGrid
         // Act
 
         // Assert
-        Assert.AreEqual(new Vector3(0, 0, 0), FieldGrid.GetSingleGrid(0, 0).GetGridCentrePoint());
-        Assert.AreEqual(new Vector3(25, 0, 25), FieldGrid.GetSingleGrid(5, 5).GetGridCentrePoint());
-        Assert.AreEqual(new Vector3(50, 0, 0), FieldGrid.GetSingleGrid(10, 0).GetGridCentrePoint());
-        Assert.AreEqual(new Vector3(40, 0, 35), FieldGrid.GetSingleGrid(8, 7).GetGridCentrePoint());
-        Assert.AreEqual(new GridCoord(0, 0), FieldGrid.GetSingleGrid(0, 0).GetGridCoord());
-        Assert.AreEqual(new GridCoord(5, 5), FieldGrid.GetSingleGrid(5, 5).GetGridCoord());
-        Assert.AreEqual(new GridCoord(8, 7), FieldGrid.GetSingleGrid(8, 7).GetGridCoord());
+        Assert.AreEqual(new Vector3(0, 0, 0), FieldGrid.GetGrid(0, 0).GetGridCentrePoint());
+        Assert.AreEqual(new Vector3(25, 0, 25), FieldGrid.GetGrid(5, 5).GetGridCentrePoint());
+        Assert.AreEqual(new Vector3(50, 0, 0), FieldGrid.GetGrid(10, 0).GetGridCentrePoint());
+        Assert.AreEqual(new Vector3(40, 0, 35), FieldGrid.GetGrid(8, 7).GetGridCentrePoint());
+        Assert.AreEqual(new GridCoord(0, 0), FieldGrid.GetGrid(0, 0).GetGridCoord());
+        Assert.AreEqual(new GridCoord(5, 5), FieldGrid.GetGrid(5, 5).GetGridCoord());
+        Assert.AreEqual(new GridCoord(8, 7), FieldGrid.GetGrid(8, 7).GetGridCoord());
     }
 
     // A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use

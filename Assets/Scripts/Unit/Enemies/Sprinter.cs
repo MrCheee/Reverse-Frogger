@@ -2,18 +2,19 @@
 {
     protected override void SetUnitAttributes()
     {
-        health = 1;
-        damage = 1;
+        Health = 1;
+        Damage = 1;
         chargePerTurn = 0;
+        SpecialTag = "Basic";
     }
 
-    public override void SetMovementPattern()
+    protected override void SetMovementPattern()
     {
         movementPattern.Add(new GridCoord(0, direction));
         movementPattern.Add(new GridCoord(0, direction));
     }
 
-    public override void TakeVehicleInTheWayAction()
+    protected override void TakeVehicleInTheWayAction()
     {
         DisableUnit(1);
         ExecuteConcussedMovement();

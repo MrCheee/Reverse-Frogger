@@ -33,7 +33,7 @@ public class BoostUnitSkillManager : ISkillManager
         }
         else
         {
-            m_Skill.unit = unit;
+            m_Skill.TargetUnit = unit;
         }
     }
 
@@ -76,9 +76,9 @@ public class BoostUnitSkillManager : ISkillManager
 
     public void RemoveSkillTarget()
     {
-        if (m_Skill != null && m_Skill.unit != null)
+        if (m_Skill != null && m_Skill.TargetUnit != null)
         {
-            m_Skill.unit.RemoveTargetedSkill(m_SkillType);
+            m_Skill.TargetUnit.RemoveTargetedSkill(m_SkillType);
         }
         m_Skill = null;
         m_LockedIn = false;
@@ -101,15 +101,15 @@ public class BoostUnitSkillManager : ISkillManager
 
     public string GetExecuteLog()
     {
-        Unit targetUnit = m_Skill.unit.GetComponent<Unit>();
+        Unit targetUnit = m_Skill.TargetUnit.GetComponent<Unit>();
         return $"Boost Unit Skill used on {targetUnit.GetName()} at Grid [{targetUnit.GetCurrentHeadGridPosition().x}, {targetUnit.GetCurrentHeadGridPosition().y}].";
     }
 
     public void RepositionSkillMarkerUI()
     {
-        if (m_Skill != null && m_Skill.unit != null)
+        if (m_Skill != null && m_Skill.TargetUnit != null)
         {
-            m_SkillMarker.PositionSkillMarkerUI(m_Skill.unit.transform.position, m_Skill.unit.GetTargetedCount());
+            m_SkillMarker.PositionSkillMarkerUI(m_Skill.TargetUnit.transform.position, m_Skill.TargetUnit.GetTargetedCount());
         }
     }
 }

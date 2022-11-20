@@ -6,21 +6,30 @@ public class EndlessVehicleSpawner : MonoBehaviour, IVehicleSpawner
     [SerializeField] private GameObject[] vehPrefabs;
 
     List<VehicleType> _currentSpawnList;
-    float doubleSpawnProbability = 0.2f;  // Using pseudo-random distribution = roughly 40% on average
-    int failedAttempts = 1;
-    int level = 1;
-    int initCount = 5;
-
-    int numOfLanes = FieldGrid.GetNumberOfLanes() * 2;
-    int spawnXLeft = FieldGrid.GetFieldBuffer() - 1;
-    int spawnXRight = FieldGrid.GetMaxLength() - FieldGrid.GetFieldBuffer();
-    int spawnYMin = FieldGrid.GetFieldBuffer() + 1;
-    int spawnYMax = FieldGrid.GetFieldBuffer() + FieldGrid.GetNumberOfLanes() * 2 + 1;
-    int dividerY = FieldGrid.GetFieldBuffer() + 1 + FieldGrid.GetNumberOfLanes();
+    float doubleSpawnProbability;
+    int failedAttempts;
+    int level;
+    int initCount;
+    int numOfLanes;
+    int spawnXLeft;
+    int spawnXRight;
+    int spawnYMin;
+    int spawnYMax;
+    int dividerY;
 
     // Start is called before the first frame update
-    void Awake()
+    void Start()
     {
+        doubleSpawnProbability = 0.2f;  // Using pseudo-random distribution = roughly 40% on average
+        failedAttempts = 1;
+        level = 1;
+        initCount = 5;
+        numOfLanes = FieldGrid.NumOfLanes * 2;
+        spawnXLeft = FieldGrid.FieldBuffer - 1;
+        spawnXRight = FieldGrid.FieldLength - FieldGrid.FieldBuffer;
+        spawnYMin = FieldGrid.FieldBuffer + 1;
+        spawnYMax = FieldGrid.FieldBuffer + FieldGrid.NumOfLanes * 2 + 1;
+        dividerY = FieldGrid.DividerY;
         SetSpawnList();
     }
 
@@ -55,7 +64,7 @@ public class EndlessVehicleSpawner : MonoBehaviour, IVehicleSpawner
             int spawnX = Random.Range(spawnXLeft + 1, spawnXRight - 1);
 
             GridCoord spawnGrid = new GridCoord(spawnX, spawnY);
-            Vector3 spawnPos = FieldGrid.GetSingleGrid(spawnGrid).GetGridCentrePoint();
+            Vector3 spawnPos = FieldGrid.GetGrid(spawnGrid).GetGridCentrePoint();
             Quaternion spawnRotation = spawnY < dividerY ? vehPrefabs[(int)vehIndex].transform.rotation : vehPrefabs[(int)vehIndex].transform.rotation * Quaternion.Euler(0f, 180f, 0f);
 
             GameObject veh = Instantiate(vehPrefabs[(int)vehIndex], spawnPos, spawnRotation);
@@ -92,7 +101,7 @@ public class EndlessVehicleSpawner : MonoBehaviour, IVehicleSpawner
             int spawnX = spawnY < dividerY ? spawnXRight : spawnXLeft;
 
             GridCoord spawnGrid = new GridCoord(spawnX, spawnY);
-            Vector3 spawnPos = FieldGrid.GetSingleGrid(spawnGrid).GetGridCentrePoint();
+            Vector3 spawnPos = FieldGrid.GetGrid(spawnGrid).GetGridCentrePoint();
             Quaternion spawnRotation = spawnY < dividerY ? vehPrefabs[(int)vehIndex].transform.rotation : vehPrefabs[(int)vehIndex].transform.rotation * Quaternion.Euler(0f, 180f, 0f);
 
             GameObject veh = Instantiate(vehPrefabs[(int)vehIndex], spawnPos, spawnRotation);
@@ -127,14 +136,14 @@ public class EndlessVehicleSpawner : MonoBehaviour, IVehicleSpawner
         {
             if (i < dividerY)
             {
-                if (FieldGrid.GetSingleGrid(spawnXRight, i).GetListOfUnitsGameObjectTag().Contains("Vehicle"))
+                if (FieldGrid.GetGrid(spawnXRight, i).GetListOfUnitsGameObjectTag().Contains("Vehicle"))
                 {
                     reservedSpawnY.Add(i);
                 }
             }
             else if (i > dividerY)
             {
-                if (FieldGrid.GetSingleGrid(spawnXLeft, i).GetListOfUnitsGameObjectTag().Contains("Vehicle"))
+                if (FieldGrid.GetGrid(spawnXLeft, i).GetListOfUnitsGameObjectTag().Contains("Vehicle"))
                 {
                     reservedSpawnY.Add(i);
                 }

@@ -1,16 +1,16 @@
 ﻿public class DisableUnit : ISkill
 {
-    public Unit unit { get; set; }
-    public GridCoord targetGrid { get; set; }
+    public Unit TargetUnit { get; set; }
+    public GridCoord TargetGrid { get; set; }
 
     public DisableUnit(Unit target)
     {
-        unit = target;
+        TargetUnit = target;
     }
 
     public void Execute()
     {
-        unit.DisableUnit(1);
+        TargetUnit.DisableUnit(1);
     }
 
     public void UpdateGridCoordAction(GridCoord coord)

@@ -33,7 +33,7 @@ public class UserControl : MonoBehaviour
 
     SkillSoundManager skillSoundManager;
 
-    private void Awake()
+    private void Start()
     {
         uiMain = UIMain.Instance;
         playerSkillVehicleManager = gameObject.GetComponent<PlayerSkillVehicleManager>();
@@ -66,6 +66,9 @@ public class UserControl : MonoBehaviour
             int tmp = i;
             carChoosingButtons[i].onClick.AddListener(delegate { HandleSelectCar(tmp); });
         }
+
+        // Events
+        Enemy.OnEnemyKilled += EnemyKilled;
     }
 
     private void Update()
@@ -84,8 +87,6 @@ public class UserControl : MonoBehaviour
         {
             HandleDeselection();
         }
-
-        //MarkerHandling();
     }
 
     public void HandleSelection()
@@ -99,11 +100,6 @@ public class UserControl : MonoBehaviour
             var unit = hit.collider.GetComponentInParent<Unit>();
             m_Selected = unit;
 
-            //if (graphicRaycasterManager.IsSelectingUI())
-            //{
-            //    Debug.Log("Selected UI Element, ignoring update on InfoPopup...");
-            //}
-            //else
             if (!graphicRaycasterManager.IsSelectingUI())
             {
                 MarkerHandling();
@@ -175,7 +171,6 @@ public class UserControl : MonoBehaviour
         // If button is selected
         if (skillToggles[skillNum].isOn)
         {
-            Debug.Log($"Skill {skillType} has been selected!");
             skillSoundManager.PlaySkillSelect();
 
             // Remove previously selected skill from active state and set this as current active skill
@@ -197,7 +192,6 @@ public class UserControl : MonoBehaviour
         }
         else  // If button is deselected, either manually, or auto trigger when a skill target is locked in
         {
-            Debug.Log($"Skill {skillType} has been deselected!");
             skillSoundManager.PlaySkillDeselect();
 
             // If skill is not locked in, refund skill orbs
@@ -214,7 +208,7 @@ public class UserControl : MonoBehaviour
     private void HandleSelectCar(int carNum)
     {
         skillSoundManager.PlaySkillSelect();
-        Unit selectedVehicle = playerSkillVehicleManager.GetPlayerSkillVehicle(carNum).GetComponent<Unit>();
+        Vehicle selectedVehicle = playerSkillVehicleManager.GetPlayerSkillVehicle(carNum).GetComponent<Vehicle>();
         skillManagers[skillSelected].UpdateSkillUnit(selectedVehicle);
         skillManagers[skillSelected].DeactivateSkillUI();
     }
@@ -299,6 +293,7 @@ public class UserControl : MonoBehaviour
         StartCoroutine("ExecuteSkills");
     }
 
+    // Coroutine used to let the locked in skills execute in 2s intervals
     private IEnumerator ExecuteSkills()
     {
         foreach (KeyValuePair<SkillType, ISkillManager> entry in skillManagers)
@@ -306,10 +301,9 @@ public class UserControl : MonoBehaviour
             if (entry.Value.m_LockedIn)
             {
                 uiMain.RemoveSkillOrb(entry.Value.m_SkillCost);
-                //uiMain.UpdateGameLog(entry.Value.GetExecuteLog());
                 entry.Value.ExecuteSkill();
                 currentSkillOrbCount -= entry.Value.m_SkillCost;
-                yield return new WaitForSeconds(2f);
+                yield return new WaitForSeconds(2f); 
             }
         }
         ResetAllSkillTargets();
@@ -338,10 +332,9 @@ public class UserControl : MonoBehaviour
         }
     }
 
-    public void AddSkillOrb(int count)
+    private void EnemyKilled(Enemy enemy)
     {
-        currentSkillOrbCount += count;
-        uiMain.AddSkillOrb(count);
+        currentSkillOrbCount += 1;
     }
 
     public void ResetSkillBar()
@@ -370,7 +363,6 @@ public class UserControl : MonoBehaviour
 
     public void UpdateSkillTogglesFunctionality()
     {
-        Debug.Log($"[UserControl] Current skill orbs: {currentSkillOrbCount}. Consumed: {consumedSkillOrbCount}");
         int skillOrbCount = currentSkillOrbCount - consumedSkillOrbCount;
         for (int i = 0; i < skillToggles.Length; i++)
         {

@@ -4,22 +4,23 @@ public class Charger : Enemy
 {
     protected override void SetUnitAttributes()
     {
-        health = 1;
-        damage = 2;
+        Health = 1;
+        Damage = 2;
         chargePerTurn = 3;
-        charging = chargePerTurn;
+        Charging = chargePerTurn;
+        SpecialTag = "Basic";
     }
 
-    public override void SetMovementPattern()
+    protected override void SetMovementPattern()
     {
-        int totalLength = FieldGrid.GetNumberOfLanes() + 1;  // Dash half of the map, start to divider, then divider to end
+        int totalLength = FieldGrid.NumOfLanes + 1;  // Dash half of the map, start to divider, then divider to end
         for (int i = 0; i < totalLength; i++)
         {
             movementPattern.Add(new GridCoord(0, direction));
         }
     }
 
-    public override void TakeVehicleInTheWayAction()
+    protected override void TakeVehicleInTheWayAction()
     {
         DisableUnit(1);
         ExecuteConcussedMovement();

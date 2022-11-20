@@ -5,12 +5,14 @@ public class EndlessEnemySpawner : MonoBehaviour, IEnemySpawner
 {
     [SerializeField] private GameObject[] enemyPrefabs;
 
+    const int EnemyBufferX = 2;  // Number of grids to buffer enemy spawn from the horizontal edges of the map
+    int spawnY = FieldGrid.MaxPlayFieldY;
+    int spawnXMin = FieldGrid.MinPlayFieldX + EnemyBufferX;
+    int spawnXMax = FieldGrid.MaxPlayFieldX - EnemyBufferX;
+    int level = 0;
+    int spawnCount = 0;
+
     List<EnemyType> _currentSpawnList;
-    int spawnY = FieldGrid.GetMaxHeight() - FieldGrid.GetFieldBuffer() - 1;
-    int spawnXMin = FieldGrid.GetFieldBuffer() + 2;
-    int spawnXMax = FieldGrid.GetMaxLength() - FieldGrid.GetFieldBuffer() - 2;
-    int level;
-    int spawnCount;
     Queue<EnemyType> forcedSpawn = new Queue<EnemyType>();
 
     public void SetDifficulty(string difficultyLevel)
@@ -63,7 +65,7 @@ public class EndlessEnemySpawner : MonoBehaviour, IEnemySpawner
             int spawnX = RandomNonRepeating(reservedSpawnX, spawnXMin, spawnXMax);
             reservedSpawnX.Add(spawnX);
             GridCoord spawnGrid = new GridCoord(spawnX, spawnY);
-            Vector3 spawnPos = FieldGrid.GetSingleGrid(spawnGrid).GetGridCentrePoint();
+            Vector3 spawnPos = FieldGrid.GetGrid(spawnGrid).GetGridCentrePoint();
             GameObject enemy = Instantiate(enemyPrefabs[(int)enemyIndex], spawnPos, enemyPrefabs[(int)enemyIndex].transform.rotation);
             enemy.GetComponent<Enemy>().AddToFieldGridPosition(spawnGrid);
         }

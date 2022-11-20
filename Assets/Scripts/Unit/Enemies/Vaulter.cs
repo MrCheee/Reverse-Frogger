@@ -9,45 +9,41 @@ public class Vaulter : Enemy
 
     protected override void SetUnitAttributes()
     {
-        health = 1;
-        damage = 1;
+        Health = 1;
+        Damage = 1;
         chargePerTurn = 0;
+        SpecialTag = "Roof-Ready";
     }
 
-    protected override void SetAdditionalTag()
-    {
-        unitTag = "Roof-Ready";
-    }
-
-    public override void SetMovementPattern()
+    protected override void SetMovementPattern()
     {
         movementPattern.Add(new GridCoord(0, direction));
     }
 
-    public override IEnumerator PreTurnActions()
+    protected override IEnumerator PreTurnActions()
     {
         GridCoord nextMove = movementPattern[0];
         GridCoord nextGrid = Helper.AddGridCoords(_currentGridPosition, nextMove);
 
         if (!vaultReady)
         {
-            if (!Helper.IsVehicleInTheWay(nextGrid))
+            if (!FieldGrid.IsVehicleInTheWay(nextGrid))
             {
                 GetComponentInChildren<VaultRotator>().GiveRotateCommand(Vector3.left, 75f);
                 vaultReady = true;
             }
         }
-        animator.SetBool("Moving", true);
+        animator.SetBool(movingAP, true);
         TurnInProgress = false;
         yield break;
     }
 
-    public override IEnumerator TakeTurn()
+    protected override IEnumerator TakeTurn()
     {
         float retryInterval = 0.2f;
         bool vaulted = false;
 
-        if (Crossed)
+        if (HasCrossed)
         {
             TurnInProgress = false;
             yield break;
@@ -60,7 +56,7 @@ public class Vaulter : Enemy
 
         if (!vaultReady)
         {
-            if (!Helper.IsVehicleInTheWay(nextGrid))
+            if (!FieldGrid.IsVehicleInTheWay(nextGrid))
             {
                 transform.Rotate(new Vector3(-90, 0, 0));
                 vaultReady = true;
@@ -70,13 +66,13 @@ public class Vaulter : Enemy
         while (moveQueue.Count > 0)
         {
             // Wait until all commands have been completed by the unit before issuing next move command
-            if (!CheckIfCompletedPreviousMovement()) yield return new WaitForSeconds(retryInterval);
+            if (!HasCompletedAllCommands()) yield return new WaitForSeconds(retryInterval);
 
             nextnextGrid = Helper.AddGridCoords(nextGrid, nextMove);
             if (vaultReady && vaultAvailable)
             {
                 // Check if theres a vehicle 2 grids away from it, if so, then perform a vault and end turn
-                if (Helper.IsVehicleInTheWay(nextnextGrid))
+                if (FieldGrid.IsVehicleInTheWay(nextnextGrid))
                 {
                     TakeVehicleInNextNextGridAction();
                     vaulted = true;
@@ -86,7 +82,7 @@ public class Vaulter : Enemy
             // If not vaulted, perform usual next grid vehicle check and move accordingly
             if (!vaulted)
             {
-                if (Helper.IsVehicleInTheWay(nextGrid))
+                if (FieldGrid.IsVehicleInTheWay(nextGrid))
                 {
                     Debug.Log("Not vaulted, and vehicle in the way.");
                     TakeVehicleInNextGridAction();
@@ -97,10 +93,9 @@ public class Vaulter : Enemy
                     TakeNoVehicleInTheWayAction();
                 }
             }
-            
+
             // If not break away by vehicle in the way, issue the next movement command
-            //Debug.Log($"Issue Move command of ({nextMove.x}, {nextMove.y}) to ({nextGrid.x}, {nextGrid.y})");
-            GiveMovementCommand(nextMove);
+            IssueCommand(new MoveToTargetGridCommand(nextGrid));
 
             // Halt further movement when enemy has crossed the road
             if (HasCrossedTheRoad(nextGrid))
@@ -115,12 +110,12 @@ public class Vaulter : Enemy
             yield return new WaitForSeconds(0.2f);
         }
         TurnInProgress = false;
-        animator.SetBool("Moving", false);
+        animator.SetBool(movingAP, false);
     }
 
     public void TakeVehicleInNextGridAction()
     {
-        if (yAdjustment == 0)  // If not on another vehicle, then give "knocked" movement and skip turn
+        if (VerticalDisplacement == 0)  // If not on another vehicle, then give "knocked" movement and skip turn
         {
             DisableUnit(1);
             ExecuteConcussedMovement();
@@ -137,35 +132,35 @@ public class Vaulter : Enemy
         
         GetComponentInChildren<VaultTrigger>().DestroySelf();
 
-        if (Helper.IsVehicleInTheWay(landingGrid))
+        if (FieldGrid.IsVehicleInTheWay(landingGrid))
         {
-            yAdjustment = 3;
+            VerticalDisplacement = 3;
         }
 
         // Flying over 1st grid
-        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(nextGrid).GetCornerPoint(0, -direction), 3));
-        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(nextGrid).GetCornerPoint(0, direction), 3));
+        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetGrid(nextGrid).GetCornerPoint(0, -direction), 3));
+        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetGrid(nextGrid).GetCornerPoint(0, direction), 3));
 
         // Flying over 2nd grid
-        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(nextnextGrid).GetCornerPoint(0, direction), 3));
+        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetGrid(nextnextGrid).GetCornerPoint(0, direction), 3));
 
         RemoveFromFieldGridPosition();
         AddToFieldGridPosition(nextnextGrid);
         vaultAvailable = false;
     }
 
-    public override void TakeNoVehicleInTheWayAction()
+    protected override void TakeNoVehicleInTheWayAction()
     {
-        if (yAdjustment == 3)
+        if (VerticalDisplacement == 3)
         {
-            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction), yAdjustment));
+            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction), VerticalDisplacement));
         }
-        yAdjustment = 0;
+        VerticalDisplacement = 0;
     }
 
-    public override bool HaltMovementByVehicleInTheWay()
+    protected override bool HaltMovementByVehicleInTheWay()
     {
-        if (yAdjustment == 3)   // and landed on another vehicle
+        if (VerticalDisplacement == 3)   // and landed on another vehicle
         {
             return false;       // then movement is not halted, can jump on top of next vehicle in the way
         }

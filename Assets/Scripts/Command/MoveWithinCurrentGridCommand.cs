@@ -13,12 +13,12 @@
 
     public override void Execute(Unit unit)
     {
-        if (isFinished) return;
+        if (IsFinished) return;
         if (!moveReady)
         {
             GridCoord currentGrid = unit.GetCurrentHeadGridPosition();
-            _target = FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(_right, _top);
-            _target.y = manualYAdjustment != 0 ? manualYAdjustment : unit.yAdjustment;
+            _target = FieldGrid.GetGrid(currentGrid).GetCornerPoint(_right, _top);
+            _target.y = manualYAdjustment != 0 ? manualYAdjustment : unit.VerticalDisplacement;
             _moveDirection = calculateMoveDirection(_target, unit.transform.position);
             FieldGrid.AddGridToReposition(currentGrid);
             moveReady = true;

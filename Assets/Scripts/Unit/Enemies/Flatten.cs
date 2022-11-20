@@ -1,38 +1,43 @@
 ﻿using System.Collections;
+using UnityEngine;
 
 public class Flatten : Enemy
 {
+    protected static readonly int flattenAP = Animator.StringToHash("Flatten");
+    protected static readonly int toFlattenAP = Animator.StringToHash("ToFlatten");
+
     protected override void SetUnitAttributes()
     {
-        health = 1;
-        damage = 1;
+        Health = 1;
+        Damage = 1;
         chargePerTurn = 0;
+        SpecialTag = "Basic";
     }
 
-    public override void SetMovementPattern()
+    protected override void SetMovementPattern()
     {
         movementPattern.Add(new GridCoord(0, direction));
     }
 
-    public override void TakeVehicleInTheWayAction()
+    protected override void TakeVehicleInTheWayAction()
     {
-        yAdjustment = -2f;
-        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction)));
+        VerticalDisplacement = -2f;
+        commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction)));
     }
 
-    public override void TakeNoVehicleInTheWayAction()
+    protected override void TakeNoVehicleInTheWayAction()
     {
-        if (yAdjustment == -2f)
+        if (VerticalDisplacement == -2f)
         {
-            animator.SetBool("Flatten", false);
-            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction), yAdjustment));
+            animator.SetBool(flattenAP, false);
+            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetGrid(GetCurrentHeadGridPosition()).GetCornerPoint(0, direction), VerticalDisplacement));
         }
-        yAdjustment = 0;
+        VerticalDisplacement = 0;
     }
 
-    public override IEnumerator PreTurnActions()
+    protected override IEnumerator PreTurnActions()
     {
-        if (Crossed || skipTurn > 0 || charging > 0)
+        if (HasCrossed || SkipTurn > 0 || Charging > 0)
         {
             TurnInProgress = false;
             yield break;
@@ -40,19 +45,19 @@ public class Flatten : Enemy
 
         GridCoord nextMove = movementPattern[0];
         GridCoord nextGrid = Helper.AddGridCoords(_currentGridPosition, nextMove);
-        if (Helper.IsVehicleInTheWay(nextGrid))
+        if (FieldGrid.IsVehicleInTheWay(nextGrid))
         {
-            if (!animator.GetBool("Flatten"))
+            if (!animator.GetBool(flattenAP))
             {
-                animator.SetTrigger("ToFlatten");
-                animator.SetBool("Flatten", true);
+                animator.SetTrigger(toFlattenAP);
+                animator.SetBool(flattenAP, true);
             }
         }
         TurnInProgress = false;
         yield break;
     }
 
-    public override bool HaltMovementByVehicleInTheWay()
+    protected override bool HaltMovementByVehicleInTheWay()
     {
         return false;
     }

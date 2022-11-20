@@ -57,17 +57,28 @@ public class UIMain : MonoBehaviour
 
     Coroutine m_Coroutine;
 
-    private void Awake()
+    int totalKills = 0;
+
+    private void Start()
     {
         Instance = this;
         InfoPopup.gameObject.SetActive(false);
         gameStateIndicators = GameObject.Find("GameStateIndicatorYellow").GetComponent<GameStateIndicators>();
         m_Coroutine = null;
+
+        // Events
+        Enemy.OnEnemyKilled += EnemyKilled;
     }
 
     private void OnDestroy()
     {
         Instance = null;
+    }
+
+    public void Initialise(int startHealth, int startSkillOrbs)
+    {
+        HealthBar.AddHealth(startHealth);
+        SkillOrbBar.AddSkillOrb(startSkillOrbs);
     }
 
     public void CloseStartMenu()
@@ -91,6 +102,7 @@ public class UIMain : MonoBehaviour
         }
     }
 
+    // Happens on new phase change
     public void UpdateContent()
     {
         if (m_CurrentContent == null) return;
@@ -106,6 +118,7 @@ public class UIMain : MonoBehaviour
         }
     }
 
+    // Happens on level up
     public void UpdateLevel(int level)
     {
         if (level < 30)
@@ -138,11 +151,6 @@ public class UIMain : MonoBehaviour
             }
             yield return new WaitForSeconds(0.25f);
         }
-    }
-
-    public void UpdateKills(int kills)
-    {
-        KillsText.text = kills.ToString();
     }
 
     public void UpdateBestScore(string difficulty, int bestScore)
@@ -183,11 +191,6 @@ public class UIMain : MonoBehaviour
         VehicleSelectionUI.gameObject.SetActive(false);
     }
 
-    public void AddHealth(int health)
-    {
-        HealthBar.AddHealth(health);
-    }
-
     public void RemoveHealth(int damage)
     {
         if (damage > 0)
@@ -224,9 +227,11 @@ public class UIMain : MonoBehaviour
         DamageTakenPanel.SetActive(false);
     }
 
-    public void AddSkillOrb(int count)
+    public void EnemyKilled(Enemy enemy)
     {
-        SkillOrbBar.AddSkillOrb(count);
+        SkillOrbBar.AddSkillOrb(1);
+        totalKills += 1;
+        KillsText.text = totalKills.ToString();
     }
 
     public void RemoveSkillOrb(int count)

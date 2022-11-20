@@ -5,110 +5,87 @@ using UnityEngine;
 
 public abstract class Vehicle : Unit
 {
-    public int SpeedAddition { get; set; }
-
+    public int Size { get; protected set; }
+    protected GridCoord[] _currentOccupiedGrids;
     protected int maxSpeed = 1;
-
     private int laneSpeedAddition = 0;
-    protected int dividerY = FieldGrid.GetFieldBuffer() + 1 + FieldGrid.GetNumberOfLanes();
-    protected GridCoord[] _currentGridPosition;
+    protected int dividerY;
+    protected int moveDirection = 1;
 
-    protected AudioSource _audioSource;
-    [SerializeField] protected AudioClip hitSound;
-
-    protected override void Awake()
+    protected override void Start()
     {
-        _audioSource = GetComponent<AudioSource>();
-
-        SetUpSize();
-        _currentGridPosition = new GridCoord[size];
-        _currentGridPosition[0] = new GridCoord(dividerY, dividerY);
+        base.Start();
+        dividerY = FieldGrid.DividerY;
+        _currentOccupiedGrids = new GridCoord[Size];
         moveSpeed = 7.5f;
         chargePerTurn = 0;
         deathTimer = 1f;
-        base.Awake();
     }
 
     protected override void SetUnitAttributes()
     {
-        health = 1;
-        damage = 1;
-    }
-
-    protected abstract void SetUpSize();
-
-    protected override void SetAdditionalTag()
-    {
-        unitTag = "Normal";
+        Health = 1;
+        Damage = 1;
+        Size = 1;
     }
 
     public override GridCoord GetCurrentHeadGridPosition()
     {
-        return _currentGridPosition[0];
-    }
-
-    public override GridCoord[] GetAllCurrentGridPosition()
-    {
         return _currentGridPosition;
     }
 
-    public override void AddToFieldGridPosition(GridCoord position)
+    public GridCoord[] GetAllOccupiedGrids()
+    {
+        return _currentOccupiedGrids;
+    }
+
+    public override void UpdateGridMovement(GridCoord position)
+    {
+        RemoveFromFieldGridPosition(); 
+        AddToFieldGridPosition(position);
+    }
+
+    public void AddToFieldGridPosition(GridCoord position)
     {
         SetCurrentGridPosition(position);
-        for (int i = 0; i < _currentGridPosition.Length; i++)
+        for (int i = 0; i < Size; i++)
         {
-            FieldGrid.GetSingleGrid(_currentGridPosition[i]).AddObject(gameObject);
+            FieldGrid.GetGrid(_currentOccupiedGrids[i]).AddObject(gameObject);
         }
     }
 
-    public override void RemoveFromFieldGridPosition()
+    public void RemoveFromFieldGridPosition()
     {
-        for (int i = 0; i < _currentGridPosition.Length; i++)
+        for (int i = 0; i < Size; i++)
         {
-            FieldGrid.GetSingleGrid(_currentGridPosition[i]).RemoveObject(gameObject.GetInstanceID());
+            FieldGrid.GetGrid(_currentOccupiedGrids[i]).RemoveObject(gameObject.GetInstanceID());
         }
     }
 
-    public override void SetCurrentGridPosition(GridCoord position)
+    public void SetCurrentGridPosition(GridCoord position)
     {
-        for (int i = 0; i < size; i++)
+        _currentGridPosition = position;
+        for (int i = 0; i < Size; i++)
         {
-            _currentGridPosition[i] = position;
+            _currentOccupiedGrids[i] = position;
             position = GetNextBodyPosition(position);
         }
     }
 
-    public override IEnumerator PreTurnActions()
+    protected override IEnumerator PreTurnActions()
     {
         yield break;
-    }
-    public override IEnumerator PostTurnActions()
-    {
-        yield break;
-    }
-    public override void TakeVehicleInTheWayAction()
-    {
-        return;
-    }
-    public override void TakeNoVehicleInTheWayAction()
-    {
-        return;
-    }
-    public override bool HaltMovementByVehicleInTheWay()
-    {
-        return true;
     }
 
-    public override IEnumerator TakeTurn()
+    protected override IEnumerator TakeTurn()
     {
         int retries = 0;
-        bool quickExit = false;
         int maxRetries = 10;
         float retryInterval = 0.2f;
 
         if (ToSkipTurn()) yield break;
 
-        animator.SetBool("Moving", true);
+        animator.SetBool(movingAP, true);
 
         actionTaken = true;
         TurnInProgress = true;
@@ -117,23 +94,23 @@ public abstract class Vehicle : Unit
 
         while (moveQueue.Count > 0)
         {
-            // If vehicle cannot proceed for a full second, halt current and further movement
+            // If vehicle cannot proceed for 2s, halt current and further movement
             if (retries > maxRetries) break;
 
             // Wait until all commands have been completed by the unit before issuing next move command
-            if (!CheckIfCompletedPreviousMovement()) yield return new WaitForSeconds(retryInterval);
+            if (!HasCompletedAllCommands()) yield return new WaitForSeconds(retryInterval);
 
-            if (skipTurn > 0)
+            if (SkipTurn > 0)
             {
                 break;
             }
 
-            // If vehicle is in the way, check again in 0.5s and move accordingly
-            if (Helper.IsVehicleInTheWay(nextGrid))
+            // If vehicle is in the way, check again in 0.2s up to a max retry count
+            if (FieldGrid.IsVehicleInTheWay(nextGrid))
             {
                 retries += 1;
             }
-            else   // If coast is clear, issue the next movement command
+            else   // Check if coast is clear, and if so, issue the next movement command
             {
                 if (IsShieldBlockingTheWay(nextMove, nextGrid)) // If Shield is blocking, halt current and further movement
                 {
@@ -142,24 +119,25 @@ public abstract class Vehicle : Unit
                 }
                 if (IsEnemyTypeInTheWay(nextGrid, "Brute"))  // If Brute in the way, check if movement will kill it. If yes, proceed as normal.
                 {
-                    Unit brute = GetUnitInTheWay(nextGrid, "Brute");
+                    Brute brute = GetUnitInTheWay(nextGrid, "Brute") as Brute;
                     if (IsBruteTooStrong(brute))  // If Brute has more HP than vehicle damage
                     {
                         HandleBruteInTheWay(brute);  // Deal vehicle damage to brute, then halt movement
                         break;
                     }
                 }
-                if (IsEnemyTypeInTheWay(nextGrid, "Bloat"))
-                {
-                    quickExit = true;
-                }
                 (nextMove, nextGrid) = TakeMovementAction(moveQueue, nextMove, nextGrid);
+                Debug.Log($"{nextMove.x}, {nextMove.y}");
             }
-            if (quickExit) break;
             yield return new WaitForSeconds(0.2f);
         }
         TurnInProgress = false;
-        animator.SetBool("Moving", false);
+        animator.SetBool(movingAP, false);
+    }
+
+    protected override IEnumerator PostTurnActions()
+    {
+        yield break;
     }
 
     void PrepareMovement(out Queue<GridCoord> moveQueue, out GridCoord nextMove, out GridCoord nextGrid)
@@ -167,12 +145,12 @@ public abstract class Vehicle : Unit
         moveQueue = new Queue<GridCoord>(movementPattern);
         moveQueue = UpdateMovementWithLaneSpeed(moveQueue);
         nextMove = moveQueue.Peek();
-        nextGrid = Helper.AddGridCoords(_currentGridPosition[0], nextMove);
+        nextGrid = Helper.AddGridCoords(_currentGridPosition, nextMove);
     }
 
     (GridCoord, GridCoord) TakeMovementAction(Queue<GridCoord> moveQueue, GridCoord nextMove, GridCoord nextGrid)
     {
-        GiveMovementCommand(nextMove);
+        IssueCommand(new MoveToTargetGridCommand(nextGrid));
         moveQueue.Dequeue();
         if (moveQueue.Count > 0)
         {
@@ -182,16 +160,23 @@ public abstract class Vehicle : Unit
         return (nextMove, nextGrid);
     }
 
-    public override void GiveMovementCommand(GridCoord moveGrid)
+    public override void IssueCommand(Command cmd)
     {
-        MoveUnitsOnTopOfVehicle(moveGrid);
-        commandStack.Enqueue(new MoveToGridCommand(moveGrid));
+        commandStack.Enqueue(cmd);
+        if (cmd is MoveToTargetGridCommand moveCmd)
+        {
+            MoveUnitsOnTopOfVehicle(moveCmd.TargetGrid);
+        }
     }
 
-    public virtual void HandleBruteInTheWay(Unit brute)
+    public virtual bool IsBruteTooStrong(Brute brute)
     {
-        brute.TakeDamage(damage);
-        TakeDamage(1);
+        return brute.Health > Damage;
+    }
+
+    public virtual void HandleBruteInTheWay(Brute brute)
+    {
+        brute.TakeDamage(Damage);
         SimulateHitObstacle();
     }
 
@@ -203,7 +188,7 @@ public abstract class Vehicle : Unit
         commandStack.Enqueue(new MoveWithinCurrentGridCommand(0, 0));
     }
 
-    public override void CheckConditionsToDestroy()
+    protected override void CheckConditionsToDestroy()
     {
         if (HasReachedEndOfRoad())
         {
@@ -211,48 +196,38 @@ public abstract class Vehicle : Unit
         }
     }
 
-    public override void DestroySelf()
+    protected override void DestroySelf()
     {
         RemoveFromFieldGridPosition();
-        if (health <= 0)
-        {
-            animator.SetTrigger("Explode");
-            deathTimer = 1f;
-        }
-        health = 0;
+        Health = 0;
         Destroy(gameObject, deathTimer);
     }
 
     public bool HasReachedEndOfRoad()
     {
-        if (_currentGridPosition[0].y < dividerY)
+        if (_currentGridPosition.y < dividerY)
         {
-            return _currentGridPosition[0].x == 0;
+            return _currentGridPosition.x == 0;
         }
         else
         {
-            return _currentGridPosition[0].x == FieldGrid.GetMaxLength() - 1;
+            return _currentGridPosition.x == FieldGrid.FieldLength - 1;
         }
     }
 
     public bool IsEnemyTypeInTheWay(GridCoord targetGrid, string enemyType)
     {
-        return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetSingleGrid(targetGrid).IsUnitTagInGrid(enemyType);
+        return FieldGrid.IsWithinField(targetGrid) && FieldGrid.GetGrid(targetGrid).IsUnitTagInGrid(enemyType);
     }
 
     public Unit GetUnitInTheWay(GridCoord targetGrid, string enemyType)
     {
-        return FieldGrid.GetSingleGrid(targetGrid).GetUnitWithTag(enemyType);
+        return FieldGrid.GetGrid(targetGrid).GetUnitWithTag(enemyType);
     }
 
     public List<Unit> GetUnitsInTheWay(GridCoord targetGrid, string enemyType)
     {
-        return FieldGrid.GetSingleGrid(targetGrid).GetListOfUnitsWithTag(enemyType);
-    }
-
-    public virtual bool IsBruteTooStrong(Unit brute)
-    {
-        return brute.GetHealth() > damage;
+        return FieldGrid.GetGrid(targetGrid).GetListOfUnitsWithTag(enemyType);
     }
 
     public bool IsShieldBlockingTheWay(GridCoord nextMove, GridCoord nextGrid)
@@ -269,29 +244,29 @@ public abstract class Vehicle : Unit
         return isBlocked;
     }
 
-    public void MoveUnitsOnTopOfVehicle(GridCoord nextMove)
+    public void MoveUnitsOnTopOfVehicle(GridCoord targetGrid)
     {
-        for (int i = 0; i < _currentGridPosition.Length; i++)
+        for (int i = 0; i < Size; i++)
         {
-            List<Unit> enemiesOnTop = FieldGrid.GetSingleGrid(_currentGridPosition[i]).GetListOfUnitsWithTag("Roof-Ready");
+            List<Unit> enemiesOnTop = FieldGrid.GetGrid(_currentOccupiedGrids[i]).GetListOfUnitsWithTag("Roof-Ready");
             foreach (Unit enemy in enemiesOnTop)
             {
-                enemy.IssueCommand(new MoveToGridCommand(nextMove));
+                enemy.IssueCommand(new MoveToTargetGridCommand(targetGrid));
             }
         }
     }
 
     public void ReverseMotion()
     {
-        movementPattern = movementPattern.Select(x => new GridCoord(x.x * -1, x.y)).ToList();
+        moveDirection = -moveDirection;
     }
 
-    public void UpdateLaneSpeed(int newLaneSpeed)
+    public void UpdateLaneSpeedAddition(int newLaneSpeed)
     {
         laneSpeedAddition = newLaneSpeed - 1;
     }
 
-    public Queue<GridCoord> UpdateMovementWithLaneSpeed(Queue<GridCoord> moveQueue)
+    protected Queue<GridCoord> UpdateMovementWithLaneSpeed(Queue<GridCoord> moveQueue)
     {
         for (int i = 0; i < laneSpeedAddition; i++)
         {
@@ -302,11 +277,6 @@ public abstract class Vehicle : Unit
             moveQueue.Enqueue(movementPattern.Last());
         }
         return moveQueue;
-    }
-
-    protected bool IsInLeftLane()
-    {
-        return _currentGridPosition[0].y < dividerY;
     }
 
     GridCoord GetNextBodyPosition(GridCoord position)
@@ -329,7 +299,7 @@ public abstract class Vehicle : Unit
 
     public IEnumerator AirdropMotion()
     {
-        Vector3 targetPos = FieldGrid.GetSingleGrid(GetCurrentHeadGridPosition()).GetGridCentrePoint();
+        Vector3 targetPos = FieldGrid.GetGrid(GetCurrentHeadGridPosition()).GetGridCentrePoint();
         Vector3 moveDirection;
         while (Vector3.Distance(targetPos, transform.position) > 0.2f)
         {
@@ -338,10 +308,5 @@ public abstract class Vehicle : Unit
             yield return null;
         }
         GameObject.Find("AirdropTarget").GetComponent<AirdropTarget>().Trigger(GetName(), transform.position, -movementPattern[0].x);
-    }
-
-    public void Collided()
-    {
-        audioSource.PlayOneShot(hitSound, 0.35f);
     }
 }

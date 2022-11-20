@@ -1,40 +1,39 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public class Brute : Enemy
 {
+    protected static readonly int knockbackAP = Animator.StringToHash("Knockback");
+
     int[] noKnockbackYPos = new int[2] {
-        FieldGrid.GetDividerLaneNum() + 1,   // Right Lane 1 - no vehicle to hit
-        FieldGrid.GetDividerLaneNum() - FieldGrid.GetNumberOfLanes()  // Left Lane 4 - no vehicle to hit
+        FieldGrid.DividerY + 1,   // Right Lane 1 - no vehicle to hit
+        FieldGrid.DividerY - FieldGrid.NumOfLanes  // Left Lane 4 - no vehicle to hit
     };
     int[] KnockbackBlockYPos = new int[2]
     {
-        FieldGrid.GetDividerLaneNum() + 2,   // Right Lane 2 - cannot hit vehicle to next lane (next lane is divider)
-        FieldGrid.GetDividerLaneNum() - FieldGrid.GetNumberOfLanes() + 1    // Left Lane 3 - cannot hit vehicle to next lane (next lane is sidewalk)
+        FieldGrid.DividerY + 2,   // Right Lane 2 - cannot hit vehicle to next lane (next lane is divider)
+        FieldGrid.DividerY - FieldGrid.NumOfLanes + 1    // Left Lane 3 - cannot hit vehicle to next lane (next lane is sidewalk)
     };
     bool movementBlocked = true;
 
-    protected override void SetAdditionalTag()
-    {
-        unitTag = "Brute";
-    }
-
     protected override void SetUnitAttributes()
     {
-        health = 2;
-        damage = 4;
+        Health = 2;
+        Damage = 4;
         chargePerTurn = 0;
+        SpecialTag = "Brute";
     }
-    
-    public override void SetMovementPattern()
+
+    protected override void SetMovementPattern()
     {
         movementPattern.Add(new GridCoord(0, direction));
     }
 
-    public override IEnumerator PreTurnActions()
+    protected override IEnumerator PreTurnActions()
     {
-        if (Crossed || skipTurn > 0 || charging > 0)
+        if (HasCrossed || SkipTurn > 0 || Charging > 0)
         {
             TurnInProgress = false;
             yield break;
@@ -42,7 +41,7 @@ public class Brute : Enemy
 
         GridCoord nextMove = movementPattern[0];
         GridCoord nextGrid = Helper.AddGridCoords(_currentGridPosition, nextMove);
-        if (Helper.IsVehicleInTheWay(nextGrid))
+        if (FieldGrid.IsVehicleInTheWay(nextGrid))
         {
             KnockbackVehicleInTheWay();
         }
@@ -59,22 +58,21 @@ public class Brute : Enemy
             GridCoord destinationGrid = new GridCoord(_currentGridPosition.x, _currentGridPosition.y + direction * 2);
         
             // If vehicle in front is knockback-able, and there is no vehicle blocking its knockback, then knockback and move forward
-            if (FieldGrid.GetSingleGrid(targetGrid).IsUnitTagInGrid("Knockback-able Vehicle"))
+            if (FieldGrid.GetGrid(targetGrid).IsUnitTagInGrid("Knockback-able Vehicle"))
             {
                 bool knockbackBlocked = KnockbackBlockYPos.Contains(_currentGridPosition.y);
-                bool vehicleBlockingDestination = Helper.IsVehicleInTheWay(destinationGrid);
+                bool vehicleBlockingDestination = FieldGrid.IsVehicleInTheWay(destinationGrid);
                 bool bruteBlockingDestination = false;
 
-                bool bruteAtDestination = Helper.IsUnitOfTypeInTheWay(destinationGrid, "Brute");
+                bool bruteAtDestination = FieldGrid.IsUnitOfTypeInTheWay(destinationGrid, "Brute");
                 if (bruteAtDestination)
                 {
-                    List<Unit> allBrutes = FieldGrid.GetSingleGrid(destinationGrid).GetListOfUnitsWithTag("Brute");
-                    bruteBlockingDestination = allBrutes.Any(x => x.GetHealth() == 2);
+                    var allBrutes = FieldGrid.GetGrid(destinationGrid).GetListOfUnitsWithTag("Brute").Select(x => x as Brute).ToList();
+                    bruteBlockingDestination = allBrutes.Any(x => x.Health == 2);
                 }
 
-                animator.SetTrigger("Knockback");
-                Unit veh = FieldGrid.GetSingleGrid(targetGrid).GetUnitWithTag("Knockback-able Vehicle");
-                gameStateManager.VehicleHit(veh, 2);
+                animator.SetTrigger(knockbackAP);
+                Unit veh = FieldGrid.GetGrid(targetGrid).GetUnitWithTag("Knockback-able Vehicle");
 
                 if (!knockbackBlocked && !vehicleBlockingDestination && !bruteBlockingDestination)
                 {
@@ -90,12 +88,12 @@ public class Brute : Enemy
         }
     }
 
-    public override void TakeVehicleInTheWayAction()
+    protected override void TakeVehicleInTheWayAction()
     {
         ExecuteConcussedMovement();
     }
 
-    public override bool HaltMovementByVehicleInTheWay()
+    protected override bool HaltMovementByVehicleInTheWay()
     {
         return movementBlocked;
     }

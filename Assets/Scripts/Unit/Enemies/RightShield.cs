@@ -3,29 +3,27 @@ using UnityEngine;
 
 public class RightShield : Soldier
 {
+    protected static readonly int blockAP = Animator.StringToHash("ToBlock");
+
     protected override void SetUnitAttributes()
     {
-        health = 1;
-        damage = 2;
+        Health = 1;
+        Damage = 2;
         chargePerTurn = 0;
+        SpecialTag = "RShield";
     }
 
-    public override IEnumerator PostTurnActions()
+    protected override IEnumerator PostTurnActions()
     {
         GetComponentInChildren<SpriteRenderer>().flipX = false;
-        animator.SetBool("Moving", false);
+        animator.SetBool(movingAP, false);
         int currentY = _currentGridPosition.y;
-        if (currentY < FieldGrid.GetDividerLaneNum() && currentY != FieldGrid.GetBottomSidewalkLaneNum())
+        if (currentY < FieldGrid.DividerY && currentY != FieldGrid.SidewalkBottomY)
         {
-            animator.SetTrigger("ToBlock");
+            animator.SetTrigger(blockAP);
         }
         TurnInProgress = false;
         yield break;
-    }
-
-    protected override void SetAdditionalTag()
-    {
-        unitTag = "RShield";
     }
 
     public override string GetName()

@@ -1,16 +1,16 @@
 ﻿public class Snipe : ISkill
 {
-    public Unit unit { get; set; }
-    public GridCoord targetGrid { get; set; }
+    public Unit TargetUnit { get; set; }
+    public GridCoord TargetGrid { get; set; }
 
     public Snipe(Unit target)
     {
-        unit = target;
+        TargetUnit = target;
     }
 
     public void Execute()
     {
-        unit.TakeDamage(1);
+        TargetUnit.TakeDamage(1);
     }
 
     public void UpdateGridCoordAction(GridCoord coord)

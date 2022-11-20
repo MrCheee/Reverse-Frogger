@@ -2,19 +2,16 @@
 {
     protected override void SetUnitAttributes()
     {
-        health = 5;
-        damage = 1;
-    }
-
-    protected override void SetUpSize()
-    {
-        size = 3;
+        Health = 5;
+        Damage = 1;
+        Size = 3;
         maxSpeed = 1;
+        SpecialTag = "Non-displacable Vehicle";
     }
 
-    public override void SetMovementPattern()
+    protected override void SetMovementPattern()
     {
-        movementPattern.Add(new GridCoord(1, 0));
+        movementPattern.Add(new GridCoord(moveDirection, 0));
     }
 
     public override string GetName()

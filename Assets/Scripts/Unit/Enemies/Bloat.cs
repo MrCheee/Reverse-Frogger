@@ -3,40 +3,33 @@ using UnityEngine;
 
 public class Bloat : Enemy
 {
+    protected static readonly int killedAP = Animator.StringToHash("Killed");
+
     protected override void SetUnitAttributes()
     {
-        health = 1;
-        damage = 2;
-        deathTimer = 2f;
+        Health = 1;
+        Damage = 2;
         chargePerTurn = 0;
+        SpecialTag = "Bloat";
     }
 
-    protected override void SetAdditionalTag()
-    {
-        unitTag = "Bloat";
-    }
-
-    public override void SetMovementPattern()
+    protected override void SetMovementPattern()
     {
         movementPattern.Add(new GridCoord(0, direction));
     }
 
-    public override void TakeVehicleInTheWayAction()
+    protected override void TakeVehicleInTheWayAction()
     {
         DisableUnit(1);
         ExecuteConcussedMovement();
     }
 
-    public override void DestroySelf()
+    protected override void DestroySelf()
     {
-        health = 0;
+        animator.SetTrigger(killedAP);
         deathTimer = 2f;
-        animator.SetTrigger("Killed");
         DisableVehiclesWithinRadius();
-        string killedInfo = $"{gameObject.GetComponent<Unit>().GetName()} has been killed at Grid [{_currentGridPosition.x}, {_currentGridPosition.y}]!";
-        gameStateManager.EnemyKilled(transform.position, killedInfo);
-        RemoveFromFieldGridPosition();
-        Destroy(gameObject, deathTimer);
+        base.DestroySelf();
     }
 
     private void DisableVehiclesWithinRadius()
@@ -50,7 +43,7 @@ public class Bloat : Enemy
         {
             for (int j = -1; j < 2; j++)
             {
-                var vehiclesInGrid = FieldGrid.GetSingleGrid(new GridCoord(currentX + i, currentY + j)).GetListOfUnitsWithGameObjectTag("Vehicle");
+                var vehiclesInGrid = FieldGrid.GetGrid(new GridCoord(currentX + i, currentY + j)).GetListOfUnitsWithGameObjectTag("Vehicle");
                 foreach (var veh in vehiclesInGrid)
                 {
                     int id = veh.gameObject.GetInstanceID();

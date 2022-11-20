@@ -12,10 +12,10 @@ public class MoveWithinGridCommand : MoveCommand
 
     public override void Execute(Unit unit)
     {
-        if (isFinished) return;
+        if (IsFinished) return;
         if (!moveReady)
         {
-            _target.y = manualYAdjustment != 0 ? manualYAdjustment : unit.yAdjustment;
+            _target.y = manualYAdjustment != 0 ? manualYAdjustment : unit.VerticalDisplacement;
             _moveDirection = calculateMoveDirection(_target, unit.transform.position);
             moveReady = true;
         }

@@ -6,17 +6,18 @@ public class Skater : Enemy
 {
     protected override void SetUnitAttributes()
     {
-        health = 1;
-        damage = 1;
+        Health = 1;
+        Damage = 1;
         chargePerTurn = 0;
+        SpecialTag = "Basic";
     }
 
-    public override void SetMovementPattern()
+    protected override void SetMovementPattern()
     {
         movementPattern.Add(new GridCoord(1, direction));
     }
 
-    public override void TakeVehicleInTheWayAction()
+    protected override void TakeVehicleInTheWayAction()
     {
         DisableUnit(1);
         ExecuteConcussedMovement();
@@ -24,38 +25,37 @@ public class Skater : Enemy
 
     protected override void ExecuteConcussedMovement()
     {
-        GridCoord currentGrid = GetCurrentHeadGridPosition();
-        GridCoord moveGrid = new GridCoord(movementPattern.Last().x, 0);
-        GridCoord _targetGrid = new GridCoord(currentGrid.x + moveGrid.x, currentGrid.y + moveGrid.y);
+        int horizontalMovement = movementPattern.Last().x;
+        GridCoord horizontalGrid = new GridCoord(_currentGridPosition.x + horizontalMovement, _currentGridPosition.y);
 
         // If there is a vehicle horizontally, remain in same grid concussed. Simulate corner move and back to middle
-        if (Helper.IsVehicleInTheWay(_targetGrid))
+        if (FieldGrid.IsVehicleInTheWay(horizontalGrid))
         {
-            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(moveGrid.x, direction)));
-            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetGridCentrePoint()));
-            FieldGrid.AddGridToReposition(currentGrid);
+            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetGrid(_currentGridPosition).GetCornerPoint(horizontalMovement, direction)));
+            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetGrid(_currentGridPosition).GetGridCentrePoint()));
+            FieldGrid.AddGridToReposition(_currentGridPosition);
         }
         else  // If there is no vehicle horizontally, move to horizontal grid concussed. Simulate corner move and then to horizontal grid
         {
-            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(currentGrid).GetCornerPoint(moveGrid.x, direction)));
-            commandStack.Enqueue(new MoveToGridCommand(moveGrid));
-            FieldGrid.AddGridToReposition(Helper.AddGridCoords(currentGrid, moveGrid));
+            commandStack.Enqueue(new MoveWithinGridCommand(FieldGrid.GetGrid(_currentGridPosition).GetCornerPoint(horizontalMovement, direction)));
+            commandStack.Enqueue(new MoveToTargetGridCommand(horizontalGrid));
+            FieldGrid.AddGridToReposition(horizontalGrid);
         }
     }
 
-    public override IEnumerator PostTurnActions()
+    protected override IEnumerator PostTurnActions()
     {
         if (actionTaken)
         {
             ReverseMotion();
             actionTaken = false;
         }
-        animator.SetBool("Moving", false);
+        animator.SetBool(movingAP, false);
         TurnInProgress = false;
         yield break;
     }
 
-    public void ReverseMotion()
+    private void ReverseMotion()
     {
         movementPattern = movementPattern.Select(x => new GridCoord(x.x * -1, x.y)).ToList();
     }

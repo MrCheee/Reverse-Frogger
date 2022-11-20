@@ -49,7 +49,7 @@ public class AirDropVehSkillManager : ISkillManager
         }
         else
         {
-            m_Skill.unit = unit;
+            m_Skill.TargetUnit = unit;
         }
     }
 
@@ -58,10 +58,10 @@ public class AirDropVehSkillManager : ISkillManager
         if (m_Skill != null)
         {
             GridCoord currentTargetedGrid = FieldGrid.GetGridCoordFromWorldPosition(GameCamera.ScreenToWorldPoint(Input.mousePosition));
-            if (Helper.IsWithinPlayableX(currentTargetedGrid.x) && !Helper.IsEqualGridCoords(currentVehicleSkillHoverGrid, currentTargetedGrid))
+            if (FieldGrid.IsWithinPlayableX(currentTargetedGrid.x) && !Helper.IsEqualGridCoords(currentVehicleSkillHoverGrid, currentTargetedGrid))
             {
-                Vector3 mouseOverGridPos = FieldGrid.GetSingleGrid(currentTargetedGrid).GetGridCentrePoint();
-                if (!Helper.IsTargetedGridInALane(currentTargetedGrid.y) || HaveVehiclesBlockingAirDrop(currentTargetedGrid, m_Skill.unit))
+                Vector3 mouseOverGridPos = FieldGrid.GetGrid(currentTargetedGrid).GetGridCentrePoint();
+                if (!FieldGrid.IsTargetedGridInALane(currentTargetedGrid.y) || HaveVehiclesBlockingAirDrop(currentTargetedGrid, m_Skill.TargetUnit))
                 {
                     SetValidLocator(mouseOverGridPos);
                 }
@@ -125,20 +125,21 @@ public class AirDropVehSkillManager : ISkillManager
 
     private bool HaveVehiclesBlockingAirDrop(GridCoord targetGrid, Unit unit)
     {
-        int vehicleSize = unit.GetSize();
-        int direction = targetGrid.y < FieldGrid.GetDividerLaneNum() ? 1 : -1;
         bool blocked = false;
-
-        for (int i = 0; i < vehicleSize; i++)
+        if (unit is Vehicle veh)
         {
-            GridCoord checkGrid = Helper.AddGridCoords(targetGrid, new GridCoord(i * direction, 0));
-            if (FieldGrid.IsWithinPlayableField(checkGrid))
+            int direction = targetGrid.y < FieldGrid.DividerY ? 1 : -1;
+            for (int i = 0; i < veh.Size; i++)
             {
-                List<string> gameObjectsTagInGrid = FieldGrid.GetSingleGrid(checkGrid).GetListOfUnitsGameObjectTag();
-                if (gameObjectsTagInGrid.Contains("Vehicle"))
+                GridCoord checkGrid = Helper.AddGridCoords(targetGrid, new GridCoord(i * direction, 0));
+                if (FieldGrid.IsWithinPlayableField(checkGrid))
                 {
-                    blocked = true;
-                    break;
+                    List<string> gameObjectsTagInGrid = FieldGrid.GetGrid(checkGrid).GetListOfUnitsGameObjectTag();
+                    if (gameObjectsTagInGrid.Contains("Vehicle"))
+                    {
+                        blocked = true;
+                        break;
+                    }
                 }
             }
         }
@@ -181,8 +182,8 @@ public class AirDropVehSkillManager : ISkillManager
 
     public string GetExecuteLog()
     {
-        Unit targetUnit = m_Skill.unit.GetComponent<Unit>();
-        return $"Air Drop Vehicle Skill used to drop a {targetUnit.GetName()} at Grid [{m_Skill.targetGrid.x}, {m_Skill.targetGrid.y}]";
+        Unit targetUnit = m_Skill.TargetUnit.GetComponent<Unit>();
+        return $"Air Drop Vehicle Skill used to drop a {targetUnit.GetName()} at Grid [{m_Skill.TargetGrid.x}, {m_Skill.TargetGrid.y}]";
     }
 
     public void RepositionSkillMarkerUI()

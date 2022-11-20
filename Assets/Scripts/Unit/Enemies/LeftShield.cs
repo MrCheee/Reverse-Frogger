@@ -3,29 +3,27 @@ using UnityEngine;
 
 public class LeftShield : Soldier
 {
+    protected static readonly int blockAP = Animator.StringToHash("ToBlock");
+
     protected override void SetUnitAttributes()
     {
-        health = 1;
-        damage = 2;
+        Health = 1;
+        Damage = 2;
         chargePerTurn = 0;
+        SpecialTag = "LShield";
     }
 
-    public override IEnumerator PostTurnActions()
+    protected override IEnumerator PostTurnActions()
     {
         GetComponentInChildren<SpriteRenderer>().flipX = true;
-        animator.SetBool("Moving", false);
+        animator.SetBool(movingAP, false);
         int currentY = _currentGridPosition.y;
-        if (currentY > FieldGrid.GetDividerLaneNum() && currentY != FieldGrid.GetTopSidewalkLaneNum())
+        if (currentY > FieldGrid.DividerY && currentY != FieldGrid.SidewalkTopY)
         {
-            animator.SetTrigger("ToBlock");
+            animator.SetTrigger(blockAP);
         }
         TurnInProgress = false;
         yield break;
-    }
-
-    protected override void SetAdditionalTag()
-    {
-        unitTag = "LShield";
     }
 
     public override string GetName()

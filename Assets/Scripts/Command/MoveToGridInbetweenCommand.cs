@@ -10,9 +10,9 @@ public class MoveToGridInbetweenCommand : MoveCommand
 
     public MoveToGridInbetweenCommand(GridCoord moveGrid)
     {
-        dividerY = FieldGrid.GetDividerLaneNum();
+        dividerY = FieldGrid.DividerY;
         toBottomInBetweenLane[0] = dividerY - 1;
-        toBottomInBetweenLane[1] = dividerY + FieldGrid.GetNumberOfLanes();
+        toBottomInBetweenLane[1] = dividerY + FieldGrid.NumOfLanes;
         _toMove = moveGrid;
     }
 
@@ -29,15 +29,14 @@ public class MoveToGridInbetweenCommand : MoveCommand
         int top = toBottomInBetweenLane.Contains(posY) ? -1 : 1;
         int front = 0;
 
-        unit.IssueCommand(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(_targetGrid).GetCornerPoint(right, top)));
-        unit.IssueCommand(new MoveWithinGridCommand(FieldGrid.GetSingleGrid(_targetGrid).GetInBetweenPoint(front, top)));
+        unit.IssueCommand(new MoveWithinGridCommand(FieldGrid.GetGrid(_targetGrid).GetCornerPoint(right, top)));
+        unit.IssueCommand(new MoveWithinGridCommand(FieldGrid.GetGrid(_targetGrid).GetInBetweenPoint(front, top)));
 
-        isFinished = true;
+        IsFinished = true;
     }
 
     public void UpdateGridOnMovement(Unit unit)
     {
-        unit.RemoveFromFieldGridPosition();
-        unit.AddToFieldGridPosition(_targetGrid);
+        unit.UpdateGridMovement(_targetGrid);
     }
 }
